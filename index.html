@@ -5,177 +5,250 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Home | DSD2026 TeamV2</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
     :root {
-      --bg:#0a0a0f; --bg2:#111118; --bg3:#16161f; --card:#1a1a26;
+      --bg:#08080e; --bg2:#0e0e18; --bg3:#13131e; --card:#181824;
       --border:rgba(255,255,255,0.07);
-      --blue:#4a9eff; --blue-dim:#2563a8; --blue-glow:rgba(74,158,255,0.15);
-      --amber:#f59e0b; --green:#10b981; --purple:#a78bfa;
-      --text:#e8e8f0; --text-dim:#8888a8; --text-xs:#55556a;
-      --mono:'Space Mono',monospace; --sans:'Syne',sans-serif;
+      --blue:#4a9eff; --blue-glow:rgba(74,158,255,0.15);
+      --red:#e8382a; --gold:#c9962a; --gold-light:#f0c040; --gold-glow:rgba(201,150,42,0.12);
+      --green:#10b981; --purple:#a78bfa;
+      --text:#f0ede8; --text-dim:#8888a8; --text-xs:#55556a;
+      --mono:'Space Mono',monospace; --sans:'Syne',sans-serif; --cn:'Noto Serif SC',serif;
     }
     html { scroll-behavior:smooth; }
     body { background:var(--bg); color:var(--text); font-family:var(--sans); line-height:1.6; overflow-x:hidden; }
 
-    /* NAV */
-    nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:0 6vw; height:56px; background:rgba(10,10,15,0.88); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); }
-    .nav-logo { font-family:var(--mono); font-size:0.75rem; font-weight:700; letter-spacing:0.12em; color:var(--text); text-transform:uppercase; }
+    /* ── FIXED CHINESE BACKGROUND — always visible on every section ── */
+    .lattice-bg {
+      position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.03;
+      background-image:
+        linear-gradient(0deg,rgba(201,150,42,0.8) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(201,150,42,0.8) 1px,transparent 1px),
+        linear-gradient(0deg,rgba(201,150,42,0.3) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(201,150,42,0.3) 1px,transparent 1px);
+      background-size:80px 80px,80px 80px,20px 20px,20px 20px;
+    }
+    .accent-left  { position:fixed; left:0; top:0; bottom:0; width:3px; background:linear-gradient(to bottom,transparent 10%,var(--red) 40%,var(--gold) 60%,transparent 90%); opacity:0.5; pointer-events:none; z-index:50; }
+    .accent-right { position:fixed; right:0; top:0; bottom:0; width:3px; background:linear-gradient(to bottom,transparent 10%,var(--red) 40%,var(--gold) 60%,transparent 90%); opacity:0.5; pointer-events:none; z-index:50; }
+
+    /* Floating kanji — fixed, visible on all sections */
+    .float-kanji {
+      position:fixed; font-family:var(--cn); font-weight:700;
+      pointer-events:none; user-select:none; line-height:1; z-index:0;
+      color:var(--red); opacity:0.025;
+    }
+    .fk1 { font-size:22rem; top:5vh;  right:-4rem; }
+    .fk2 { font-size:14rem; bottom:5vh; left:-2rem; color:var(--gold); opacity:0.02; }
+    .fk3 { font-size:8rem;  top:40vh; left:3%;  opacity:0.015; }
+
+    /* ── NAV ── */
+    nav {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 6vw; height:56px;
+      background:rgba(8,8,14,0.92); backdrop-filter:blur(14px);
+      border-bottom:1px solid rgba(201,150,42,0.15);
+    }
+    nav::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:linear-gradient(to right,transparent,var(--gold),var(--red),var(--gold),transparent); opacity:0.4; }
+    .nav-logo { font-family:var(--mono); font-size:0.75rem; font-weight:700; letter-spacing:0.12em; color:var(--text); text-transform:uppercase; display:flex; align-items:center; gap:0.7rem; }
+    .nav-logo .cn-char { font-family:var(--cn); font-size:1rem; color:var(--red); line-height:1; }
     .nav-links { display:flex; gap:2rem; }
     .nav-links a { font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-dim); text-decoration:none; transition:color 0.2s; }
-    .nav-links a:hover { color:var(--blue); }
+    .nav-links a:hover { color:var(--gold-light); }
     .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; background:none; border:none; padding:4px; }
     .hamburger span { width:22px; height:2px; background:var(--text); display:block; }
-    .mobile-menu { display:none; position:fixed; inset:0; z-index:99; background:rgba(10,10,15,0.97); flex-direction:column; align-items:center; justify-content:center; gap:1.2rem; }
+    .mobile-menu { display:none; position:fixed; inset:0; z-index:99; background:rgba(8,8,14,0.97); flex-direction:column; align-items:center; justify-content:center; gap:1.2rem; }
     .mobile-menu.open { display:flex; }
-    .mobile-menu a { font-family:var(--mono); font-size:1rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--text); text-decoration:none; padding:0.75rem 3rem; border:1px solid var(--border); border-radius:8px; width:220px; text-align:center; transition:0.2s; }
-    .mobile-menu a:hover { border-color:var(--blue); color:var(--blue); }
+    .mobile-menu a { font-family:var(--mono); font-size:1rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--text); text-decoration:none; padding:0.75rem 3rem; border:1px solid rgba(201,150,42,0.2); border-radius:8px; width:220px; text-align:center; transition:0.2s; }
+    .mobile-menu a:hover { border-color:var(--gold); color:var(--gold-light); }
     .mobile-close { position:absolute; top:1.2rem; right:1.5rem; font-size:1.4rem; color:var(--text-dim); cursor:pointer; background:none; border:none; }
 
-    /* HERO */
+    /* ── HERO ── */
     .hero { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:100px 6vw 80px; position:relative; overflow:hidden; }
-    .hero::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(74,158,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(74,158,255,0.04) 1px,transparent 1px); background-size:40px 40px; mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black,transparent); }
-    .hero::after { content:''; position:absolute; width:600px; height:600px; background:radial-gradient(circle,rgba(74,158,255,0.08) 0%,transparent 70%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; }
-    .hero-tag { font-family:var(--mono); font-size:0.66rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-xs); margin-bottom:1.2rem; animation:fadeUp 0.6s ease both; }
+    .hero-glow { position:absolute; inset:0; pointer-events:none;
+      background:radial-gradient(ellipse 70% 50% at 50% 50%,rgba(232,56,42,0.04) 0%,transparent 70%); }
+    .hero-circles { position:absolute; inset:0; pointer-events:none; }
+    .hc { position:absolute; border-radius:50%; border:1px solid; top:50%; left:50%; }
+    .hc1 { width:600px; height:600px; border-color:rgba(201,150,42,0.04); transform:translate(-50%,-50%); }
+    .hc2 { width:400px; height:400px; border-color:rgba(232,56,42,0.05); transform:translate(-50%,-50%); }
+    .hc3 { width:200px; height:200px; border-color:rgba(201,150,42,0.07); transform:translate(-50%,-50%); animation:spin 60s linear infinite; }
+    @keyframes spin { to{ transform:translate(-50%,-50%) rotate(360deg); } }
+
+    /* Corner ornaments */
+    .corner { position:absolute; width:100px; height:100px; pointer-events:none; opacity:0.15; }
+    .corner svg { width:100%; height:100%; }
+    .c-tl { top:68px; left:16px; }
+    .c-tr { top:68px; right:16px; transform:scaleX(-1); }
+    .c-bl { bottom:16px; left:16px; transform:scaleY(-1); }
+    .c-br { bottom:16px; right:16px; transform:scale(-1,-1); }
+
+    .hero-content { position:relative; z-index:2; }
+    .hero-tag { font-family:var(--mono); font-size:0.66rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-xs); margin-bottom:1.2rem; animation:fadeUp 0.6s ease both; display:flex; align-items:center; justify-content:center; gap:0.8rem; }
+    .hero-tag::before,.hero-tag::after { content:''; width:30px; height:1px; }
+    .hero-tag::before { background:linear-gradient(to right,transparent,var(--gold)); }
+    .hero-tag::after  { background:linear-gradient(to left,transparent,var(--gold)); }
+    .hero-cn-sub { font-family:var(--cn); font-size:1rem; color:rgba(201,150,42,0.45); letter-spacing:0.3em; margin-bottom:0.8rem; animation:fadeUp 0.6s 0.05s ease both; }
     .hero h1 { font-size:clamp(2.6rem,7vw,5.2rem); font-weight:800; line-height:1.08; letter-spacing:-0.025em; margin-bottom:1.2rem; animation:fadeUp 0.6s 0.1s ease both; }
     .hero h1 .accent { color:var(--blue); }
     .hero-sub { max-width:520px; color:var(--text-dim); font-size:0.97rem; line-height:1.75; margin-bottom:2.4rem; animation:fadeUp 0.6s 0.2s ease both; }
     .hero-badges { display:flex; gap:0.55rem; flex-wrap:wrap; justify-content:center; animation:fadeUp 0.6s 0.3s ease both; }
     .badge { font-family:var(--mono); font-size:0.63rem; letter-spacing:0.08em; padding:0.28rem 0.75rem; border-radius:4px; border:1px solid var(--border); color:var(--text-dim); background:var(--bg3); }
     .badge.blue  { border-color:rgba(74,158,255,0.3); color:var(--blue); }
-    .badge.amber { border-color:rgba(245,158,11,0.3); color:var(--amber); }
-    .scroll-hint { position:absolute; bottom:2rem; left:50%; transform:translateX(-50%); font-family:var(--mono); font-size:0.58rem; letter-spacing:0.15em; color:var(--text-xs); text-transform:uppercase; display:flex; flex-direction:column; align-items:center; gap:0.5rem; animation:fadeUp 0.6s 0.5s ease both; }
-    .scroll-hint::after { content:''; width:1px; height:36px; background:linear-gradient(to bottom,var(--text-xs),transparent); animation:lineDown 1.5s ease-in-out infinite; }
+    .badge.amber { border-color:rgba(201,150,42,0.4); color:var(--gold-light); }
+    .badge.red   { border-color:rgba(232,56,42,0.35); color:var(--red); }
+    .scroll-hint { position:absolute; bottom:2rem; left:50%; transform:translateX(-50%); font-family:var(--mono); font-size:0.58rem; letter-spacing:0.15em; color:var(--text-xs); text-transform:uppercase; display:flex; flex-direction:column; align-items:center; gap:0.5rem; animation:fadeUp 0.6s 0.5s ease both; z-index:2; }
+    .scroll-hint::after { content:''; width:1px; height:36px; background:linear-gradient(to bottom,rgba(201,150,42,0.5),transparent); animation:lineDown 1.5s ease-in-out infinite; }
     @keyframes lineDown { 0%,100%{opacity:.3;transform:scaleY(.6)} 50%{opacity:1;transform:scaleY(1)} }
 
-    /* SECTIONS */
-    section { padding:80px 6vw; }
-    .section-label { font-family:var(--mono); font-size:0.63rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--blue); margin-bottom:0.5rem; }
+    /* ── SECTIONS — all transparent so lattice shows through ── */
+    section { padding:80px 6vw; position:relative; z-index:1; }
+    /* Alternating subtle bg so sections are distinguishable but lattice still visible */
+    #background  { background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
+    #functions   { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); }
+    #architecture{ background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
+    #progress    { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); }
+    #members     { background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
+
+    .section-label { font-family:var(--mono); font-size:0.63rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:0.5rem; display:flex; align-items:center; gap:0.6rem; }
+    .section-label::before { content:'⬡'; font-size:0.5rem; color:var(--red); }
     h2 { font-size:clamp(1.6rem,3.5vw,2.3rem); font-weight:700; letter-spacing:-0.02em; margin-bottom:1rem; }
     .section-intro { max-width:640px; color:var(--text-dim); font-size:0.93rem; line-height:1.78; margin-bottom:2.2rem; }
 
-    /* BACKGROUND */
-    #background { border-top:1px solid var(--border); }
+    .cn-divider { display:flex; align-items:center; gap:1rem; margin:2rem 0; }
+    .cn-divider-line { flex:1; height:1px; background:linear-gradient(to right,transparent,rgba(201,150,42,0.3),transparent); }
+    .cn-divider-symbol { font-family:var(--cn); font-size:1.2rem; color:rgba(201,150,42,0.4); }
 
     /* FUNCTIONS */
-    #functions { background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
-    .fn-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-    .fn-card { background:var(--card); padding:1.8rem; transition:background 0.25s; }
-    .fn-card:hover { background:#1e1e2e; }
-    .fn-card .fn-label { font-size:0.65rem; font-family:var(--mono); letter-spacing:0.15em; color:var(--text-xs); text-transform:uppercase; margin-bottom:0.4rem; }
-    .fn-card h3 { font-size:1.15rem; font-weight:700; color:var(--blue); margin-bottom:0.6rem; }
+    .fn-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1px; background:rgba(201,150,42,0.08); border:1px solid rgba(201,150,42,0.12); border-radius:12px; overflow:hidden; }
+    .fn-card { background:rgba(24,24,36,0.85); padding:1.8rem; transition:background 0.25s; position:relative; overflow:hidden; backdrop-filter:blur(4px); }
+    .fn-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(to right,var(--red),var(--gold)); opacity:0; transition:opacity 0.25s; }
+    .fn-card:hover { background:rgba(28,24,36,0.95); }
+    .fn-card:hover::before { opacity:1; }
+    .fn-label { font-size:0.65rem; font-family:var(--mono); letter-spacing:0.15em; color:var(--text-xs); text-transform:uppercase; margin-bottom:0.4rem; }
+    .fn-card h3 { font-size:1.15rem; font-weight:700; color:var(--gold-light); margin-bottom:0.6rem; }
     .fn-card p  { font-size:0.86rem; color:var(--text-dim); line-height:1.65; }
+    .fn-cn { font-family:var(--cn); font-size:2rem; color:var(--red); opacity:0.15; position:absolute; bottom:1rem; right:1.2rem; line-height:1; }
 
     /* ARCHITECTURE */
-    #architecture { border-top:1px solid var(--border); }
-    .arch-diagram { background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:2.5rem 1.5rem; margin-bottom:2rem; overflow-x:auto; }
+    .arch-diagram { background:rgba(19,19,30,0.8); border:1px solid rgba(201,150,42,0.12); border-radius:12px; padding:2.5rem 1.5rem; margin-bottom:2rem; overflow-x:auto; backdrop-filter:blur(4px); }
     .arch-flow { display:flex; align-items:center; justify-content:center; gap:0; flex-wrap:nowrap; min-width:480px; }
     .arch-group { display:flex; flex-direction:column; gap:0.5rem; }
     .arch-box { padding:0.5rem 0.9rem; border-radius:6px; font-family:var(--mono); font-size:0.68rem; font-weight:700; letter-spacing:0.04em; border:1.5px solid; white-space:nowrap; text-align:center; }
     .arch-box.sensor  { border-color:#f97316; color:#f97316; background:rgba(249,115,22,0.08); }
     .arch-box.server  { border-color:var(--blue); color:var(--blue); background:var(--blue-glow); }
-    .arch-box.server.v2 { background:rgba(74,158,255,0.2); box-shadow:0 0 14px rgba(74,158,255,0.25); }
+    .arch-box.server.v2 { border-color:var(--gold); color:var(--gold-light); background:var(--gold-glow); box-shadow:0 0 14px rgba(201,150,42,0.2); }
     .arch-box.monitor { border-color:var(--green); color:var(--green); background:rgba(16,185,129,0.08); }
     .arch-arrow { display:flex; flex-direction:column; align-items:center; padding:0 0.8rem; gap:3px; }
-    .arch-arrow .if-label { font-family:var(--mono); font-size:0.58rem; color:var(--amber); letter-spacing:0.08em; }
-    .arch-arrow .arrow-line { width:36px; height:1px; background:linear-gradient(to right,var(--text-xs),var(--amber),var(--text-xs)); position:relative; }
-    .arch-arrow .arrow-line::after { content:'▶'; position:absolute; right:-7px; top:-6px; font-size:0.52rem; color:var(--amber); }
+    .arch-arrow .if-label { font-family:var(--mono); font-size:0.58rem; color:var(--gold); letter-spacing:0.08em; }
+    .arch-arrow .arrow-line { width:36px; height:1px; background:linear-gradient(to right,var(--text-xs),var(--gold),var(--text-xs)); position:relative; }
+    .arch-arrow .arrow-line::after { content:'▶'; position:absolute; right:-7px; top:-6px; font-size:0.52rem; color:var(--gold); }
     .arch-table-wrap { overflow-x:auto; }
     table { width:100%; border-collapse:collapse; font-size:0.87rem; }
-    th { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-xs); text-align:left; padding:0.6rem 1rem; border-bottom:1px solid var(--border); }
+    th { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); text-align:left; padding:0.6rem 1rem; border-bottom:1px solid rgba(201,150,42,0.15); }
     td { padding:0.85rem 1rem; border-bottom:1px solid var(--border); color:var(--text-dim); vertical-align:top; }
     tr:last-child td { border-bottom:none; }
-    tr:hover td { background:var(--bg3); }
-    td.layer-cell { font-family:var(--mono); font-size:0.68rem; letter-spacing:0.05em; color:var(--text-xs); text-transform:uppercase; white-space:nowrap; }
+    tr:hover td { background:rgba(19,19,30,0.6); }
+    td.layer-cell { font-family:var(--mono); font-size:0.68rem; color:var(--text-xs); text-transform:uppercase; white-space:nowrap; }
     td.team-cell  { font-weight:600; color:var(--text); }
-    td.highlight  { color:var(--blue) !important; font-weight:700; }
-    .v2-row td    { background:rgba(74,158,255,0.04); }
-    .v2-row td.team-cell { color:var(--blue); }
+    td.highlight  { color:var(--gold-light)!important; font-weight:700; }
+    .v2-row td    { background:rgba(201,150,42,0.04); }
+    .v2-row td.team-cell { color:var(--gold-light); }
 
     /* PROGRESS */
-    #progress { background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
     .sprint-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1rem; }
-    .sprint-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:1.4rem; transition:border-color 0.25s,transform 0.25s; }
-    .sprint-card:hover { border-color:rgba(74,158,255,0.3); transform:translateY(-2px); }
-    .sprint-card.active { border-color:var(--blue); }
+    .sprint-card { background:rgba(24,24,36,0.8); border:1px solid var(--border); border-radius:10px; padding:1.4rem; transition:border-color 0.25s,transform 0.25s; position:relative; overflow:hidden; backdrop-filter:blur(4px); }
+    .sprint-card::after { font-family:var(--cn); font-size:5rem; font-weight:700; position:absolute; bottom:-1rem; right:0.5rem; color:var(--red); opacity:0.05; line-height:1; pointer-events:none; content:attr(data-cn); }
+    .sprint-card:hover { border-color:rgba(201,150,42,0.3); transform:translateY(-2px); }
+    .sprint-card.active { border-color:rgba(201,150,42,0.4); border-left:2px solid var(--red); }
     .sprint-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.9rem; }
     .sprint-num { font-family:var(--mono); font-size:0.63rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-xs); }
     .sprint-status { font-family:var(--mono); font-size:0.58rem; padding:0.18rem 0.5rem; border-radius:4px; letter-spacing:0.08em; text-transform:uppercase; }
-    .status-active   { background:rgba(74,158,255,0.15); color:var(--blue); border:1px solid rgba(74,158,255,0.3); }
+    .status-active   { background:rgba(232,56,42,0.12); color:var(--red); border:1px solid rgba(232,56,42,0.3); }
     .status-upcoming { background:rgba(255,255,255,0.04); color:var(--text-xs); border:1px solid var(--border); }
-    .status-done     { background:rgba(16,185,129,0.12); color:var(--green); border:1px solid rgba(16,185,129,0.3); }
     .sprint-title { font-size:0.93rem; font-weight:700; margin-bottom:0.75rem; }
     .sprint-items { list-style:none; display:flex; flex-direction:column; gap:0.4rem; }
     .sprint-items li { font-size:0.8rem; color:var(--text-dim); display:flex; align-items:flex-start; gap:0.5rem; }
-    .sprint-items li::before { content:'–'; color:var(--text-xs); flex-shrink:0; margin-top:0.05rem; }
+    .sprint-items li::before { content:'–'; color:var(--gold); flex-shrink:0; }
     .progress-bar-wrap { margin-top:1.1rem; height:3px; background:var(--bg); border-radius:2px; overflow:hidden; }
-    .progress-bar { height:100%; background:var(--blue); border-radius:2px; }
+    .progress-bar { height:100%; background:linear-gradient(to right,var(--red),var(--gold)); border-radius:2px; }
 
     /* MEMBERS */
-    #members { border-top:1px solid var(--border); }
     .members-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:1rem; }
-    .member-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:1.4rem 1.1rem; text-align:center; transition:border-color 0.25s,transform 0.25s; }
-    .member-card:hover { border-color:rgba(74,158,255,0.3); transform:translateY(-2px); }
-    .member-card.pm { border-color:rgba(245,158,11,0.35); }
-    .member-avatar { width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:0.95rem; font-weight:700; margin:0 auto 0.85rem; border:1.5px solid var(--border); }
-    .av-blue   { background:rgba(74,158,255,0.12);  color:var(--blue);   border-color:rgba(74,158,255,0.3); }
-    .av-amber  { background:rgba(245,158,11,0.12);  color:var(--amber);  border-color:rgba(245,158,11,0.3); }
-    .av-green  { background:rgba(16,185,129,0.12);  color:var(--green);  border-color:rgba(16,185,129,0.3); }
-    .av-purple { background:rgba(167,139,250,0.12); color:var(--purple); border-color:rgba(167,139,250,0.3); }
+    .member-card { background:rgba(24,24,36,0.8); border:1px solid var(--border); border-radius:10px; padding:1.4rem 1.1rem; text-align:center; transition:border-color 0.25s,transform 0.25s; backdrop-filter:blur(4px); }
+    .member-card:hover { border-color:rgba(201,150,42,0.3); transform:translateY(-2px); }
+    .member-card.pm { border-color:rgba(232,56,42,0.3); border-top:2px solid var(--red); }
+    .member-avatar { width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:0.95rem; font-weight:700; margin:0 auto 0.85rem; border:1.5px solid; }
+    .av-red    { background:rgba(232,56,42,0.12);  color:var(--red);        border-color:rgba(232,56,42,0.3); }
+    .av-gold   { background:rgba(201,150,42,0.12); color:var(--gold-light); border-color:rgba(201,150,42,0.35); }
+    .av-blue   { background:rgba(74,158,255,0.12); color:var(--blue);       border-color:rgba(74,158,255,0.3); }
+    .av-green  { background:rgba(16,185,129,0.12); color:var(--green);      border-color:rgba(16,185,129,0.3); }
+    .av-purple { background:rgba(167,139,250,0.12);color:var(--purple);     border-color:rgba(167,139,250,0.3); }
     .member-name { font-size:0.92rem; font-weight:700; margin-bottom:0.2rem; }
     .member-role { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-xs); margin-bottom:0.25rem; }
-    .member-nat  { font-size:0.75rem; color:var(--text-xs); }
+    .member-nat  { font-size:0.85rem; color:var(--text-dim); margin-bottom:0.1rem; }
     .member-tag  { display:inline-block; margin-top:0.55rem; font-family:var(--mono); font-size:0.56rem; letter-spacing:0.06em; text-transform:uppercase; padding:0.18rem 0.45rem; border-radius:3px; }
-    .tag-pm     { background:rgba(245,158,11,0.12);  color:var(--amber);  border:1px solid rgba(245,158,11,0.25); }
-    .tag-arch   { background:rgba(167,139,250,0.12); color:var(--purple); border:1px solid rgba(167,139,250,0.25); }
-    .tag-dev-pt { background:rgba(74,158,255,0.12);  color:var(--blue);   border:1px solid rgba(74,158,255,0.25); }
-    .tag-dev-cn { background:rgba(16,185,129,0.12);  color:var(--green);  border:1px solid rgba(16,185,129,0.25); }
-    .tag-vpm    { background:rgba(255,255,255,0.06); color:var(--text-dim); border:1px solid var(--border); }
-
-    /* NEWS */
-    #news { background:var(--bg2); border-top:1px solid var(--border); }
-    .news-list { display:flex; flex-direction:column; }
-    .news-item { display:grid; grid-template-columns:90px 1fr; gap:1.2rem; padding:1.2rem 0; border-bottom:1px solid var(--border); align-items:start; }
-    .news-item:last-child { border-bottom:none; }
-    .news-date  { font-family:var(--mono); font-size:0.63rem; letter-spacing:0.05em; color:var(--text-xs); padding-top:0.1rem; }
-    .news-title { font-size:0.88rem; font-weight:600; margin-bottom:0.25rem; }
-    .news-body  { font-size:0.8rem; color:var(--text-dim); line-height:1.62; }
-    .news-tag   { display:inline-block; margin-top:0.4rem; font-family:var(--mono); font-size:0.56rem; letter-spacing:0.08em; text-transform:uppercase; padding:0.15rem 0.42rem; border-radius:3px; }
-    .nt-sprint  { background:rgba(74,158,255,0.12);  color:var(--blue);   border:1px solid rgba(74,158,255,0.2); }
-    .nt-meeting { background:rgba(245,158,11,0.10);  color:var(--amber);  border:1px solid rgba(245,158,11,0.2); }
-    .nt-doc     { background:rgba(167,139,250,0.10); color:var(--purple); border:1px solid rgba(167,139,250,0.2); }
+    .tag-pm     { background:rgba(232,56,42,0.12);  color:var(--red);        border:1px solid rgba(232,56,42,0.25); }
+    .tag-arch   { background:rgba(167,139,250,0.12);color:var(--purple);     border:1px solid rgba(167,139,250,0.25); }
+    .tag-dev-pt { background:rgba(74,158,255,0.12); color:var(--blue);       border:1px solid rgba(74,158,255,0.25); }
+    .tag-dev-cn { background:rgba(201,150,42,0.12); color:var(--gold-light); border:1px solid rgba(201,150,42,0.25); }
+    .tag-vpm    { background:rgba(255,255,255,0.06);color:var(--text-dim);   border:1px solid var(--border); }
 
     /* FOOTER */
-    footer { padding:2.5rem 6vw; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
-    .footer-logo  { font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; color:var(--text-xs); }
+    footer { padding:2.5rem 6vw; border-top:1px solid rgba(201,150,42,0.15); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; position:relative; z-index:1; }
+    footer::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(to right,transparent,var(--gold),var(--red),var(--gold),transparent); opacity:0.3; }
+    .footer-logo { font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; color:var(--text-xs); }
+    .footer-cn   { font-family:var(--cn); font-size:0.85rem; color:rgba(201,150,42,0.25); letter-spacing:0.15em; }
     .footer-links { display:flex; gap:1.4rem; flex-wrap:wrap; }
     .footer-links a { font-family:var(--mono); font-size:0.63rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-xs); text-decoration:none; transition:color 0.2s; }
-    .footer-links a:hover { color:var(--blue); }
+    .footer-links a:hover { color:var(--gold-light); }
 
-    /* ANIMATIONS */
     @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
     .reveal { opacity:0; transform:translateY(20px); transition:opacity 0.55s ease,transform 0.55s ease; }
     .reveal.visible { opacity:1; transform:translateY(0); }
 
-    /* RESPONSIVE */
     @media(max-width:640px) {
       .nav-links { display:none; }
       .hamburger { display:flex; }
-      .news-item { grid-template-columns:1fr; gap:0.3rem; }
       section { padding:60px 5vw; }
+      .float-kanji { display:none; }
+      .corner { display:none; }
     }
   </style>
 </head>
 <body>
 
+<!-- FIXED CHINESE BG — stays on every section -->
+<div class="lattice-bg"></div>
+<div class="accent-left"></div>
+<div class="accent-right"></div>
+<div class="float-kanji fk1">协</div>
+<div class="float-kanji fk2">合</div>
+<div class="float-kanji fk3">技</div>
+
+<svg style="display:none">
+  <defs>
+    <symbol id="corner-svg" viewBox="0 0 100 100">
+      <path d="M8,8 L8,45 M8,8 L45,8" stroke="currentColor" stroke-width="2" fill="none"/>
+      <path d="M8,8 L8,25 M8,8 L25,8" stroke="currentColor" stroke-width="1" fill="none" opacity="0.5"/>
+      <circle cx="8" cy="8" r="3" fill="currentColor"/>
+      <path d="M18,18 Q30,18 30,30 Q30,42 42,42" stroke="currentColor" stroke-width="1" fill="none" opacity="0.35"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- NAV -->
 <nav>
-  <div class="nav-logo">DSD2026 &middot; Team V2</div>
+  <div class="nav-logo">
+    <span class="cn-char">协</span>
+    DSD2026 &middot; Team V2
+  </div>
   <div class="nav-links">
     <a href="#background">Background</a>
     <a href="#architecture">Architecture</a>
     <a href="#progress">Progress</a>
-    <a href="#news">News</a>
+    <a href="news.html">Dispatch</a>
     <a href="#members">Members</a>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -188,25 +261,34 @@
   <a href="#background"   onclick="closeMobile()">Background</a>
   <a href="#architecture" onclick="closeMobile()">Architecture</a>
   <a href="#progress"     onclick="closeMobile()">Progress</a>
-  <a href="#news"         onclick="closeMobile()">News</a>
+  <a href="news.html"     onclick="closeMobile()">Dispatch</a>
   <a href="#members"      onclick="closeMobile()">Members</a>
 </div>
 
 <!-- HERO -->
 <section class="hero">
-  <p class="hero-tag">Distributed Software Development &middot; 2025&ndash;2026</p>
-  <h1>Backend API<br>&amp; <span class="accent">Storage</span></h1>
-  <p class="hero-sub">
-    Team V2 &mdash; the central integration hub of the Limb Motion Recognition
-    &amp; Assistant system. We own the API layer, the data pipeline, and
-    end-to-end system integration across all six teams.
-  </p>
-  <div class="hero-badges">
-    <span class="badge blue">REST / WebSocket</span>
-    <span class="badge blue">SQL &amp; Migrations</span>
-    <span class="badge blue">JWT Auth</span>
-    <span class="badge amber">Integration Lead</span>
-    <span class="badge">UTAD &times; Jilin University</span>
+  <div class="hero-glow"></div>
+  <div class="hero-circles">
+    <div class="hc hc1"></div>
+    <div class="hc hc2"></div>
+    <div class="hc hc3"></div>
+  </div>
+  <div class="corner c-tl" style="color:var(--gold)"><svg viewBox="0 0 100 100"><use href="#corner-svg"/></svg></div>
+  <div class="corner c-tr" style="color:var(--gold)"><svg viewBox="0 0 100 100"><use href="#corner-svg"/></svg></div>
+  <div class="corner c-bl" style="color:rgba(232,56,42,0.6)"><svg viewBox="0 0 100 100"><use href="#corner-svg"/></svg></div>
+  <div class="corner c-br" style="color:rgba(232,56,42,0.6)"><svg viewBox="0 0 100 100"><use href="#corner-svg"/></svg></div>
+  <div class="hero-content">
+    <p class="hero-tag">Distributed Software Development &middot; 2025&ndash;2026</p>
+    <div class="hero-cn-sub">后端接口与数据存储</div>
+    <h1>Backend API<br>&amp; <span class="accent">Storage</span></h1>
+    <p class="hero-sub">Team V2 serves as the backbone of the entire Limb Motion Recognition &amp; Assistant system &mdash; bridging sensor data, AI inference, and end-user interfaces through a robust, contract-driven API layer.</p>
+    <div class="hero-badges">
+      <span class="badge blue">REST / WebSocket</span>
+      <span class="badge blue">SQL &amp; Migrations</span>
+      <span class="badge blue">JWT Auth</span>
+      <span class="badge amber">Integration Lead</span>
+      <span class="badge red">UTAD &times; Jilin University</span>
+    </div>
   </div>
   <div class="scroll-hint">Scroll</div>
 </section>
@@ -214,73 +296,59 @@
 <!-- BACKGROUND -->
 <section id="background">
   <p class="section-label reveal">01 &middot; Context</p>
-  <h2 class="reveal">Project Background</h2>
-  <p class="section-intro reveal">
-    Post-surgery limb rehabilitation is a long and demanding process that traditionally
-    relies on in-person supervision by medical professionals. This project aims to build
-    a <strong>smart rehabilitation assistant system</strong> that leverages wearable
-    wireless sensors and AI-powered motion analysis to help patients complete
-    rehabilitation exercises safely and independently.
-  </p>
-  <p class="section-intro reveal">
-    As a core practice of the DSD course jointly offered by the University of
-    Tr&aacute;s-os-Montes e Alto Douro (UTAD) and Jilin University (JLU), all six teams
-    operate under a distributed, cross-timezone collaboration model to deliver the complete
-    system together &mdash; 28 students, 6 teams, one integrated rehabilitation system.
-  </p>
+  <h2 class="reveal">Why This Project Exists</h2>
+  <p class="section-intro reveal">Recovering from limb surgery is rarely straightforward. Traditional rehabilitation demands frequent clinic visits and constant supervision &mdash; a model that is costly, time-consuming, and inaccessible for many patients. Our project tackles this gap head-on by building an intelligent, sensor-driven assistant that guides patients through their recovery at home.</p>
+  <p class="section-intro reveal">Developed jointly by UTAD and Jilin University as part of the Distributed Software Development course, the system brings together 28 students across 6 specialised teams, each contributing a distinct technical layer to one unified rehabilitation platform.</p>
+  <div class="cn-divider reveal">
+    <div class="cn-divider-line"></div>
+    <div class="cn-divider-symbol">中葡合作</div>
+    <div class="cn-divider-line"></div>
+  </div>
 </section>
 
 <!-- FUNCTIONS -->
 <section id="functions">
-  <p class="section-label reveal">02 &middot; System Goals</p>
-  <h2 class="reveal">Three Core Functions</h2>
+  <p class="section-label reveal">02 &middot; What the System Does</p>
+  <h2 class="reveal">Three Core Capabilities</h2>
   <div class="fn-grid reveal">
     <div class="fn-card">
-      <p class="fn-label">Function 01</p>
+      <p class="fn-label">Capability 01</p>
       <h3>Tell</h3>
-      <p>Provide real-time feedback on whether a rehabilitation movement is performed correctly, preventing injury from incorrect postures.</p>
+      <p>Delivers instant feedback on whether a patient's movement matches the prescribed rehabilitation motion, reducing the risk of reinjury from poor form.</p>
+      <div class="fn-cn">告</div>
     </div>
     <div class="fn-card">
-      <p class="fn-label">Function 02</p>
+      <p class="fn-label">Capability 02</p>
       <h3>Reconstruct</h3>
-      <p>Reconstruct 3D limb motion and compare actual joint angles against expected recovery trajectories for clinical analysis.</p>
+      <p>Builds a 3D representation of each recorded movement and benchmarks joint angles against clinically expected recovery curves for precise medical review.</p>
+      <div class="fn-cn">构</div>
     </div>
     <div class="fn-card">
-      <p class="fn-label">Function 03</p>
+      <p class="fn-label">Capability 03</p>
       <h3>Suggest</h3>
-      <p>Recommend personalised rehabilitation exercises based on historical performance data and similar medical cases.</p>
+      <p>Analyses a patient's performance history to generate tailored exercise recommendations, adapting the rehabilitation programme as recovery progresses.</p>
+      <div class="fn-cn">议</div>
     </div>
   </div>
 </section>
 
 <!-- ARCHITECTURE -->
 <section id="architecture">
-  <p class="section-label reveal">03 &middot; System Architecture</p>
-  <h2 class="reveal">Architecture &amp; Team Structure</h2>
-  <p class="section-intro reveal">
-    The system is divided into three functional layers &mdash; <strong>Sensor</strong>,
-    <strong>Server</strong>, and <strong>Monitor</strong> &mdash; following a balanced
-    2-2-2 distribution. Each layer can be developed, tested, and iterated independently,
-    with formally defined interface contracts enabling parallel development across all six teams.
-  </p>
+  <p class="section-label reveal">03 &middot; How It&rsquo;s Built</p>
+  <h2 class="reveal">System Architecture</h2>
+  <p class="section-intro reveal">Six teams operate across three independent layers, each exposing a formally specified interface contract. This approach lets every team build and test in isolation while guaranteeing seamless integration when the contracts are met.</p>
   <div class="arch-diagram reveal">
     <div class="arch-flow">
       <div class="arch-group">
         <div class="arch-box sensor">S1 &middot; Firmware</div>
         <div class="arch-box sensor">S2 &middot; Data Acq.</div>
       </div>
-      <div class="arch-arrow">
-        <span class="if-label">IF1</span>
-        <div class="arrow-line"></div>
-      </div>
+      <div class="arch-arrow"><span class="if-label">IF1</span><div class="arrow-line"></div></div>
       <div class="arch-group">
         <div class="arch-box server">V1 &middot; AI Engine</div>
         <div class="arch-box server v2">V2 &middot; API &amp; DB &#9733;</div>
       </div>
-      <div class="arch-arrow">
-        <span class="if-label">IF2</span>
-        <div class="arrow-line"></div>
-      </div>
+      <div class="arch-arrow"><span class="if-label">IF2</span><div class="arrow-line"></div></div>
       <div class="arch-group">
         <div class="arch-box monitor">M1 &middot; Patient App</div>
         <div class="arch-box monitor">M2 &middot; Web Dashboard</div>
@@ -289,42 +357,28 @@
   </div>
   <div class="arch-table-wrap reveal">
     <table>
-      <thead>
-        <tr><th>Layer</th><th>Team</th><th>Lead</th><th>Main Responsibility</th></tr>
-      </thead>
+      <thead><tr><th>Layer</th><th>Team</th><th>Lead</th><th>Core Focus</th></tr></thead>
       <tbody>
         <tr>
           <td class="layer-cell" rowspan="2">Sensor</td>
-          <td class="team-cell">S1 &mdash; Firmware &amp; Protocol</td>
-          <td>Zhihang Yu</td>
-          <td>Sensor firmware, wireless protocol, data packet format</td>
+          <td class="team-cell">S1 &mdash; Firmware &amp; Protocol</td><td>Zhihang Yu</td><td>Embedded firmware, wireless protocol spec, data packet format</td>
         </tr>
         <tr>
-          <td class="team-cell">S2 &mdash; Data Acquisition &amp; Mock Generator</td>
-          <td>Zhiqi Zhang</td>
-          <td>Data pipeline, validation &amp; cleansing, mock data module</td>
+          <td class="team-cell">S2 &mdash; Data Acquisition &amp; Mock</td><td>Zhiqi Zhang</td><td>Acquisition pipeline, input validation, mock sensor module</td>
         </tr>
         <tr>
           <td class="layer-cell" rowspan="2">Server</td>
-          <td class="team-cell">V1 &mdash; AI &amp; Motion Recognition</td>
-          <td>Diogo Borges</td>
-          <td>Deep learning model integration, motion analysis pipeline</td>
+          <td class="team-cell">V1 &mdash; AI &amp; Motion Recognition</td><td>Diogo Borges</td><td>Deep learning integration, inference pipeline, angle comparison</td>
         </tr>
         <tr class="v2-row">
-          <td class="team-cell highlight">V2 &mdash; Backend API &amp; Storage &#9733;</td>
-          <td class="highlight">Sergio Moniz</td>
-          <td>REST/WebSocket API, database, recommendation engine, Integration Lead</td>
+          <td class="team-cell highlight">V2 &mdash; Backend API &amp; Storage &#9733;</td><td class="highlight">Sergio Moniz</td><td>API gateway, database, recommendation engine, Integration Lead</td>
         </tr>
         <tr>
           <td class="layer-cell" rowspan="2">Monitor</td>
-          <td class="team-cell">M1 &mdash; Patient Mobile App</td>
-          <td>Diogo Pinhel</td>
-          <td>Real-time rehabilitation feedback mobile interface</td>
+          <td class="team-cell">M1 &mdash; Patient Mobile App</td><td>Diogo Pinhel</td><td>Real-time mobile UI, live motion visualisation, posture alerts</td>
         </tr>
         <tr>
-          <td class="team-cell">M2 &mdash; Clinical Web Dashboard</td>
-          <td>Yihang Li</td>
-          <td>Historical recovery dashboard, 3D limb reconstruction</td>
+          <td class="team-cell">M2 &mdash; Clinical Web Dashboard</td><td>Yihang Li</td><td>Long-term recovery charts, 3D limb reconstruction, clinical views</td>
         </tr>
       </tbody>
     </table>
@@ -333,148 +387,102 @@
 
 <!-- PROGRESS -->
 <section id="progress">
-  <p class="section-label reveal">04 &middot; Sprint Progress</p>
-  <h2 class="reveal">Development Progress</h2>
-  <p class="section-intro reveal">Tracking our deliverables sprint by sprint. V2 takes on the Integration Lead role from Sprint 3 onwards.</p>
+  <p class="section-label reveal">04 &middot; Roadmap</p>
+  <h2 class="reveal">Sprint Progress</h2>
+  <p class="section-intro reveal">Three sprints, one fully integrated system. V2 steps up as Integration Lead when Sprint 3 begins.</p>
   <div class="sprint-grid">
-    <div class="sprint-card active reveal">
-      <div class="sprint-header">
-        <span class="sprint-num">Sprint 1</span>
-        <span class="sprint-status status-active">In Progress</span>
-      </div>
-      <div class="sprint-title">Foundation &amp; Interface Contracts</div>
+    <div class="sprint-card active reveal" data-cn="一">
+      <div class="sprint-header"><span class="sprint-num">Sprint 1</span><span class="sprint-status status-active">In Progress</span></div>
+      <div class="sprint-title">Groundwork &amp; Contracts</div>
       <ul class="sprint-items">
-        <li>Team formation &amp; role assignment</li>
-        <li>Co-define IF1 with S2 and V1</li>
-        <li>Draft IF2 specification (Server &rarr; Monitor)</li>
-        <li>Set up repository &amp; GitHub Wiki</li>
-        <li>Daily async standup protocol established</li>
+        <li>Team assembled, roles distributed</li>
+        <li>IF1 co-authored with S2 and V1</li>
+        <li>IF2 initial draft prepared for M1 review</li>
+        <li>Repository structure and Wiki launched</li>
+        <li>Async standup routine established</li>
       </ul>
       <div class="progress-bar-wrap"><div class="progress-bar" style="width:55%"></div></div>
     </div>
-    <div class="sprint-card reveal">
-      <div class="sprint-header">
-        <span class="sprint-num">Sprint 2</span>
-        <span class="sprint-status status-upcoming">Upcoming</span>
-      </div>
-      <div class="sprint-title">API Design &amp; Data Layer</div>
+    <div class="sprint-card reveal" data-cn="二">
+      <div class="sprint-header"><span class="sprint-num">Sprint 2</span><span class="sprint-status status-upcoming">Upcoming</span></div>
+      <div class="sprint-title">Core Implementation</div>
       <ul class="sprint-items">
-        <li>Freeze IF2 contract with M1</li>
-        <li>Implement REST API gateway &amp; auth</li>
-        <li>Design database schema &amp; migrations</li>
-        <li>Integrate V1 AI inference outputs</li>
-        <li>Begin recommendation engine logic</li>
+        <li>IF2 signed off and frozen with M1</li>
+        <li>REST gateway and auth layer built</li>
+        <li>Schema designed, migrations versioned</li>
+        <li>V1 inference outputs wired into storage</li>
+        <li>Recommendation logic prototyped</li>
       </ul>
       <div class="progress-bar-wrap"><div class="progress-bar" style="width:0%"></div></div>
     </div>
-    <div class="sprint-card reveal">
-      <div class="sprint-header">
-        <span class="sprint-num">Sprint 3</span>
-        <span class="sprint-status status-upcoming">Upcoming</span>
-      </div>
-      <div class="sprint-title">Integration &amp; Testing</div>
+    <div class="sprint-card reveal" data-cn="三">
+      <div class="sprint-header"><span class="sprint-num">Sprint 3</span><span class="sprint-status status-upcoming">Upcoming</span></div>
+      <div class="sprint-title">Integration &amp; Hardening</div>
       <ul class="sprint-items">
-        <li>Act as Integration Lead across all teams</li>
-        <li>Full WebSocket server for M1 real-time feed</li>
-        <li>Cross-area integration tests (min. 1 required)</li>
-        <li>Performance &amp; indexing optimisations</li>
-        <li>Security audit &amp; RBAC enforcement</li>
+        <li>V2 leads full-stack integration testing</li>
+        <li>WebSocket channel live for M1 streaming</li>
+        <li>At least one cross-area integration report</li>
+        <li>Query performance tuning and indexing</li>
+        <li>RBAC policies and security review complete</li>
       </ul>
       <div class="progress-bar-wrap"><div class="progress-bar" style="width:0%"></div></div>
-    </div>
-  </div>
-</section>
-
-<!-- NEWS -->
-<section id="news">
-  <p class="section-label reveal">05 &middot; Updates</p>
-  <h2 class="reveal">Latest News</h2>
-  <div class="news-list reveal">
-    <div class="news-item">
-      <div class="news-date">2026-03-26</div>
-      <div>
-        <div class="news-title">Team V2 website is live</div>
-        <div class="news-body">Our team page is now published on GitHub Pages. Sprint 1 has officially started. All team members confirmed and roles assigned.</div>
-        <span class="news-tag nt-sprint">Sprint 1</span>
-      </div>
-    </div>
-    <div class="news-item">
-      <div class="news-date">2026-03-25</div>
-      <div>
-        <div class="news-title">IF2 draft discussion kicked off with M1</div>
-        <div class="news-body">Initial async discussion started with Team M1 regarding the IF2 (Server &rarr; Monitor) interface contract. First draft expected by end of Sprint 1.</div>
-        <span class="news-tag nt-doc">Documentation</span>
-      </div>
-    </div>
-    <div class="news-item">
-      <div class="news-date">2026-03-22</div>
-      <div>
-        <div class="news-title">First All-Site Meeting completed</div>
-        <div class="news-body">All six team leaders attended the ASM via WeMeet. Architecture overview confirmed, sprint timelines aligned, async standup format agreed.</div>
-        <span class="news-tag nt-meeting">Meeting</span>
-      </div>
-    </div>
-    <div class="news-item">
-      <div class="news-date">2026-03-18</div>
-      <div>
-        <div class="news-title">Team structure proposal published</div>
-        <div class="news-body">Diogo Pinhel (M1 lead) published the Team Structure Proposal document covering all six teams, role definitions, and coordination mechanisms.</div>
-        <span class="news-tag nt-doc">Documentation</span>
-      </div>
     </div>
   </div>
 </section>
 
 <!-- MEMBERS -->
 <section id="members">
-  <p class="section-label reveal">06 &middot; Team</p>
-  <h2 class="reveal">Team Members</h2>
-  <p class="section-intro reveal">Five members. Two nationalities. One backend.</p>
+  <p class="section-label reveal">05 &middot; The Team</p>
+  <h2 class="reveal">Who We Are</h2>
+  <p class="section-intro reveal">Five engineers. Two continents. One shared codebase.</p>
   <div class="members-grid">
     <div class="member-card pm reveal">
-      <div class="member-avatar av-amber">SM</div>
+      <div class="member-avatar av-red">SM</div>
       <div class="member-name">Sergio Moniz</div>
       <div class="member-role">Team Leader</div>
-      <div class="member-nat">&#127477;&#127481; Portuguese</div>
+      <div class="member-nat">🇵🇹 Portuguese</div>
       <span class="member-tag tag-pm">PM</span>
     </div>
     <div class="member-card reveal">
-      <div class="member-avatar av-blue">&#x2015;</div>
+      <div class="member-avatar av-gold">?</div>
       <div class="member-name">TBD</div>
       <div class="member-role">Vice PM</div>
-      <div class="member-nat">&#127464;&#127475; Chinese</div>
+      <div class="member-nat">🇨🇳 Chinese</div>
       <span class="member-tag tag-vpm">Shadow PM</span>
     </div>
     <div class="member-card reveal">
-      <div class="member-avatar av-purple">&#x2015;</div>
+      <div class="member-avatar av-purple">?</div>
       <div class="member-name">TBD</div>
       <div class="member-role">System Architect</div>
-      <div class="member-nat">Any</div>
+      <div class="member-nat">🇵🇹 / 🇨🇳</div>
       <span class="member-tag tag-arch">Architect</span>
     </div>
     <div class="member-card reveal">
-      <div class="member-avatar av-blue">&#x2015;</div>
+      <div class="member-avatar av-blue">?</div>
       <div class="member-name">TBD</div>
       <div class="member-role">Programmer / Tester</div>
-      <div class="member-nat">&#127477;&#127481; Portuguese</div>
+      <div class="member-nat">🇵🇹 Portuguese</div>
       <span class="member-tag tag-dev-pt">Dev PT</span>
     </div>
     <div class="member-card reveal">
-      <div class="member-avatar av-green">&#x2015;</div>
+      <div class="member-avatar av-gold">?</div>
       <div class="member-name">TBD</div>
       <div class="member-role">Programmer / Tester</div>
-      <div class="member-nat">&#127464;&#127475; Chinese</div>
+      <div class="member-nat">🇨🇳 Chinese</div>
       <span class="member-tag tag-dev-cn">Dev CN</span>
     </div>
   </div>
 </section>
 
 <footer>
-  <div class="footer-logo">DSD2026 &middot; Team V2 &middot; UTAD &times; Jilin University</div>
+  <div>
+    <div class="footer-logo">DSD2026 &middot; Team V2 &middot; UTAD &times; Jilin University</div>
+    <div class="footer-cn">中葡分布式软件开发</div>
+  </div>
   <div class="footer-links">
     <a href="#background">Home</a>
     <a href="#progress">Progress</a>
-    <a href="#news">News</a>
+    <a href="news.html">Dispatch</a>
     <a href="#members">Members</a>
   </div>
 </footer>
@@ -486,19 +494,17 @@
   hamburger.addEventListener('click', () => mobileMenu.classList.add('open'));
   mobileClose.addEventListener('click', closeMobile);
   function closeMobile() { mobileMenu.classList.remove('open'); }
-
   const revealEls = document.querySelectorAll('.reveal');
   const observer  = new IntersectionObserver(entries => {
     entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); observer.unobserve(e.target); } });
   }, { threshold: 0.1 });
   revealEls.forEach(el => observer.observe(el));
-
   const sections = document.querySelectorAll('section[id]');
   const navLinks  = document.querySelectorAll('.nav-links a');
   window.addEventListener('scroll', () => {
     let current = '';
     sections.forEach(s => { if(window.scrollY >= s.offsetTop - 80) current = s.id; });
-    navLinks.forEach(a => { a.style.color = a.getAttribute('href') === '#'+current ? 'var(--blue)' : ''; });
+    navLinks.forEach(a => { a.style.color = a.getAttribute('href') === '#'+current ? 'var(--gold-light)' : ''; });
   });
 </script>
 </body>

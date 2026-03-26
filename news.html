@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dispatch | DSD2026 TeamV2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#08080e; --bg2:#0e0e18; --bg3:#13131e; --card:#181824;
+      --border:rgba(255,255,255,0.07);
+      --blue:#4a9eff;
+      --red:#e8382a; --gold:#c9962a; --gold-light:#f0c040; --gold-glow:rgba(201,150,42,0.12);
+      --green:#10b981; --purple:#a78bfa;
+      --text:#f0ede8; --text-dim:#8888a8; --text-xs:#55556a;
+      --mono:'Space Mono',monospace; --sans:'Syne',sans-serif;
+      --serif:'Playfair Display',serif; --cn:'Noto Serif SC',serif;
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--sans); line-height:1.6; overflow-x:hidden; cursor:none; }
+
+    .cursor { position:fixed; width:10px; height:10px; background:var(--red); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); mix-blend-mode:screen; }
+    .cursor-ring { position:fixed; width:36px; height:36px; border:1px solid rgba(201,150,42,0.5); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:width 0.2s,height 0.2s,border-color 0.2s; }
+    body:has(a:hover) .cursor-ring, body:has(button:hover) .cursor-ring { width:52px; height:52px; border-color:var(--gold); }
+
+    /* FIXED CHINESE BG — same as index */
+    .lattice-bg { position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.03;
+      background-image:linear-gradient(0deg,rgba(201,150,42,0.8) 1px,transparent 1px),linear-gradient(90deg,rgba(201,150,42,0.8) 1px,transparent 1px),linear-gradient(0deg,rgba(201,150,42,0.3) 1px,transparent 1px),linear-gradient(90deg,rgba(201,150,42,0.3) 1px,transparent 1px);
+      background-size:80px 80px,80px 80px,20px 20px,20px 20px; }
+    .accent-left  { position:fixed; left:0; top:0; bottom:0; width:3px; background:linear-gradient(to bottom,transparent 10%,var(--red) 40%,var(--gold) 60%,transparent 90%); opacity:0.5; pointer-events:none; z-index:50; }
+    .accent-right { position:fixed; right:0; top:0; bottom:0; width:3px; background:linear-gradient(to bottom,transparent 10%,var(--red) 40%,var(--gold) 60%,transparent 90%); opacity:0.5; pointer-events:none; z-index:50; }
+    .float-kanji { position:fixed; font-family:var(--cn); font-weight:700; pointer-events:none; user-select:none; line-height:1; z-index:0; color:var(--red); opacity:0.025; }
+    .fk1 { font-size:22rem; top:5vh;  right:-4rem; }
+    .fk2 { font-size:14rem; bottom:5vh; left:-2rem; color:var(--gold); opacity:0.02; }
+
+    /* NAV */
+    nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:0 6vw; height:56px; background:rgba(8,8,14,0.92); backdrop-filter:blur(14px); border-bottom:1px solid rgba(201,150,42,0.15); }
+    nav::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:linear-gradient(to right,transparent,var(--gold),var(--red),var(--gold),transparent); opacity:0.4; }
+    .nav-logo { font-family:var(--mono); font-size:0.75rem; font-weight:700; letter-spacing:0.12em; color:var(--text); text-transform:uppercase; text-decoration:none; display:flex; align-items:center; gap:0.7rem; }
+    .nav-logo .cn-char { font-family:var(--cn); font-size:1rem; color:var(--red); line-height:1; }
+    .nav-links { display:flex; gap:2rem; }
+    .nav-links a { font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-dim); text-decoration:none; transition:color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color:var(--gold-light); }
+    .hamburger { display:none; flex-direction:column; gap:5px; cursor:none; background:none; border:none; padding:4px; }
+    .hamburger span { width:22px; height:2px; background:var(--text); display:block; }
+    .mobile-menu { display:none; position:fixed; inset:0; z-index:99; background:rgba(8,8,14,0.97); flex-direction:column; align-items:center; justify-content:center; gap:1.2rem; }
+    .mobile-menu.open { display:flex; }
+    .mobile-menu a { font-family:var(--mono); font-size:1rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--text); text-decoration:none; padding:0.75rem 3rem; border:1px solid rgba(201,150,42,0.2); border-radius:8px; width:220px; text-align:center; transition:0.2s; }
+    .mobile-menu a:hover { border-color:var(--gold); color:var(--gold-light); }
+    .mobile-close { position:absolute; top:1.2rem; right:1.5rem; font-size:1.4rem; color:var(--text-dim); cursor:none; background:none; border:none; }
+
+    /* MASTHEAD */
+    .masthead { padding:80px 6vw 0; border-bottom:1px solid rgba(201,150,42,0.15); position:relative; overflow:hidden; z-index:1; }
+    .mk1 { position:absolute; font-family:var(--cn); font-weight:700; font-size:22rem; opacity:0.025; top:-4rem; right:-3rem; color:var(--red); pointer-events:none; user-select:none; line-height:1; }
+    .mk2 { position:absolute; font-family:var(--cn); font-weight:700; font-size:10rem; opacity:0.025; bottom:0; left:0; color:var(--gold); pointer-events:none; user-select:none; line-height:1; }
+
+    .masthead-ticker { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.12em; color:var(--text-xs); text-transform:uppercase; display:flex; align-items:center; gap:1rem; padding:0.5rem 0; border-bottom:1px solid rgba(201,150,42,0.1); margin-bottom:2rem; overflow:hidden; position:relative; z-index:1; }
+    .ticker-label { background:var(--red); color:#fff; font-family:var(--mono); font-size:0.58rem; font-weight:700; letter-spacing:0.1em; padding:0.15rem 0.5rem; border-radius:2px; flex-shrink:0; }
+    .ticker-text { white-space:nowrap; animation:ticker 30s linear infinite; display:inline-block; }
+    @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+    .masthead-top { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem; position:relative; z-index:1; }
+    .masthead-meta { font-family:var(--mono); font-size:0.6rem; letter-spacing:0.1em; color:var(--text-xs); text-transform:uppercase; }
+    .live-dot { display:inline-flex; align-items:center; gap:0.4rem; font-family:var(--mono); font-size:0.6rem; letter-spacing:0.1em; color:var(--red); text-transform:uppercase; }
+    .live-dot::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--red); animation:pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(0.7)} }
+
+    .masthead-title { font-family:var(--serif); font-size:clamp(3.5rem,10vw,7rem); font-weight:900; line-height:0.95; letter-spacing:-0.03em; text-align:center; width:100%; padding:0.4rem 0 0.5rem; border-top:2px solid rgba(201,150,42,0.25); border-bottom:2px solid rgba(201,150,42,0.25); margin-bottom:0.5rem; position:relative; z-index:1; }
+    .masthead-title .dispatch-accent { color:var(--red); font-style:italic; }
+    .masthead-cn { font-family:var(--cn); font-size:0.9rem; color:rgba(201,150,42,0.35); letter-spacing:0.4em; text-align:center; margin-bottom:0.5rem; position:relative; z-index:1; }
+    .masthead-sub { display:flex; justify-content:space-between; align-items:center; padding-bottom:1.5rem; flex-wrap:wrap; gap:0.5rem; position:relative; z-index:1; }
+    .masthead-sub-left { font-family:var(--mono); font-size:0.6rem; letter-spacing:0.08em; color:var(--text-xs); text-transform:uppercase; }
+
+    /* FILTER BAR */
+    .filter-bar { padding:1rem 6vw; border-bottom:1px solid rgba(201,150,42,0.1); display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; background:rgba(14,14,24,0.85); backdrop-filter:blur(10px); position:sticky; top:56px; z-index:50; }
+    .filter-label { font-family:var(--mono); font-size:0.6rem; letter-spacing:0.1em; color:var(--text-xs); text-transform:uppercase; margin-right:0.4rem; }
+    .filter-btn { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase; padding:0.25rem 0.7rem; border-radius:4px; border:1px solid var(--border); background:transparent; color:var(--text-dim); cursor:none; transition:all 0.2s; }
+    .filter-btn:hover { border-color:rgba(201,150,42,0.4); color:var(--gold-light); }
+    .filter-btn.active { border-color:var(--red); color:var(--red); background:rgba(232,56,42,0.08); }
+    .filter-btn[data-filter="milestone"].active { border-color:var(--gold); color:var(--gold-light); background:var(--gold-glow); }
+    .filter-btn[data-filter="meeting"].active   { border-color:var(--green); color:var(--green); background:rgba(16,185,129,0.08); }
+    .filter-btn[data-filter="doc"].active       { border-color:var(--purple); color:var(--purple); background:rgba(167,139,250,0.08); }
+    .filter-btn[data-filter="blocker"].active   { border-color:#ef4444; color:#ef4444; background:rgba(239,68,68,0.08); }
+
+    /* NEWS GRID */
+    .news-container { display:grid; grid-template-columns:repeat(12,1fr); gap:1px; background:rgba(201,150,42,0.06); border:1px solid rgba(201,150,42,0.1); margin:2rem 6vw 4rem; border-radius:4px; overflow:hidden; position:relative; z-index:1; }
+
+    .article { background:rgba(8,8,14,0.7); padding:1.6rem; transition:background 0.25s; position:relative; overflow:hidden; backdrop-filter:blur(4px); }
+    .article::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(to right,var(--red),var(--gold)); opacity:0; transition:opacity 0.25s; }
+    .article:hover { background:rgba(19,19,30,0.85); }
+    .article:hover::before { opacity:1; }
+    .article::after { font-family:var(--cn); font-size:6rem; font-weight:700; position:absolute; bottom:-1rem; right:0.5rem; opacity:0.03; line-height:1; pointer-events:none; color:var(--red); }
+    .article[data-category="sprint"]::after    { content:'进'; }
+    .article[data-category="milestone"]::after { content:'达'; color:var(--gold); }
+    .article[data-category="meeting"]::after   { content:'议'; color:var(--green); }
+    .article[data-category="doc"]::after       { content:'记'; color:var(--purple); }
+    .article[data-category="blocker"]::after   { content:'阻'; }
+
+    .article.hero-story  { grid-column:span 8; }
+    .article.side-story  { grid-column:span 4; }
+    .article.half-story  { grid-column:span 6; }
+    .article.third-story { grid-column:span 4; }
+    .article.full-story  { grid-column:span 12; display:grid; grid-template-columns:1fr 1fr; gap:2rem; align-items:start; }
+    @media(max-width:900px) {
+      .article.hero-story,.article.side-story,.article.half-story,.article.third-story { grid-column:span 12; }
+      .article.full-story { grid-column:span 12; grid-template-columns:1fr; }
+    }
+
+    .article-category { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.15em; text-transform:uppercase; margin-bottom:0.7rem; display:flex; align-items:center; gap:0.5rem; }
+    .cat-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .cat-sprint   .cat-dot { background:var(--red); }
+    .cat-milestone .cat-dot { background:var(--gold); }
+    .cat-meeting  .cat-dot { background:var(--green); }
+    .cat-doc      .cat-dot { background:var(--purple); }
+    .cat-blocker  .cat-dot { background:#ef4444; }
+    .cat-sprint    { color:var(--red); }
+    .cat-milestone { color:var(--gold-light); }
+    .cat-meeting   { color:var(--green); }
+    .cat-doc       { color:var(--purple); }
+    .cat-blocker   { color:#ef4444; }
+
+    .article-headline { font-family:var(--serif); font-size:clamp(1.1rem,2.5vw,1.5rem); font-weight:700; line-height:1.25; margin-bottom:0.75rem; }
+    .article.hero-story .article-headline { font-size:clamp(1.4rem,3vw,2.2rem); }
+    .article-deck { font-size:0.88rem; color:var(--text-dim); line-height:1.68; margin-bottom:1rem; }
+    .article-body { font-size:0.82rem; color:var(--text-xs); line-height:1.7; border-top:1px solid rgba(201,150,42,0.1); padding-top:0.8rem; margin-top:0.8rem; }
+    .article-byline { display:flex; align-items:center; justify-content:space-between; margin-top:1.2rem; padding-top:0.8rem; border-top:1px solid rgba(201,150,42,0.1); flex-wrap:wrap; gap:0.4rem; }
+    .byline-author { font-family:var(--mono); font-size:0.6rem; letter-spacing:0.08em; color:var(--text-xs); text-transform:uppercase; }
+    .byline-date   { font-family:var(--mono); font-size:0.6rem; color:var(--text-xs); }
+
+    .pull-quote { border-left:3px solid var(--red); padding:0.8rem 1.2rem; margin:1rem 0; background:rgba(232,56,42,0.04); border-radius:0 4px 4px 0; }
+    .pull-quote p { font-family:var(--serif); font-style:italic; font-size:1rem; color:var(--text); line-height:1.55; }
+
+    .status-pill { display:inline-flex; align-items:center; gap:0.35rem; font-family:var(--mono); font-size:0.58rem; letter-spacing:0.08em; text-transform:uppercase; padding:0.2rem 0.55rem; border-radius:3px; margin-bottom:0.6rem; }
+    .pill-open     { background:rgba(232,56,42,0.12); color:var(--red); border:1px solid rgba(232,56,42,0.25); }
+    .pill-resolved { background:rgba(16,185,129,0.12); color:var(--green); border:1px solid rgba(16,185,129,0.25); }
+    .pill-pending  { background:var(--gold-glow); color:var(--gold-light); border:1px solid rgba(201,150,42,0.3); }
+
+    .edition-divider { grid-column:span 12; display:flex; align-items:center; gap:1rem; padding:1rem 1.6rem; background:rgba(14,14,24,0.8); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); backdrop-filter:blur(4px); }
+    .edition-divider-label { font-family:var(--serif); font-size:0.9rem; font-weight:700; font-style:italic; color:var(--gold); white-space:nowrap; }
+    .edition-divider-cn { font-family:var(--cn); font-size:0.85rem; color:rgba(201,150,42,0.35); margin-left:0.4rem; }
+    .edition-divider-line { flex:1; height:1px; background:rgba(201,150,42,0.15); }
+
+    .empty-state { grid-column:span 12; text-align:center; padding:4rem 2rem; display:none; }
+    .empty-state.visible { display:block; }
+    .empty-state p { font-family:var(--mono); font-size:0.75rem; color:var(--text-xs); letter-spacing:0.1em; }
+
+    .reveal { opacity:0; transform:translateY(16px); transition:opacity 0.5s ease,transform 0.5s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+
+    /* FOOTER */
+    footer { padding:2.5rem 6vw; border-top:1px solid rgba(201,150,42,0.15); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; position:relative; z-index:1; }
+    footer::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(to right,transparent,var(--gold),var(--red),var(--gold),transparent); opacity:0.3; }
+    .footer-logo { font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; color:var(--text-xs); }
+    .footer-cn   { font-family:var(--cn); font-size:0.85rem; color:rgba(201,150,42,0.25); letter-spacing:0.15em; }
+    .footer-links { display:flex; gap:1.4rem; flex-wrap:wrap; }
+    .footer-links a { font-family:var(--mono); font-size:0.63rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-xs); text-decoration:none; transition:color 0.2s; }
+    .footer-links a:hover { color:var(--gold-light); }
+
+    @media(max-width:640px) {
+      .nav-links { display:none; }
+      .hamburger { display:flex; }
+      .news-container { margin:1rem 0 3rem; border-radius:0; border-left:none; border-right:none; }
+      .float-kanji { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- FIXED CHINESE BG — identical to index.html -->
+<div class="lattice-bg"></div>
+<div class="accent-left"></div>
+<div class="accent-right"></div>
+<div class="float-kanji fk1">报</div>
+<div class="float-kanji fk2">新</div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">
+    <span class="cn-char">协</span>DSD2026 &middot; Team V2
+  </a>
+  <div class="nav-links">
+    <a href="index.html#background">Background</a>
+    <a href="index.html#architecture">Architecture</a>
+    <a href="index.html#progress">Progress</a>
+    <a href="news.html" class="active">Dispatch</a>
+    <a href="index.html#members">Members</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">&#x2715;</button>
+  <a href="index.html#background" onclick="closeMobile()">Background</a>
+  <a href="index.html#architecture" onclick="closeMobile()">Architecture</a>
+  <a href="index.html#progress" onclick="closeMobile()">Progress</a>
+  <a href="news.html" onclick="closeMobile()">Dispatch</a>
+  <a href="index.html#members" onclick="closeMobile()">Members</a>
+</div>
+
+<!-- MASTHEAD -->
+<div class="masthead">
+  <div class="mk1">报</div>
+  <div class="mk2">新</div>
+  <div class="masthead-ticker">
+    <span class="ticker-label">Live</span>
+    <span class="ticker-text">Sprint&nbsp;1&nbsp;in&nbsp;progress &nbsp;&bull;&nbsp; IF2&nbsp;draft&nbsp;under&nbsp;review&nbsp;with&nbsp;M1 &nbsp;&bull;&nbsp; First&nbsp;ASM&nbsp;completed &nbsp;&bull;&nbsp; Wiki&nbsp;standup&nbsp;active &nbsp;&bull;&nbsp; V2&nbsp;Integration&nbsp;Lead&nbsp;from&nbsp;Sprint&nbsp;3 &nbsp;&bull;&nbsp; 中葡合作 &nbsp;&bull;&nbsp; Sprint&nbsp;1&nbsp;in&nbsp;progress &nbsp;&bull;&nbsp; IF2&nbsp;draft&nbsp;under&nbsp;review&nbsp;with&nbsp;M1 &nbsp;&bull;&nbsp; First&nbsp;ASM&nbsp;completed &nbsp;&bull;&nbsp; Wiki&nbsp;standup&nbsp;active &nbsp;&bull;&nbsp; V2&nbsp;Integration&nbsp;Lead&nbsp;from&nbsp;Sprint&nbsp;3 &nbsp;&bull;&nbsp; 中葡合作 &nbsp;&bull;&nbsp;</span>
+  </div>
+  <div class="masthead-top">
+    <div class="masthead-meta">Team V2 &middot; Backend API &amp; Storage &middot; DSD 2025&ndash;2026</div>
+    <div class="live-dot">Publishing live</div>
+  </div>
+  <div class="masthead-title">The V2 <span class="dispatch-accent">Dispatch</span></div>
+  <div class="masthead-cn">第二队简报 &middot; 后端接口与数据存储</div>
+  <div class="masthead-sub">
+    <div class="masthead-sub-left">UTAD &times; Jilin University &middot; Vol. 1 &middot; Sprint 1</div>
+    <div class="masthead-sub-left" id="currentDate"></div>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <span class="filter-label">Filter:</span>
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="sprint">Sprint</button>
+  <button class="filter-btn" data-filter="milestone">Milestone</button>
+  <button class="filter-btn" data-filter="meeting">Meeting</button>
+  <button class="filter-btn" data-filter="doc">Documentation</button>
+  <button class="filter-btn" data-filter="blocker">Blockers</button>
+</div>
+
+<!-- NEWS GRID -->
+<div class="news-container" id="newsGrid">
+  <div class="edition-divider" data-category="sprint">
+    <div class="edition-divider-line"></div>
+    <div class="edition-divider-label">Sprint 1 Edition &mdash; March 2026</div>
+    <div class="edition-divider-cn">第一冲刺</div>
+    <div class="edition-divider-line"></div>
+  </div>
+
+  <article class="article hero-story reveal" data-category="sprint">
+    <div class="article-category cat-sprint"><span class="cat-dot"></span>Sprint Update</div>
+    <h2 class="article-headline">V2 Launches Its Infrastructure Layer &mdash; Sprint 1 Officially Underway</h2>
+    <p class="article-deck">With roles confirmed and repositories configured, Team V2 has begun laying the architectural groundwork that will connect every team in the project.</p>
+    <div class="pull-quote"><p>"V2 is not just another backend team &mdash; we are the contract owners, the integration bridge, and the data layer that makes the whole system possible."</p></div>
+    <p class="article-body">Sprint 1 focuses on establishing interface contracts and shared conventions before any code runs in production. Team V2 is co-authoring IF1 alongside S2 and V1, and has begun an initial IF2 draft to present to M1. The async standup model &mdash; daily Wiki updates replacing synchronous stand-ups &mdash; is now active across both timezones.</p>
+    <div class="article-byline"><span class="byline-author">&#127477;&#127481; Sergio Moniz &middot; Team Lead</span><span class="byline-date">26 Mar 2026</span></div>
+  </article>
+
+  <article class="article side-story reveal" data-category="doc">
+    <div class="article-category cat-doc"><span class="cat-dot"></span>Documentation</div>
+    <h2 class="article-headline">IF2 Contract Draft Opens for Review</h2>
+    <p class="article-deck">The Server-to-Monitor interface specification is taking shape. V2 and M1 have begun synchronising on endpoint requirements, payload structure, and authentication flows.</p>
+    <p class="article-body">The IF2 contract defines the full REST and WebSocket API surface that both M1 and M2 will consume. It must be frozen by the close of Sprint 2.</p>
+    <div class="article-byline"><span class="byline-author">&#127477;&#127481; System Architect &middot; V2</span><span class="byline-date">25 Mar 2026</span></div>
+  </article>
+
+  <article class="article half-story reveal" data-category="meeting">
+    <div class="article-category cat-meeting"><span class="cat-dot"></span>All-Site Meeting</div>
+    <h2 class="article-headline">Six Teams, One Call &mdash; First ASM Sets the Tone</h2>
+    <p class="article-deck">All project managers gathered in a synchronous session via WeMeet to align on timelines, communication standards, and cross-team dependencies.</p>
+    <p class="article-body">Key outcomes included confirmation of the Git English-only convention, the rotating meeting schedule, and a mutual agreement to flag blockers proactively rather than waiting for sprint reviews.</p>
+    <div class="article-byline"><span class="byline-author">&#127477;&#127481; &amp; &#127464;&#127475; All Teams</span><span class="byline-date">22 Mar 2026</span></div>
+  </article>
+
+  <article class="article half-story reveal" data-category="milestone">
+    <div class="article-category cat-milestone"><span class="cat-dot"></span>Milestone</div>
+    <div class="status-pill pill-open">&#x25cf;&nbsp;In Progress</div>
+    <h2 class="article-headline">Repository Skeleton and Wiki Convention Established</h2>
+    <p class="article-deck">The V2 GitHub repository is live, folder structure agreed, and the async standup format documented on the team Wiki page.</p>
+    <p class="article-body">The standup format follows a three-field structure: Done, In Progress, and Blockers. Each Vice PM posts their update by end of local working day.</p>
+    <div class="article-byline"><span class="byline-author">&#127477;&#127481; Sergio Moniz</span><span class="byline-date">20 Mar 2026</span></div>
+  </article>
+
+  <article class="article full-story reveal" data-category="milestone">
+    <div>
+      <div class="article-category cat-milestone"><span class="cat-dot"></span>Milestone</div>
+      <h2 class="article-headline">Team Structure Proposal Published: 28 Students, 6 Teams, One System</h2>
+      <p class="article-deck">A comprehensive team structure document covering all six teams, role definitions, cross-testing models, and coordination mechanisms has been formally published.</p>
+    </div>
+    <div>
+      <p class="article-body">The document establishes the foundational principles guiding the entire project: modularity, specialisation, scalability, and parallel development. V2 is singled out as the Integration Lead from Sprint 3 &mdash; a strategic responsibility that places our team at the centre of all end-to-end validation efforts.</p>
+      <div class="article-byline"><span class="byline-author">&#127477;&#127481; Diogo Pinhel &middot; M1 Lead &middot; Document Author</span><span class="byline-date">18 Mar 2026</span></div>
+    </div>
+  </article>
+
+  <article class="article third-story reveal" data-category="doc">
+    <div class="article-category cat-doc"><span class="cat-dot"></span>Documentation</div>
+    <h2 class="article-headline">IF1 Schema Draft Shared with V2 for Review</h2>
+    <p class="article-deck">S2 circulated the initial IF1 JSON schema, sampling rate defaults, and MQTT endpoint spec for V2 to validate compatibility with storage requirements.</p>
+    <div class="article-byline"><span class="byline-author">&#127464;&#127475; S2 &amp; &#127477;&#127481; V2 Architects</span><span class="byline-date">17 Mar 2026</span></div>
+  </article>
+
+  <article class="article third-story reveal" data-category="sprint">
+    <div class="article-category cat-sprint"><span class="cat-dot"></span>Sprint</div>
+    <h2 class="article-headline">V2 Confirms Solution B Role Model for Internal Structure</h2>
+    <p class="article-deck">After reviewing both proposed role models, Team V2 opted for Solution B &mdash; pairing the PM with the System Architect role to reduce priority conflicts during heavy coordination phases.</p>
+    <div class="article-byline"><span class="byline-author">&#127477;&#127481; Sergio Moniz</span><span class="byline-date">16 Mar 2026</span></div>
+  </article>
+
+  <article class="article third-story reveal" data-category="meeting">
+    <div class="article-category cat-meeting"><span class="cat-dot"></span>Meeting</div>
+    <h2 class="article-headline">V2&ndash;M1 Bilateral Sync: API Endpoint Wishlist Exchanged</h2>
+    <p class="article-deck">An informal bilateral session between V2 and M1 produced the first shared wishlist of API endpoints, which will inform the IF2 contract drafting process.</p>
+    <div class="article-byline"><span class="byline-author">&#127477;&#127481; V2 &amp; &#127464;&#127475; M1 Leads</span><span class="byline-date">14 Mar 2026</span></div>
+  </article>
+
+  <article class="article half-story reveal" data-category="blocker">
+    <div class="article-category cat-blocker"><span class="cat-dot"></span>Blocker</div>
+    <div class="status-pill pill-resolved">&#x2714;&nbsp;Resolved</div>
+    <h2 class="article-headline">Sensor Hardware Unavailable in Portugal &mdash; Mock Module Unblocks V2</h2>
+    <p class="article-deck">Physical sensors are only available in China. S2&rsquo;s mandatory Sprint 1 deliverable &mdash; a software mock module &mdash; resolves this entirely.</p>
+    <p class="article-body">The mock module emits realistic JSON sensor frames at configurable sampling rates, allowing V2 to develop and test the ingestion pipeline without waiting for physical hardware. Hardware tasks remain with Chinese team members only.</p>
+    <div class="article-byline"><span class="byline-author">&#127477;&#127481; V2 &amp; &#127464;&#127475; S2 Teams</span><span class="byline-date">12 Mar 2026</span></div>
+  </article>
+
+  <article class="article half-story reveal" data-category="milestone">
+    <div class="article-category cat-milestone"><span class="cat-dot"></span>Milestone</div>
+    <div class="status-pill pill-pending">&#x25cf;&nbsp;Pending</div>
+    <h2 class="article-headline">Next Milestone: IF2 Contract Frozen by End of Sprint 2</h2>
+    <p class="article-deck">The Server-to-Monitor interface contract must be fully agreed before Sprint 3 begins. Any delay directly blocks M1 and M2 development.</p>
+    <p class="article-body">V2 owns the IF2 specification in partnership with M1. Both teams will iterate on the draft through Sprint 1 and finalise payload schemas, auth requirements, and WebSocket event definitions during Sprint 2.</p>
+    <div class="article-byline"><span class="byline-author">&#127477;&#127481; V2 System Architect</span><span class="byline-date">26 Mar 2026</span></div>
+  </article>
+
+  <div class="empty-state" id="emptyState"><p>No articles found for this category.</p></div>
+</div>
+
+<footer>
+  <div>
+    <div class="footer-logo">DSD2026 &middot; Team V2 &middot; UTAD &times; Jilin University</div>
+    <div class="footer-cn">中葡分布式软件开发</div>
+  </div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="index.html#progress">Progress</a>
+    <a href="news.html">Dispatch</a>
+    <a href="index.html#members">Members</a>
+  </div>
+</footer>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  const ring   = document.getElementById('cursorRing');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cursor.style.left=mx+'px'; cursor.style.top=my+'px'; });
+  (function animRing(){ rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animRing); })();
+
+  const hamburger  = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileClose= document.getElementById('mobileClose');
+  hamburger.addEventListener('click', () => mobileMenu.classList.add('open'));
+  mobileClose.addEventListener('click', closeMobile);
+  function closeMobile() { mobileMenu.classList.remove('open'); }
+
+  document.getElementById('currentDate').textContent =
+    new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}).toUpperCase();
+
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const articles   = document.querySelectorAll('.article[data-category], .edition-divider[data-category]');
+  const emptyState = document.getElementById('emptyState');
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      let visible = 0;
+      articles.forEach(a => {
+        const show = f==='all' || a.dataset.category===f || (a.classList.contains('edition-divider') && f==='all');
+        a.style.display = show ? '' : 'none';
+        if(show && a.classList.contains('article')) visible++;
+      });
+      emptyState.classList.toggle('visible', visible===0);
+    });
+  });
+
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer  = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.08 });
+  revealEls.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
