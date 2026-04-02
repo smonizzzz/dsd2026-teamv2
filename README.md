@@ -1,22 +1,15 @@
 # V2 — Backend API & Storage
 
-Distributed Software Development (DSD) 2025–2026
+**Distributed Software Development (DSD) 2025–2026**
 UTAD × Jilin University
 
 ---
 
 ## 📌 Overview
 
-Team V2 is the central integration hub of the Limb Motion Recognition and Assistant system.
+Team V2 is the central integration hub of the **Limb Motion Recognition and Assistant System**.
 
-We are responsible for:
-
-* Backend API (REST & WebSocket)
-* Database & data persistence
-* Integration between Sensor (S1/S2), AI (V1), and Monitor (M1/M2) teams
-* Exercise recommendation engine
-
-From Sprint 3 onwards, V2 assumes the **Integration Lead role**, coordinating system-wide testing across all teams.
+This backend is responsible for managing data, processing movement measurements, and generating exercise recommendations.
 
 ---
 
@@ -26,43 +19,35 @@ The system follows a layered architecture:
 
 Sensor Layer → Server Layer (V2) → Monitor Layer
 
-* **S1/S2**: Sensor data acquisition
-* **V1**: AI & motion recognition
-* **V2 (this team)**: Backend + Database
-* **M1/M2**: Frontend applications
+* **S1/S2** → Sensor data acquisition (joint angles, movement data)
+* **V1** → AI processing (optional integration)
+* **V2 (this backend)** → Data storage, processing, and API
+* **M1/M2** → Frontend applications
 
 ---
 
 ## ⚙️ Tech Stack
 
-* **Backend**: Node.js (Express)
-* **Database**: PostgreSQL
-* **ORM**: Prisma
-* **Authentication**: JWT
-* **Real-time**: WebSockets
+* **Backend:** Node.js (Express)
+* **Database:** SQLite (via sql.js)
+* **API:** REST
+* **Data Format:** JSON
+
+> SQLite was chosen for simplicity and fast development during early project stages.
 
 ---
 
 ## 📁 Project Structure
 
-```bash
-v2-backend/
+```
+src/
 │
-├── src/
-│   ├── routes/        # API endpoints
-│   ├── controllers/   # Request handling logic
-│   ├── services/      # Business logic
-│   ├── middleware/    # Auth & validation
+├── routes/         # API endpoints
+├── controllers/    # Request handling logic
+├── db/             # Database connection and helpers
+├── middleware/     # Error handling
 │
-├── prisma/
-│   └── schema.prisma  # Database schema
-│
-├── docs/
-│   ├── api.md         # API documentation (IF2)
-│   ├── data-model.md  # Database design
-│
-├── .env.example       # Environment variables template
-├── README.md
+├── app.js          # Main server file
 ```
 
 ---
@@ -71,70 +56,114 @@ v2-backend/
 
 ### Backend API
 
-* Design and implement REST endpoints
-* Provide WebSocket streams for real-time data
-* Define request/response schemas
+* Provide REST endpoints for all system entities
+* Handle incoming sensor data
+* Serve processed data to frontend
 
 ### Database
 
-* Design data model (User, Session, Measurement, Recommendation)
-* Handle data ingestion from sensors
-* Store AI outputs and session history
+* Store users, sessions, measurements, and recommendations
+* Ensure data consistency
+* Persist session history
 
 ### Integration
 
-* Receive sensor data (S2)
-* Integrate AI outputs (V1)
-* Serve data to frontend (M1/M2)
+* Receive data from sensor systems (S2)
+* Provide structured data to frontend (M1/M2)
+* Support integration with AI module (V1)
 
 ---
 
-## 🔌 API (IF2)
+## 🗄️ Data Model
 
-The API follows REST principles and versioning:
+The system includes four main entities:
+
+* **User** → system user (patient or clinician)
+* **Session** → exercise session
+* **Measurement** → captured movement data
+* **Recommendation** → performance feedback
+
+Relationships:
+
+* One user → multiple sessions
+* One session → multiple measurements
+* One session → multiple recommendations
+
+---
+
+## 🔌 API Endpoints
 
 Base URL:
 
 ```
-/api/v1/
+http://localhost:3000/
 ```
 
-Example endpoints:
+### 👤 Users
 
-* `GET /api/v1/sessions/:userId`
-* `POST /api/v1/sessions`
-* `POST /api/v1/auth/login`
+* `GET /users`
+* `GET /users/:id`
+* `POST /users`
 
-Full API specification available in:
+---
 
-```
-docs/api.md
-```
+### 🕒 Sessions
+
+* `GET /sessions`
+* `GET /sessions/:id`
+* `POST /sessions`
+* `PATCH /sessions/:id/end`
+
+---
+
+### 📏 Measurements
+
+* `GET /measurements/:sessionId`
+* `POST /measurements`
+* `POST /measurements/batch`
+
+---
+
+### 💡 Recommendations
+
+* `GET /recommendations/session/:sessionId`
+* `GET /recommendations/engine/:userId`
+* `POST /recommendations`
+* `PATCH /recommendations/:id`
+
+---
+
+## 🧠 Recommendation Engine
+
+The system includes a rule-based recommendation engine.
+
+It:
+
+1. Analyzes measurements from recent sessions
+2. Calculates accuracy per joint
+3. Generates feedback
+
+### Example logic:
+
+* Accuracy < 50% → High priority
+* Accuracy 50–70% → Medium priority
+* Accuracy > 70% → Good performance
 
 ---
 
 ## ⚡ Real-Time Communication
 
-WebSocket endpoint:
+Real-time communication is **not yet implemented**.
 
-```
-ws://server/api/v1/live
-```
-
-Used for:
-
-* Live sensor updates
-* Real-time feedback during sessions
+> Future work may include WebSocket support for live feedback.
 
 ---
 
 ## 🔐 Authentication
 
-* JWT-based authentication
-* Token passed via:
+Authentication is **not yet implemented**.
 
-  * REST → Authorization header
-  * WebSocket → query parameter
+> JWT-based authentication is planned for future development.
 
 ---
 
@@ -142,67 +171,57 @@ Used for:
 
 ### 1. Install dependencies
 
-```bash
+```
 npm install
 ```
 
-### 2. Setup environment variables
+### 2. Run the server
 
-Copy:
-
-```bash
-.env.example → .env
 ```
-
-### 3. Run the server
-
-```bash
 npm run dev
 ```
+
+### 3. Test the API
+
+```
+http://localhost:3000/health
+```
+
+---
+
+## 📅 Current Status
+
+✔️ Core backend fully functional
+✔️ Data persistence implemented
+✔️ Recommendation engine implemented
+⚠️ Authentication not implemented
+⚠️ Real-time communication not implemented
 
 ---
 
 ## 👥 Team Roles
 
-* **System Architect / PM** — Architecture, API design, database model
-* **Vice PM** — Coordination & async communication
-* **Programmer PT** — API implementation
-* **Programmer CN** — Database implementation
-
----
-
-## 📅 Sprint 1 Goals
-
-* Define system architecture
-* Design database schema
-* Draft IF2 (API contract with M1)
-* Setup development environment
-* Align data formats with S2 and V1
-
----
-
-## ⚠️ Important Notes
-
-* IF2 must be finalized by the end of Sprint 2
-* Backend decisions must be centralized in V2
-* Early alignment with M1 is critical to avoid rework
-
----
-
-## 📬 Communication
-
-* Async updates via GitHub Wiki
-* Cross-team coordination via WeChat
-* Formal API contracts documented in `/docs`
+* System Architect / PM — Architecture and API design
+* Developers — Backend implementation and database management
 
 ---
 
 ## 👑 Vision
 
-V2 is the backbone of the system.
+V2 acts as the backbone of the system.
 
-We ensure:
+It ensures:
 
-* Data consistency
-* System reliability
-* Seamless integration between all teams
+* Reliable data storage
+* Clear API communication
+* Integration between all components
+
+---
+
+## 📬 Communication
+
+* API documentation shared with frontend teams
+* Integration via REST endpoints
+* Future support for real-time communication
+
+---
