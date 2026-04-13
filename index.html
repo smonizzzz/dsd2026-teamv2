@@ -166,6 +166,7 @@
     .sprint-num { font-family:var(--mono); font-size:0.63rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-xs); }
     .sprint-status { font-family:var(--mono); font-size:0.58rem; padding:0.18rem 0.5rem; border-radius:4px; letter-spacing:0.08em; text-transform:uppercase; }
     .status-active   { background:rgba(232,56,42,0.12); color:var(--red); border:1px solid rgba(232,56,42,0.3); }
+    .status-complete { background:rgba(16,185,129,0.12); color:var(--green); border:1px solid rgba(16,185,129,0.3); }
     .status-upcoming { background:rgba(255,255,255,0.04); color:var(--text-xs); border:1px solid var(--border); }
     .sprint-title { font-size:0.93rem; font-weight:700; margin-bottom:0.75rem; }
     .sprint-items { list-style:none; display:flex; flex-direction:column; gap:0.4rem; }
@@ -281,7 +282,7 @@
     <p class="hero-tag">Distributed Software Development &middot; 2025&ndash;2026</p>
     <div class="hero-cn-sub">后端接口与数据存储</div>
     <h1>Backend API<br>&amp; <span class="accent">Storage</span></h1>
-    <p class="hero-sub">Team V2 serves as the backbone of the entire Limb Motion Recognition &amp; Assistant system &mdash; bridging sensor data, AI inference, and end-user interfaces through a robust, contract-driven API layer.</p>
+    <p class="hero-sub">System Design 1.0 now positions Team V2 as the central Node.js &amp; Express layer &mdash; bridging sensor data, AI inference, and end-user interfaces through REST APIs and SQLite-backed storage.</p>
     <div class="hero-badges">
       <span class="badge blue">REST / WebSocket</span>
       <span class="badge blue">SQL &amp; Migrations</span>
@@ -336,22 +337,22 @@
 <section id="architecture">
   <p class="section-label reveal">03 &middot; How It&rsquo;s Built</p>
   <h2 class="reveal">System Architecture</h2>
-  <p class="section-intro reveal">Six teams operate across three independent layers, each exposing a formally specified interface contract. This approach lets every team build and test in isolation while guaranteeing seamless integration when the contracts are met.</p>
+  <p class="section-intro reveal">System Design 1.0, published on 13 April, freezes the distributed architecture into front-end, intermediate, and back-end layers. V2 sits in the middle as the API hub, storage coordinator, and integration point for the rest of the platform.</p>
   <div class="arch-diagram reveal">
     <div class="arch-flow">
       <div class="arch-group">
-        <div class="arch-box sensor">S1 &middot; Firmware</div>
-        <div class="arch-box sensor">S2 &middot; Data Acq.</div>
+        <div class="arch-box sensor">Front-end</div>
+        <div class="arch-box sensor">IMU Sensors</div>
       </div>
-      <div class="arch-arrow"><span class="if-label">IF1</span><div class="arrow-line"></div></div>
+      <div class="arch-arrow"><span class="if-label">INPUT</span><div class="arrow-line"></div></div>
       <div class="arch-group">
-        <div class="arch-box server">V1 &middot; AI Engine</div>
-        <div class="arch-box server v2">V2 &middot; API &amp; DB &#9733;</div>
+        <div class="arch-box server">V2 Server</div>
+        <div class="arch-box server v2">Node.js &amp; Express</div>
       </div>
-      <div class="arch-arrow"><span class="if-label">IF2</span><div class="arrow-line"></div></div>
+      <div class="arch-arrow"><span class="if-label">OUTPUT</span><div class="arrow-line"></div></div>
       <div class="arch-group">
-        <div class="arch-box monitor">M1 &middot; Patient App</div>
-        <div class="arch-box monitor">M2 &middot; Web Dashboard</div>
+        <div class="arch-box monitor">SQLite DB</div>
+        <div class="arch-box monitor">V1 AI Module</div>
       </div>
     </div>
   </div>
@@ -361,24 +362,24 @@
       <tbody>
         <tr>
           <td class="layer-cell" rowspan="2">Sensor</td>
-          <td class="team-cell">S1 &mdash; Firmware &amp; Protocol</td><td>Zhihang Yu</td><td>Embedded firmware, wireless protocol spec, data packet format</td>
+          <td class="team-cell">S1 &mdash; Firmware &amp; Protocol</td><td>Zhihang Yu</td><td>Embedded firmware, IMU packet format, wireless transport rules</td>
         </tr>
         <tr>
-          <td class="team-cell">S2 &mdash; Data Acquisition &amp; Mock</td><td>Zhiqi Zhang</td><td>Acquisition pipeline, input validation, mock sensor module</td>
+          <td class="team-cell">S2 &mdash; Data Acquisition &amp; Mock</td><td>Zhiqi Zhang</td><td>Sensor ingestion, input validation, mock measurements for testing</td>
         </tr>
         <tr>
           <td class="layer-cell" rowspan="2">Server</td>
-          <td class="team-cell">V1 &mdash; AI &amp; Motion Recognition</td><td>Diogo Borges</td><td>Deep learning integration, inference pipeline, angle comparison</td>
+          <td class="team-cell">V1 &mdash; AI &amp; Motion Recognition</td><td>Diogo Borges</td><td>Motion classification, feedback generation, recommendation inputs</td>
         </tr>
         <tr class="v2-row">
-          <td class="team-cell highlight">V2 &mdash; Backend API &amp; Storage &#9733;</td><td class="highlight">Sergio Moniz</td><td>API gateway, database, recommendation engine, Integration Lead</td>
+          <td class="team-cell highlight">V2 &mdash; Backend API &amp; Storage &#9733;</td><td class="highlight">Sergio Moniz</td><td>Node.js &amp; Express API, SQLite storage, MVC layers, integration lead</td>
         </tr>
         <tr>
           <td class="layer-cell" rowspan="2">Monitor</td>
-          <td class="team-cell">M1 &mdash; Patient Mobile App</td><td>Diogo Pinhel</td><td>Real-time mobile UI, live motion visualisation, posture alerts</td>
+          <td class="team-cell">M1 &mdash; Patient Mobile App</td><td>Diogo Pinhel</td><td>User login, sessions, sensor upload, live feedback display</td>
         </tr>
         <tr>
-          <td class="team-cell">M2 &mdash; Clinical Web Dashboard</td><td>Yihang Li</td><td>Long-term recovery charts, 3D limb reconstruction, clinical views</td>
+          <td class="team-cell">M2 &mdash; Clinical Web Dashboard</td><td>Yihang Li</td><td>Recovery charts, recommendation review, clinical monitoring views</td>
         </tr>
       </tbody>
     </table>
@@ -389,19 +390,20 @@
 <section id="progress">
   <p class="section-label reveal">04 &middot; Roadmap</p>
   <h2 class="reveal">Sprint Progress</h2>
-  <p class="section-intro reveal">Three sprints, one fully integrated system. V2 steps up as Integration Lead when Sprint 3 begins.</p>
+  <p class="section-intro reveal">Three sprints, one fully integrated system. System Design 1.0 was locked and announced on 13 April, giving V2 a stable backend baseline for the remaining implementation work.</p>
   <div class="sprint-grid">
-    <div class="sprint-card active reveal" data-cn="一">
-      <div class="sprint-header"><span class="sprint-num">Sprint 1</span><span class="sprint-status status-active">In Progress</span></div>
+    <div class="sprint-card reveal" data-cn="一">
+      <div class="sprint-header"><span class="sprint-num">Sprint 1</span><span class="sprint-status status-complete">Completed</span></div>
       <div class="sprint-title">Groundwork &amp; Contracts</div>
       <ul class="sprint-items">
+        <li>System Design 1.0 approved and baselined</li>
         <li>Team assembled, roles distributed</li>
         <li>IF1 co-authored with S2 and V1</li>
         <li>IF2 initial draft prepared for M1 review</li>
         <li>Repository structure and Wiki launched</li>
         <li>Async standup routine established</li>
       </ul>
-      <div class="progress-bar-wrap"><div class="progress-bar" style="width:55%"></div></div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:100%"></div></div>
     </div>
     <div class="sprint-card reveal" data-cn="二">
       <div class="sprint-header"><span class="sprint-num">Sprint 2</span><span class="sprint-status status-upcoming">Upcoming</span></div>
