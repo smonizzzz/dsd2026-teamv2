@@ -20,9 +20,8 @@ function queryOne(db, sql, params = []) {
 
 function run(db, sql, params = []) {
   db.run(sql, params);
-  // Return the last inserted rowid
   const result = queryOne(db, 'SELECT last_insert_rowid() AS id');
-  return { lastInsertRowid: result ? result['last_insert_rowid()'] : null };
+  return { lastInsertRowid: result ? result.id : null };
 }
 
 module.exports = { queryAll, queryOne, run };
