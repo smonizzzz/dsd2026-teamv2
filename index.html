@@ -109,7 +109,8 @@
     #functions   { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); }
     #architecture{ background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
     #progress    { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); }
-    #members     { background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
+    #conflicts   { background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
+    #members     { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); }
 
     .section-label { font-family:var(--mono); font-size:0.63rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:0.5rem; display:flex; align-items:center; gap:0.6rem; }
     .section-label::before { content:'⬡'; font-size:0.5rem; color:var(--red); }
@@ -249,6 +250,7 @@
     <a href="#background">Background</a>
     <a href="#architecture">Architecture</a>
     <a href="#progress">Progress</a>
+    <a href="#conflicts">Conflicts</a>
     <a href="news.html">Dispatch</a>
     <a href="#members">Members</a>
   </div>
@@ -262,6 +264,7 @@
   <a href="#background"   onclick="closeMobile()">Background</a>
   <a href="#architecture" onclick="closeMobile()">Architecture</a>
   <a href="#progress"     onclick="closeMobile()">Progress</a>
+  <a href="#conflicts"    onclick="closeMobile()">Conflicts</a>
   <a href="news.html"     onclick="closeMobile()">Dispatch</a>
   <a href="#members"      onclick="closeMobile()">Members</a>
 </div>
@@ -432,9 +435,330 @@
   </div>
 </section>
 
+<!-- CONFLICTS -->
+<section id="conflicts">
+  <p class="section-label reveal">05 &middot; IF-S2-V2</p>
+  <h2 class="reveal">Interface Conflict Log</h2>
+  <p class="section-intro reveal">During System Design integration, S2 (Zhiqi Zhang) identified 9 conflicts between the S2 Interface Specification and V2&rsquo;s actual backend. All conflicts are within IF-S2-V2. Below is V2&rsquo;s proposed resolution for each one.</p>
+
+  <div class="cn-divider reveal">
+    <div class="cn-divider-line"></div>
+    <div class="cn-divider-symbol">接口冲突</div>
+    <div class="cn-divider-line"></div>
+  </div>
+
+  <style>
+    .conflict-grid { display:flex; flex-direction:column; gap:1rem; margin-top:1.5rem; }
+    .conflict-card { background:rgba(24,24,36,0.85); border:1px solid var(--border); border-radius:10px; overflow:hidden; backdrop-filter:blur(4px); transition:border-color 0.25s; }
+    .conflict-card:hover { border-color:rgba(201,150,42,0.3); }
+    .conflict-header { display:flex; align-items:center; gap:1rem; padding:1rem 1.3rem; border-bottom:1px solid var(--border); flex-wrap:wrap; cursor:pointer; }
+    .conflict-id { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.12em; color:var(--text-xs); text-transform:uppercase; white-space:nowrap; }
+    .conflict-title { font-size:0.93rem; font-weight:700; flex:1; }
+    .conflict-type { font-family:var(--mono); font-size:0.58rem; padding:0.18rem 0.55rem; border-radius:4px; letter-spacing:0.08em; text-transform:uppercase; white-space:nowrap; }
+    .type-a { background:rgba(74,158,255,0.12); color:var(--blue); border:1px solid rgba(74,158,255,0.3); }
+    .type-b { background:rgba(201,150,42,0.12); color:var(--gold-light); border:1px solid rgba(201,150,42,0.3); }
+    .type-c { background:rgba(232,56,42,0.12); color:var(--red); border:1px solid rgba(232,56,42,0.3); }
+    .conflict-status { font-family:var(--mono); font-size:0.58rem; padding:0.18rem 0.55rem; border-radius:4px; letter-spacing:0.08em; text-transform:uppercase; white-space:nowrap; }
+    .status-resolved  { background:rgba(16,185,129,0.12); color:var(--green); border:1px solid rgba(16,185,129,0.3); }
+    .status-pending   { background:rgba(255,255,255,0.05); color:var(--text-xs); border:1px solid var(--border); }
+    .conflict-body { padding:1.3rem; display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+    @media(max-width:700px){ .conflict-body { grid-template-columns:1fr; } }
+    .conflict-col-label { font-family:var(--mono); font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; margin-bottom:0.45rem; }
+    .col-label-s2  { color:var(--blue); }
+    .col-label-v2  { color:var(--gold); }
+    .col-label-res { color:var(--green); }
+    .conflict-col p, .conflict-col li { font-size:0.82rem; color:var(--text-dim); line-height:1.65; }
+    .conflict-col ul { padding-left:1rem; display:flex; flex-direction:column; gap:0.25rem; }
+    .conflict-col li::marker { color:var(--gold); }
+    .conflict-resolution { grid-column:1/-1; background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.15); border-radius:8px; padding:1rem 1.2rem; }
+    .conflict-code { font-family:var(--mono); font-size:0.75rem; color:var(--blue); background:rgba(8,8,14,0.6); border-radius:6px; padding:0.6rem 0.9rem; margin-top:0.5rem; overflow-x:auto; white-space:pre; line-height:1.55; }
+  </style>
+
+  <div class="conflict-grid">
+
+    <!-- C1 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 1</span>
+        <span class="conflict-title">Endpoint Path Mismatch</span>
+        <span class="conflict-type type-b">Type B</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Design</div>
+          <ul>
+            <li>POST /api/session</li>
+            <li>POST /api/session/&lt;sessionId&gt;/data</li>
+            <li>PUT /api/session/&lt;sessionId&gt;/end</li>
+          </ul>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Actual</div>
+          <ul>
+            <li>POST /sessions</li>
+            <li>POST /measurements or /measurements/batch</li>
+            <li>PATCH /sessions/:id/end</li>
+          </ul>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <p>S2 adopts V2&rsquo;s path structure. No <code>/api</code> prefix is used. Measurements are a top-level resource, not nested under sessions &mdash; this cleanly separates concerns and allows other teams (V1, M1) to query measurements independently. S2 updates their implementation to call <code>/sessions</code> and <code>/measurements</code> directly.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- C2 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 2</span>
+        <span class="conflict-title">HTTP Method Mismatch — End Session</span>
+        <span class="conflict-type type-b">Type B</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Design</div>
+          <p>Uses <strong>PUT</strong> to end a session.</p>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Actual</div>
+          <p>Uses <strong>PATCH</strong> — only one field (ended_at) is updated, not the full resource.</p>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <p>Use <strong>PATCH</strong>. This is semantically correct per HTTP spec: PUT replaces the entire resource, PATCH applies a partial update. S2 updates their client to send <code>PATCH /sessions/:id/end</code>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- C3 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 3</span>
+        <span class="conflict-title">Session Creation Request Body</span>
+        <span class="conflict-type type-a">Type A</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Sends</div>
+          <div class="conflict-code">{ "sessionId": "session-001",
+  "patientId": "patient-001",
+  "sensorJointMapping": {...},
+  "payloadStatus": "bend_knee_10",
+  "startTime": 1714456800000 }</div>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Expects</div>
+          <div class="conflict-code">{ "userId": 1 }</div>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <ul>
+            <li>V2 ignores unknown fields — S2 may send extra fields without breaking the API.</li>
+            <li><strong>patientId → userId:</strong> S2 renames this field to <code>userId</code> and uses the integer ID returned by <code>GET /users</code>. String IDs are not supported.</li>
+            <li><strong>sessionId:</strong> Server generates the ID. S2 must not provide it; use the <code>id</code> returned in the response for subsequent calls.</li>
+            <li><strong>startTime:</strong> Server auto-generates <code>started_at</code>. Client-provided start times are ignored for now.</li>
+            <li>V2 returns <strong>201 Created</strong> on success (not 200 OK).</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- C4 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 4</span>
+        <span class="conflict-title">Data Upload Structure — Critical</span>
+        <span class="conflict-type type-c">Type C</span>
+        <span class="conflict-status status-pending">In Negotiation</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Sends</div>
+          <div class="conflict-code">{ "sensorData": [
+    { "sensorId":"...",
+      "accX":..., "accY":..., "accZ":...,
+      "gyroX":..., "gyroY":..., "gyroZ":...,
+      "roll":..., "pitch":..., "yaw":... }
+  ],
+  "targetAngles": [
+    { "angleID":"...", "angle":... }
+  ],
+  "errors": [
+    { "sensorId":"...", "errorType":"...",
+      "message":"..." }
+  ] }</div>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Expects</div>
+          <div class="conflict-code">{ "sessionId": 1,
+  "jointAngles": {
+    "knee": 45.2,
+    "hip": 30.1
+  },
+  "isCorrect": false }</div>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Proposed Resolution</div>
+          <p>V2 will create a dedicated ingestion endpoint <code>POST /ingest</code> that accepts S2&rsquo;s full payload. Internally, V2 will:</p>
+          <ul>
+            <li>Map <code>targetAngles</code> &rarr; <code>joint_angles</code> (keyed by angleID)</li>
+            <li>Store raw IMU data in a new <code>raw_imu</code> JSON field on the measurements table</li>
+            <li>Store sensor errors in a separate <code>sensor_errors</code> JSON field</li>
+            <li>Set <code>is_correct = false</code> by default; V1 fills this in later via their own endpoint</li>
+          </ul>
+          <p style="margin-top:0.6rem;color:var(--red);font-size:0.8rem;">&#9888; This requires V1 input: V1 must confirm how they consume the data before V2 finalises the schema extension. Joint call between S2 + V1 + V2 required.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- C5 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 5</span>
+        <span class="conflict-title">Session End Request Body</span>
+        <span class="conflict-type type-a">Type A</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Sends</div>
+          <div class="conflict-code">{ "endTime": 1714456860000,
+  "sampleCount": 1200,
+  "errorCount": 3 }</div>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Actual</div>
+          <p>No body expected. Server auto-sets <code>ended_at = now()</code>. No fields for sampleCount or errorCount.</p>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <p>V2 will accept the optional body but ignore unknown fields for now. <code>sampleCount</code> and <code>errorCount</code> are computable server-side from existing data and do not need to be stored separately. <code>endTime</code> is ignored — server timestamp is authoritative to avoid clock skew between devices.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- C6 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 6</span>
+        <span class="conflict-title">Timestamp Format</span>
+        <span class="conflict-type type-b">Type B</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Design</div>
+          <p>Unix milliseconds integer — e.g. <code>1714456800000</code></p>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Actual</div>
+          <p>ISO 8601 UTC string — e.g. <code>"2025-04-21T14:30:00.000Z"</code></p>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <p>All timestamps use <strong>ISO 8601 UTC</strong> throughout the system. This is the REST API standard, human-readable, and timezone-unambiguous. S2 converts Unix ms to ISO 8601 before sending. V2 will accept both formats on the optional <code>timestamp</code> field and normalise internally if needed.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- C7 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 7</span>
+        <span class="conflict-title">Field Naming Convention</span>
+        <span class="conflict-type type-b">Type B</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Design</div>
+          <p>camelCase in both requests <em>and</em> responses.</p>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Actual</div>
+          <p>camelCase in <strong>requests</strong> (what you send), snake_case in <strong>responses</strong> (what you receive back).</p>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <p>The mixed convention is intentional and already documented in V2&rsquo;s integration guide. All teams must follow it: send camelCase, parse snake_case. This is the single most common cause of bugs during integration &mdash; read the guide carefully. V2 will not change response casing, as it would break teams already built against it.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- C8 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 8</span>
+        <span class="conflict-title">Session ID Type</span>
+        <span class="conflict-type type-b">Type B</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Design</div>
+          <p>String, client-generated — e.g. <code>"session-001"</code></p>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Actual</div>
+          <p>Integer, server auto-incremented — e.g. <code>1</code>, <code>2</code>, <code>3</code></p>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <p>Server-generated integer IDs are used throughout. Client-provided IDs are rejected. S2 must call <code>POST /sessions</code>, receive the <code>id</code> integer in the response, and use that value in all subsequent measurement uploads. This prevents ID collisions across distributed clients and is consistent with the rest of the API.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- C9 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 9</span>
+        <span class="conflict-title">HTTP Status Codes &amp; Authentication</span>
+        <span class="conflict-type type-b">Type B</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Design</div>
+          <ul>
+            <li>Success: <strong>200 OK</strong> for all operations</li>
+            <li>Auth failure: <strong>401 Unauthorized</strong></li>
+          </ul>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Actual</div>
+          <ul>
+            <li>Resource creation: <strong>201 Created</strong></li>
+            <li>Reads/updates: <strong>200 OK</strong></li>
+            <li>No authentication — 401 is never returned</li>
+          </ul>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <p>V2&rsquo;s status codes follow HTTP semantics: <strong>201</strong> for new resource creation, <strong>200</strong> for reads and updates. Authentication is not implemented in Sprint 1; 401 responses do not exist yet. When auth is added in Sprint 3, a 401 scheme will be agreed with all teams simultaneously. S2 should treat any unexpected 401 as a server misconfiguration for now.</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.conflict-grid -->
+
+  <div class="cn-divider reveal" style="margin-top:2.5rem">
+    <div class="cn-divider-line"></div>
+    <div class="cn-divider-symbol">待定</div>
+    <div class="cn-divider-line"></div>
+  </div>
+  <p class="section-intro reveal" style="margin-top:1rem">
+    <strong style="color:var(--red)">1 conflict remains open (Conflict 4)</strong> &mdash; the raw IMU data structure requires a joint call between S2, V1, and V2 before V2 can finalise the schema extension and the <code>/ingest</code> endpoint. All other 8 conflicts are resolved from V2&rsquo;s side.
+  </p>
+
+</section>
+
 <!-- MEMBERS -->
 <section id="members">
-  <p class="section-label reveal">05 &middot; The Team</p>
+  <p class="section-label reveal">06 &middot; The Team</p>
   <h2 class="reveal">Who We Are</h2>
   <p class="section-intro reveal">Five engineers. Two continents. One shared codebase.</p>
   <div class="members-grid">
