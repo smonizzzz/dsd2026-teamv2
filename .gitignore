@@ -1,3 +1,4 @@
 node_modules/
-data/v2.db
+data/
 .env
+*.db

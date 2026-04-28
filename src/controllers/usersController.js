@@ -4,7 +4,7 @@ const { queryAll, queryOne, run } = require('../db/helpers');
 async function getUsers(req, res, next) {
   try {
     const { db } = await getDb();
-    const users = queryAll(db, 'SELECT * FROM users ORDER BY created_at DESC');
+    const users = queryAll(db, 'SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC');
     res.json(users);
   } catch (err) { next(err); }
 }
@@ -13,7 +13,7 @@ async function getUserById(req, res, next) {
   try {
     const { db } = await getDb();
     const user = queryOne(db, `
-      SELECT u.*, COUNT(s.id) AS session_count
+      SELECT u.id, u.name, u.email, u.role, u.created_at, COUNT(s.id) AS session_count
       FROM users u LEFT JOIN sessions s ON s.user_id = u.id
       WHERE u.id = ? GROUP BY u.id
     `, [req.params.id]);
