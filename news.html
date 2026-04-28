@@ -187,6 +187,7 @@
     <a href="index.html#background">Background</a>
     <a href="index.html#architecture">Architecture</a>
     <a href="index.html#progress">Progress</a>
+    <a href="index.html#conflicts">Conflicts</a>
     <a href="news.html" class="active">Dispatch</a>
     <a href="index.html#members">Members</a>
   </div>
@@ -197,6 +198,7 @@
   <a href="index.html#background" onclick="closeMobile()">Background</a>
   <a href="index.html#architecture" onclick="closeMobile()">Architecture</a>
   <a href="index.html#progress" onclick="closeMobile()">Progress</a>
+  <a href="index.html#conflicts" onclick="closeMobile()">Conflicts</a>
   <a href="news.html" onclick="closeMobile()">Dispatch</a>
   <a href="index.html#members" onclick="closeMobile()">Members</a>
 </div>
@@ -207,7 +209,7 @@
   <div class="mk2">新</div>
   <div class="masthead-ticker">
     <span class="ticker-label">Live</span>
-    <span class="ticker-text">System&nbsp;Design&nbsp;1.0&nbsp;approved&nbsp;on&nbsp;13&nbsp;Apr &nbsp;&bull;&nbsp; Node.js&nbsp;+&nbsp;Express&nbsp;backend locked &nbsp;&bull;&nbsp; SQLite&nbsp;schema&nbsp;baseline set &nbsp;&bull;&nbsp; REST&nbsp;endpoints&nbsp;defined &nbsp;&bull;&nbsp; System&nbsp;Design&nbsp;1.0&nbsp;approved&nbsp;on&nbsp;13&nbsp;Apr &nbsp;&bull;&nbsp; Node.js&nbsp;+&nbsp;Express&nbsp;backend locked &nbsp;&bull;&nbsp; SQLite&nbsp;schema&nbsp;baseline set &nbsp;&bull;&nbsp; REST&nbsp;endpoints&nbsp;defined &nbsp;&bull;&nbsp;</span>
+    <span class="ticker-text">IF-S2-V2&nbsp;conflict&nbsp;analysis&nbsp;received&nbsp;from&nbsp;S2 &nbsp;&bull;&nbsp; 8&nbsp;of&nbsp;9&nbsp;conflicts&nbsp;resolved&nbsp;by&nbsp;V2 &nbsp;&bull;&nbsp; Conflict&nbsp;4&nbsp;(raw&nbsp;IMU&nbsp;data)&nbsp;pending&nbsp;joint&nbsp;call &nbsp;&bull;&nbsp; System&nbsp;Design&nbsp;1.0&nbsp;approved&nbsp;13&nbsp;Apr &nbsp;&bull;&nbsp; Node.js&nbsp;+&nbsp;Express&nbsp;backend locked &nbsp;&bull;&nbsp; SQLite&nbsp;schema&nbsp;baseline set &nbsp;&bull;&nbsp; REST&nbsp;endpoints&nbsp;defined &nbsp;&bull;&nbsp; IF-S2-V2&nbsp;conflict&nbsp;analysis&nbsp;received&nbsp;from&nbsp;S2 &nbsp;&bull;&nbsp; 8&nbsp;of&nbsp;9&nbsp;conflicts&nbsp;resolved&nbsp;by&nbsp;V2 &nbsp;&bull;&nbsp; Conflict&nbsp;4&nbsp;(raw&nbsp;IMU&nbsp;data)&nbsp;pending&nbsp;joint&nbsp;call &nbsp;&bull;&nbsp; System&nbsp;Design&nbsp;1.0&nbsp;approved&nbsp;13&nbsp;Apr &nbsp;&bull;&nbsp; Node.js&nbsp;+&nbsp;Express&nbsp;backend locked &nbsp;&bull;&nbsp; SQLite&nbsp;schema&nbsp;baseline set &nbsp;&bull;&nbsp; REST&nbsp;endpoints&nbsp;defined &nbsp;&bull;&nbsp;</span>
   </div>
   <div class="masthead-top">
     <div class="masthead-meta">System Design 1.0 &middot; Node.js &amp; Express &middot; DSD 2025&ndash;2026</div>
@@ -234,6 +236,47 @@
 
 <!-- NEWS GRID -->
 <div class="news-container" id="newsGrid">
+  <!-- ── CONFLICT EDITION ── -->
+  <div class="edition-divider" data-category="doc">
+    <div class="edition-divider-line"></div>
+    <div class="edition-divider-label">Integration Conflicts Edition &mdash; April 2026</div>
+    <div class="edition-divider-cn">接口冲突版</div>
+    <div class="edition-divider-line"></div>
+  </div>
+
+  <article class="article full-story reveal" data-category="doc">
+    <div>
+      <div class="article-category cat-doc"><span class="cat-dot"></span>Documentation</div>
+      <div class="status-pill pill-pending">&#x25cf;&nbsp;1 Open · 8 Resolved</div>
+      <h2 class="article-headline">S2 Delivers IF-S2-V2 Conflict Report — V2 Responds with Resolutions</h2>
+      <p class="article-deck">Zhiqi Zhang (S2) submitted a formal conflict analysis identifying 9 interface mismatches between the S2 specification and V2&rsquo;s actual backend. Team V2 has reviewed all conflicts and issued resolutions for 8 of them.</p>
+    </div>
+    <div>
+      <p class="article-body">The conflicts span endpoint paths, HTTP methods, request body structure, data granularity, timestamp format, field naming, session ID type, and authentication. Most are classified as Type B (easy to unify) and have been resolved in favour of V2&rsquo;s existing design, which is already in use and documented in the integration guide. One critical conflict remains open: Conflict 4 concerns the raw IMU data upload structure, where S2&rsquo;s payload (accelerometer, gyroscope, orientation, errors) is fundamentally different from V2&rsquo;s current measurements schema. This requires a joint call between S2, V1, and V2 before V2 can finalise a new <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">/ingest</code> endpoint and schema extension.</p>
+      <div class="article-byline"><span class="byline-author">&#127464;&#127475; Zhiqi Zhang &middot; S2 &nbsp;|&nbsp; &#127477;&#127481; Sergio Moniz &middot; V2</span><span class="byline-date">24 Apr 2026</span></div>
+    </div>
+  </article>
+
+  <article class="article hero-story reveal" data-category="doc">
+    <div class="article-category cat-doc"><span class="cat-dot"></span>Conflict Detail</div>
+    <div class="status-pill pill-resolved">&#x2714;&nbsp;8 Resolved</div>
+    <h2 class="article-headline">Eight of Nine Conflicts Closed: Paths, Methods, IDs, Timestamps, and Naming All Unified</h2>
+    <p class="article-deck">V2 issued clear resolutions for the straightforward conflicts, establishing the conventions that S2 must follow when implementing their client.</p>
+    <div class="pull-quote"><p>"Server-generated integer IDs. ISO 8601 timestamps. PATCH not PUT. No /api prefix. These are non-negotiable &mdash; they are already live."</p></div>
+    <p class="article-body">Conflicts 1, 2, 6, 7, 8, and 9 were resolved outright: S2 adopts V2&rsquo;s path structure, uses PATCH for session end, sends ISO 8601 timestamps, reads snake_case responses while sending camelCase requests, uses server-assigned integer session IDs, and expects 201 on creation. Conflicts 3 and 5 (richer session creation body and session-end metadata) are resolved by V2 silently ignoring unknown fields &mdash; S2 may send extra data without breaking the API.</p>
+    <div class="article-byline"><span class="byline-author">&#127477;&#127481; Sergio Moniz &middot; V2 Lead</span><span class="byline-date">28 Apr 2026</span></div>
+  </article>
+
+  <article class="article side-story reveal" data-category="blocker">
+    <div class="article-category cat-blocker"><span class="cat-dot"></span>Blocker</div>
+    <div class="status-pill pill-open">&#x25cf;&nbsp;Open</div>
+    <h2 class="article-headline">Conflict 4: Raw IMU Data Structure Requires Tri-Team Negotiation</h2>
+    <p class="article-deck">S2&rsquo;s sensor payload contains raw accelerometer, gyroscope, orientation, and error data that V2&rsquo;s current schema cannot store. This is the sole remaining blocker.</p>
+    <p class="article-body">V2 has proposed a <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">/ingest</code> endpoint that maps S2&rsquo;s <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">targetAngles</code> to <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">joint_angles</code> and stores raw IMU data in an extended JSON field. V1 must confirm what fields they need before V2 finalises the schema. A joint call between all three teams is required.</p>
+    <div class="article-byline"><span class="byline-author">&#127464;&#127475; S2 &middot; &#127477;&#127481; V1 &middot; &#127477;&#127481; V2</span><span class="byline-date">28 Apr 2026</span></div>
+  </article>
+
+  <!-- ── ORIGINAL EDITION ── -->
   <div class="edition-divider" data-category="sprint">
     <div class="edition-divider-line"></div>
     <div class="edition-divider-label">System Design 1.0 Edition &mdash; April 2026</div>
