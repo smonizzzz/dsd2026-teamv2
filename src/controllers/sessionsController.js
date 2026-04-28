@@ -73,4 +73,18 @@ async function endSession(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { getSessions, getSessionById, createSession, endSession };
+async function deleteSession(req, res, next) {
+  try {
+    const { db, save } = await getDb();
+    const session = queryOne(db, 'SELECT id FROM sessions WHERE id = ?', [req.params.id]);
+    if (!session) { const e = new Error('Session not found'); e.status = 404; return next(e); }
+
+    run(db, 'DELETE FROM measurements WHERE session_id = ?', [req.params.id]);
+    run(db, 'DELETE FROM recommendations WHERE session_id = ?', [req.params.id]);
+    run(db, 'DELETE FROM sessions WHERE id = ?', [req.params.id]);
+    save();
+    res.status(204).send();
+  } catch (err) { next(err); }
+}
+
+module.exports = { getSessions, getSessionById, createSession, endSession, deleteSession };

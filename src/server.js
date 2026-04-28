@@ -3,10 +3,13 @@ const cors    = require('cors');
 const initDb  = require('./db/init');
 
 const errorHandler          = require('./middleware/errorHandler');
+const authRouter            = require('./routes/auth');
 const usersRouter           = require('./routes/users');
 const sessionsRouter        = require('./routes/sessions');
 const measurementsRouter    = require('./routes/measurements');
 const recommendationsRouter = require('./routes/recommendations');
+const scheduleRouter        = require('./routes/schedule');
+const pushRouter            = require('./routes/push');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -21,10 +24,13 @@ app.get('/health', (req, res) => res.json({
   timestamp: new Date().toISOString()
 }));
 
+app.use('/auth',            authRouter);
 app.use('/users',           usersRouter);
 app.use('/sessions',        sessionsRouter);
 app.use('/measurements',    measurementsRouter);
 app.use('/recommendations', recommendationsRouter);
+app.use('/schedule',        scheduleRouter);
+app.use('/push',            pushRouter);
 
 app.use((req, res) => res.status(404).json({ error: `${req.method} ${req.path} not found` }));
 app.use(errorHandler);
