@@ -108,9 +108,29 @@
     #background  { background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
     #functions   { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); }
     #architecture{ background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
-    #progress    { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); }
-    #conflicts   { background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
-    #members     { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); }
+    #api         { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); }
+    #progress    { background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
+    #conflicts   { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); }
+    #members     { background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
+
+    .api-url-box { background:rgba(8,8,14,0.8); border:1px solid rgba(74,158,255,0.3); border-radius:10px; padding:1.2rem 1.6rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:2rem; }
+    .api-url-label { font-family:var(--mono); font-size:0.6rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-xs); margin-bottom:0.3rem; }
+    .api-url-value { font-family:var(--mono); font-size:1rem; color:var(--blue); font-weight:700; }
+    .api-live-badge { display:inline-flex; align-items:center; gap:0.5rem; font-family:var(--mono); font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.35rem 0.8rem; border-radius:20px; background:rgba(16,185,129,0.12); color:var(--green); border:1px solid rgba(16,185,129,0.3); white-space:nowrap; }
+    .api-live-badge::before { content:''; width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse2 1.5s ease-in-out infinite; }
+    @keyframes pulse2 { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .endpoint-group { margin-bottom:1.5rem; }
+    .endpoint-group-title { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid rgba(201,150,42,0.12); }
+    .endpoint-list { display:flex; flex-direction:column; gap:0.35rem; }
+    .endpoint-row { display:flex; align-items:baseline; gap:0.7rem; font-family:var(--mono); font-size:0.78rem; }
+    .method { font-size:0.6rem; font-weight:700; letter-spacing:0.08em; padding:0.12rem 0.45rem; border-radius:3px; white-space:nowrap; }
+    .m-get    { background:rgba(16,185,129,0.12); color:var(--green); border:1px solid rgba(16,185,129,0.25); }
+    .m-post   { background:rgba(74,158,255,0.12); color:var(--blue); border:1px solid rgba(74,158,255,0.25); }
+    .m-patch  { background:rgba(201,150,42,0.12); color:var(--gold-light); border:1px solid rgba(201,150,42,0.25); }
+    .m-delete { background:rgba(232,56,42,0.12); color:var(--red); border:1px solid rgba(232,56,42,0.25); }
+    .ep-path  { color:var(--text); }
+    .ep-desc  { color:var(--text-xs); font-size:0.68rem; }
+    .endpoint-cols { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:2rem; }
 
     .section-label { font-family:var(--mono); font-size:0.63rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:0.5rem; display:flex; align-items:center; gap:0.6rem; }
     .section-label::before { content:'⬡'; font-size:0.5rem; color:var(--red); }
@@ -249,6 +269,7 @@
   <div class="nav-links">
     <a href="#background">Background</a>
     <a href="#architecture">Architecture</a>
+    <a href="#api">API</a>
     <a href="#progress">Progress</a>
     <a href="#conflicts">Conflicts</a>
     <a href="news.html">Dispatch</a>
@@ -263,6 +284,7 @@
   <button class="mobile-close" id="mobileClose">&#x2715;</button>
   <a href="#background"   onclick="closeMobile()">Background</a>
   <a href="#architecture" onclick="closeMobile()">Architecture</a>
+  <a href="#api"          onclick="closeMobile()">API</a>
   <a href="#progress"     onclick="closeMobile()">Progress</a>
   <a href="#conflicts"    onclick="closeMobile()">Conflicts</a>
   <a href="news.html"     onclick="closeMobile()">Dispatch</a>
@@ -285,12 +307,13 @@
     <p class="hero-tag">Distributed Software Development &middot; 2025&ndash;2026</p>
     <div class="hero-cn-sub">后端接口与数据存储</div>
     <h1>Backend API<br>&amp; <span class="accent">Storage</span></h1>
-    <p class="hero-sub">System Design 1.0 now positions Team V2 as the central Node.js &amp; Express layer &mdash; bridging sensor data, AI inference, and end-user interfaces through REST APIs and SQLite-backed storage.</p>
+    <p class="hero-sub">Team V2 is the central Node.js &amp; Express layer &mdash; bridging sensor data, AI inference, and end-user interfaces through REST APIs and SQLite-backed storage. The API is now live and publicly accessible.</p>
     <div class="hero-badges">
       <span class="badge blue">REST / WebSocket</span>
       <span class="badge blue">SQL &amp; Migrations</span>
       <span class="badge blue">JWT Auth</span>
       <span class="badge amber">Integration Lead</span>
+      <span class="badge" style="border-color:rgba(16,185,129,0.4);color:var(--green)">&#x25cf; API Live</span>
       <span class="badge red">UTAD &times; Jilin University</span>
     </div>
   </div>
@@ -389,11 +412,92 @@
   </div>
 </section>
 
+<!-- API -->
+<section id="api">
+  <p class="section-label reveal">04 &middot; Live API</p>
+  <h2 class="reveal">Public API — Live Now</h2>
+  <p class="section-intro reveal">The V2 backend is deployed and publicly accessible. Any team can integrate immediately using the base URL below. No setup required — just HTTP calls.</p>
+
+  <div class="api-url-box reveal">
+    <div>
+      <div class="api-url-label">Base URL</div>
+      <div class="api-url-value">https://dsd2026-teamv2-production.up.railway.app</div>
+    </div>
+    <span class="api-live-badge">Online</span>
+  </div>
+
+  <div class="endpoint-cols reveal">
+    <div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Auth</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/auth/register</span></div>
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/auth/login</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/auth/me</span><span class="ep-desc">requires Bearer token</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Users</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/users</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/users/:id</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/users</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Sessions</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/sessions</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/sessions/:id</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/sessions?userId=</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/sessions/:id/end</span></div>
+          <div class="endpoint-row"><span class="method m-delete">DELETE</span><span class="ep-path">/sessions/:id</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Measurements</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/measurements</span></div>
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/measurements/batch</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/measurements/:sessionId</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Recommendations</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/recommendations</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/recommendations/session/:id</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/recommendations/engine/:userId</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/recommendations/:id</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Schedule</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/schedule</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/schedule/:userId</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/schedule/:id</span></div>
+          <div class="endpoint-row"><span class="method m-delete">DELETE</span><span class="ep-path">/schedule/:id</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Push Tokens</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/push/register</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/push/tokens/:userId</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- PROGRESS -->
 <section id="progress">
-  <p class="section-label reveal">04 &middot; Roadmap</p>
+  <p class="section-label reveal">05 &middot; Roadmap</p>
   <h2 class="reveal">Sprint Progress</h2>
-  <p class="section-intro reveal">Three sprints, one fully integrated system. System Design 1.0 was locked and announced on 13 April, giving V2 a stable backend baseline for the remaining implementation work.</p>
+  <p class="section-intro reveal">Three sprints, one fully integrated system. Sprint 2 is now active — the API is live, auth is implemented, and all core endpoints are deployed to production.</p>
   <div class="sprint-grid">
     <div class="sprint-card reveal" data-cn="一">
       <div class="sprint-header"><span class="sprint-num">Sprint 1</span><span class="sprint-status status-complete">Completed</span></div>
@@ -408,17 +512,18 @@
       </ul>
       <div class="progress-bar-wrap"><div class="progress-bar" style="width:100%"></div></div>
     </div>
-    <div class="sprint-card reveal" data-cn="二">
-      <div class="sprint-header"><span class="sprint-num">Sprint 2</span><span class="sprint-status status-upcoming">Upcoming</span></div>
+    <div class="sprint-card reveal active" data-cn="二">
+      <div class="sprint-header"><span class="sprint-num">Sprint 2</span><span class="sprint-status status-active">Active</span></div>
       <div class="sprint-title">Core Implementation</div>
       <ul class="sprint-items">
-        <li>IF2 signed off and frozen with M1</li>
-        <li>REST gateway and auth layer built</li>
-        <li>Schema designed, migrations versioned</li>
-        <li>V1 inference outputs wired into storage</li>
-        <li>Recommendation logic prototyped</li>
+        <li>JWT auth system live (register / login / me)</li>
+        <li>Schedule endpoints deployed (CRUD)</li>
+        <li>Push token storage implemented</li>
+        <li>DELETE /sessions with cascade live</li>
+        <li>API deployed to Railway — publicly accessible</li>
+        <li>IF2 contract alignment with M1 in progress</li>
       </ul>
-      <div class="progress-bar-wrap"><div class="progress-bar" style="width:0%"></div></div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:65%"></div></div>
     </div>
     <div class="sprint-card reveal" data-cn="三">
       <div class="sprint-header"><span class="sprint-num">Sprint 3</span><span class="sprint-status status-upcoming">Upcoming</span></div>
@@ -437,7 +542,7 @@
 
 <!-- CONFLICTS -->
 <section id="conflicts">
-  <p class="section-label reveal">05 &middot; IF-S2-V2</p>
+  <p class="section-label reveal">06 &middot; IF-S2-V2</p>
   <h2 class="reveal">Interface Conflict Log</h2>
   <p class="section-intro reveal">During System Design integration, S2 (Zhiqi Zhang) identified 9 conflicts between the S2 Interface Specification and V2&rsquo;s actual backend. All conflicts are within IF-S2-V2. Below is V2&rsquo;s proposed resolution for each one.</p>
 
@@ -758,7 +863,7 @@
 
 <!-- MEMBERS -->
 <section id="members">
-  <p class="section-label reveal">06 &middot; The Team</p>
+  <p class="section-label reveal">07 &middot; The Team</p>
   <h2 class="reveal">Who We Are</h2>
   <p class="section-intro reveal">Five engineers. Two continents. One shared codebase.</p>
   <div class="members-grid">

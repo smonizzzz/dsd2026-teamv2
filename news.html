@@ -209,7 +209,7 @@
   <div class="mk2">新</div>
   <div class="masthead-ticker">
     <span class="ticker-label">Live</span>
-    <span class="ticker-text">IF-S2-V2&nbsp;conflict&nbsp;analysis&nbsp;received&nbsp;from&nbsp;S2 &nbsp;&bull;&nbsp; 8&nbsp;of&nbsp;9&nbsp;conflicts&nbsp;resolved&nbsp;by&nbsp;V2 &nbsp;&bull;&nbsp; Conflict&nbsp;4&nbsp;(raw&nbsp;IMU&nbsp;data)&nbsp;pending&nbsp;joint&nbsp;call &nbsp;&bull;&nbsp; System&nbsp;Design&nbsp;1.0&nbsp;approved&nbsp;13&nbsp;Apr &nbsp;&bull;&nbsp; Node.js&nbsp;+&nbsp;Express&nbsp;backend locked &nbsp;&bull;&nbsp; SQLite&nbsp;schema&nbsp;baseline set &nbsp;&bull;&nbsp; REST&nbsp;endpoints&nbsp;defined &nbsp;&bull;&nbsp; IF-S2-V2&nbsp;conflict&nbsp;analysis&nbsp;received&nbsp;from&nbsp;S2 &nbsp;&bull;&nbsp; 8&nbsp;of&nbsp;9&nbsp;conflicts&nbsp;resolved&nbsp;by&nbsp;V2 &nbsp;&bull;&nbsp; Conflict&nbsp;4&nbsp;(raw&nbsp;IMU&nbsp;data)&nbsp;pending&nbsp;joint&nbsp;call &nbsp;&bull;&nbsp; System&nbsp;Design&nbsp;1.0&nbsp;approved&nbsp;13&nbsp;Apr &nbsp;&bull;&nbsp; Node.js&nbsp;+&nbsp;Express&nbsp;backend locked &nbsp;&bull;&nbsp; SQLite&nbsp;schema&nbsp;baseline set &nbsp;&bull;&nbsp; REST&nbsp;endpoints&nbsp;defined &nbsp;&bull;&nbsp;</span>
+    <span class="ticker-text">API&nbsp;live&nbsp;at&nbsp;dsd2026-teamv2-production.up.railway.app &nbsp;&bull;&nbsp; JWT&nbsp;auth&nbsp;deployed &nbsp;&bull;&nbsp; Schedule&nbsp;endpoints&nbsp;live &nbsp;&bull;&nbsp; Push&nbsp;tokens&nbsp;implemented &nbsp;&bull;&nbsp; Sprint&nbsp;2&nbsp;active &nbsp;&bull;&nbsp; IF-S2-V2&nbsp;8/9&nbsp;conflicts&nbsp;resolved &nbsp;&bull;&nbsp; API&nbsp;live&nbsp;at&nbsp;dsd2026-teamv2-production.up.railway.app &nbsp;&bull;&nbsp; JWT&nbsp;auth&nbsp;deployed &nbsp;&bull;&nbsp; Schedule&nbsp;endpoints&nbsp;live &nbsp;&bull;&nbsp; Push&nbsp;tokens&nbsp;implemented &nbsp;&bull;&nbsp; Sprint&nbsp;2&nbsp;active &nbsp;&bull;&nbsp; IF-S2-V2&nbsp;8/9&nbsp;conflicts&nbsp;resolved &nbsp;&bull;&nbsp;</span>
   </div>
   <div class="masthead-top">
     <div class="masthead-meta">System Design 1.0 &middot; Node.js &amp; Express &middot; DSD 2025&ndash;2026</div>
@@ -236,6 +236,47 @@
 
 <!-- NEWS GRID -->
 <div class="news-container" id="newsGrid">
+
+  <!-- ── SPRINT 2 / DEPLOYMENT EDITION ── -->
+  <div class="edition-divider" data-category="sprint">
+    <div class="edition-divider-line"></div>
+    <div class="edition-divider-label">Sprint 2 &mdash; Deployment Edition &middot; April 2026</div>
+    <div class="edition-divider-cn">部署上线版</div>
+    <div class="edition-divider-line"></div>
+  </div>
+
+  <article class="article hero-story reveal" data-category="milestone">
+    <div class="article-category cat-milestone"><span class="cat-dot"></span>Milestone</div>
+    <div class="status-pill pill-resolved">&#x2714;&nbsp;Live</div>
+    <h2 class="article-headline">V2 API Is Live — All Teams Can Integrate Now</h2>
+    <p class="article-deck">The V2 backend is deployed to Railway and publicly accessible at a permanent URL. No waiting, no setup — other teams can start making HTTP calls today.</p>
+    <div class="pull-quote"><p>"The API is not something we are building towards. It is running. Hit <code style="font-family:var(--mono);font-size:0.85em">/health</code> and see for yourself."</p></div>
+    <p class="article-body">After resolving a package dependency issue on the first build attempt, the deployment succeeded on the second push. The server runs Node 18 on Railway's US West 2 infrastructure, auto-deploying on every push to the main branch. The base URL is <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">https://dsd2026-teamv2-production.up.railway.app</code> and all endpoints documented in the integration guide are active.</p>
+    <div class="article-byline"><span class="byline-author">&#127477;&#127481; Sergio Moniz &middot; V2 Lead</span><span class="byline-date">28 Apr 2026</span></div>
+  </article>
+
+  <article class="article side-story reveal" data-category="sprint">
+    <div class="article-category cat-sprint"><span class="cat-dot"></span>Sprint 2</div>
+    <div class="status-pill pill-open">&#x25cf;&nbsp;Active</div>
+    <h2 class="article-headline">Four New Feature Areas Shipped in Sprint 2</h2>
+    <p class="article-deck">JWT authentication, schedule management, push token storage, and session deletion with cascade are all live in production.</p>
+    <p class="article-body">The auth system uses bcrypt password hashing and signs JWT tokens valid for 7 days. The schedule endpoints cover full CRUD for exercise planning. Push tokens support multi-device registration per user. DELETE /sessions cascades to remove all linked measurements and recommendations. All endpoints tested and verified before deployment.</p>
+    <div class="article-byline"><span class="byline-author">&#127477;&#127481; V2 Engineering</span><span class="byline-date">28 Apr 2026</span></div>
+  </article>
+
+  <article class="article full-story reveal" data-category="doc">
+    <div>
+      <div class="article-category cat-doc"><span class="cat-dot"></span>Integration Guide</div>
+      <div class="status-pill pill-resolved">&#x2714;&nbsp;Published</div>
+      <h2 class="article-headline">Complete Endpoint Reference Now Available to All Teams</h2>
+      <p class="article-deck">V2 has shared the full API reference with all team leaders. Every endpoint, request format, and response structure is documented and accessible at the live base URL.</p>
+    </div>
+    <div>
+      <p class="article-body">The integration guide covers all 20+ endpoints across Auth, Users, Sessions, Measurements, Recommendations, Schedule, and Push Tokens. Key conventions: send <strong>camelCase</strong> in requests, parse <strong>snake_case</strong> in responses. All timestamps are ISO 8601. IDs are server-generated integers — never provide your own. Protected routes require <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">Authorization: Bearer &lt;token&gt;</code>. A security fix was also shipped: password hashes are never returned in any user endpoint response.</p>
+      <div class="article-byline"><span class="byline-author">&#127477;&#127481; Sergio Moniz &middot; V2 Lead</span><span class="byline-date">28 Apr 2026</span></div>
+    </div>
+  </article>
+
   <!-- ── CONFLICT EDITION ── -->
   <div class="edition-divider" data-category="doc">
     <div class="edition-divider-line"></div>
