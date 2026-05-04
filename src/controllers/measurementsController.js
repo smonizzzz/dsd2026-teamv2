@@ -7,10 +7,24 @@ async function getMeasurementsBySession(req, res, next) {
     const session = queryOne(db, 'SELECT id FROM sessions WHERE id = ?', [req.params.sessionId]);
     if (!session) { const e = new Error('Session not found'); e.status = 404; return next(e); }
 
-    const rows = queryAll(db,
-      'SELECT * FROM measurements WHERE session_id = ? ORDER BY timestamp ASC',
-      [req.params.sessionId]
-    ).map(m => ({ ...m, joint_angles: JSON.parse(m.joint_angles), is_correct: Boolean(m.is_correct) }));
+    const { startDate, endDate } = req.query;
+    let sql = 'SELECT * FROM measurements WHERE session_id = ?';
+    const params = [req.params.sessionId];
+
+    if (startDate) {
+      const start = startDate.includes('T') ? startDate : startDate + 'T00:00:00.000Z';
+      sql += ' AND timestamp >= ?';
+      params.push(start);
+    }
+    if (endDate) {
+      const end = endDate.includes('T') ? endDate : endDate + 'T23:59:59.999Z';
+      sql += ' AND timestamp <= ?';
+      params.push(end);
+    }
+    sql += ' ORDER BY timestamp ASC';
+
+    const rows = queryAll(db, sql, params)
+      .map(m => ({ ...m, joint_angles: JSON.parse(m.joint_angles), is_correct: Boolean(m.is_correct) }));
 
     res.json(rows);
   } catch (err) { next(err); }

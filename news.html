@@ -209,7 +209,7 @@
   <div class="mk2">新</div>
   <div class="masthead-ticker">
     <span class="ticker-label">Live</span>
-    <span class="ticker-text">API&nbsp;live&nbsp;at&nbsp;dsd2026-teamv2-production.up.railway.app &nbsp;&bull;&nbsp; JWT&nbsp;auth&nbsp;deployed &nbsp;&bull;&nbsp; Schedule&nbsp;endpoints&nbsp;live &nbsp;&bull;&nbsp; Push&nbsp;tokens&nbsp;implemented &nbsp;&bull;&nbsp; Sprint&nbsp;2&nbsp;active &nbsp;&bull;&nbsp; IF-S2-V2&nbsp;8/9&nbsp;conflicts&nbsp;resolved &nbsp;&bull;&nbsp; API&nbsp;live&nbsp;at&nbsp;dsd2026-teamv2-production.up.railway.app &nbsp;&bull;&nbsp; JWT&nbsp;auth&nbsp;deployed &nbsp;&bull;&nbsp; Schedule&nbsp;endpoints&nbsp;live &nbsp;&bull;&nbsp; Push&nbsp;tokens&nbsp;implemented &nbsp;&bull;&nbsp; Sprint&nbsp;2&nbsp;active &nbsp;&bull;&nbsp; IF-S2-V2&nbsp;8/9&nbsp;conflicts&nbsp;resolved &nbsp;&bull;&nbsp;</span>
+    <span class="ticker-text">API&nbsp;live&nbsp;at&nbsp;dsd2026-teamv2-production.up.railway.app &nbsp;&bull;&nbsp; 3&nbsp;API&nbsp;bugs&nbsp;patched &nbsp;&bull;&nbsp; Doctor&nbsp;approval&nbsp;workflow&nbsp;live &nbsp;&bull;&nbsp; GET&nbsp;/patients&nbsp;deployed &nbsp;&bull;&nbsp; Date&nbsp;range&nbsp;filtering&nbsp;on&nbsp;measurements &nbsp;&bull;&nbsp; JWT&nbsp;auth&nbsp;deployed &nbsp;&bull;&nbsp; Schedule&nbsp;endpoints&nbsp;live &nbsp;&bull;&nbsp; Push&nbsp;tokens&nbsp;implemented &nbsp;&bull;&nbsp; Sprint&nbsp;2&nbsp;active &nbsp;&bull;&nbsp; IF-S2-V2&nbsp;8/9&nbsp;conflicts&nbsp;resolved &nbsp;&bull;&nbsp; API&nbsp;live&nbsp;at&nbsp;dsd2026-teamv2-production.up.railway.app &nbsp;&bull;&nbsp; 3&nbsp;API&nbsp;bugs&nbsp;patched &nbsp;&bull;&nbsp; Doctor&nbsp;approval&nbsp;workflow&nbsp;live &nbsp;&bull;&nbsp; GET&nbsp;/patients&nbsp;deployed &nbsp;&bull;&nbsp; Date&nbsp;range&nbsp;filtering&nbsp;on&nbsp;measurements &nbsp;&bull;&nbsp; JWT&nbsp;auth&nbsp;deployed &nbsp;&bull;&nbsp; Schedule&nbsp;endpoints&nbsp;live &nbsp;&bull;&nbsp; Push&nbsp;tokens&nbsp;implemented &nbsp;&bull;&nbsp; Sprint&nbsp;2&nbsp;active &nbsp;&bull;&nbsp; IF-S2-V2&nbsp;8/9&nbsp;conflicts&nbsp;resolved &nbsp;&bull;&nbsp;</span>
   </div>
   <div class="masthead-top">
     <div class="masthead-meta">System Design 1.0 &middot; Node.js &amp; Express &middot; DSD 2025&ndash;2026</div>
@@ -236,6 +236,46 @@
 
 <!-- NEWS GRID -->
 <div class="news-container" id="newsGrid">
+
+  <!-- ── M2 INTEGRATION EDITION ── -->
+  <div class="edition-divider" data-category="milestone">
+    <div class="edition-divider-line"></div>
+    <div class="edition-divider-label">M2 Integration Edition &mdash; May 2026</div>
+    <div class="edition-divider-cn">M2接口整合版</div>
+    <div class="edition-divider-line"></div>
+  </div>
+
+  <article class="article hero-story reveal" data-category="milestone">
+    <div class="article-category cat-milestone"><span class="cat-dot"></span>Milestone</div>
+    <div class="status-pill pill-resolved">&#x2714;&nbsp;Shipped</div>
+    <h2 class="article-headline">Three API Bugs Patched After Cross-Team Integration Testing</h2>
+    <p class="article-deck">Integration testing by the project coordination team identified three consistency issues in the V2 API. All three were reviewed against the full codebase and corrected in a single focused session.</p>
+    <div class="pull-quote"><p>"We read every controller, every route, every helper before touching anything. These fixes were surgical — one line each."</p></div>
+    <p class="article-body"><strong style="color:var(--text)">Bug 1 — userId type:</strong> <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">GET /recommendations/engine/:userId</code> was returning <code>userId</code> as a string instead of an integer, inconsistent with every other endpoint. Fixed with <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">Number()</code>. <strong style="color:var(--text)">Bug 2 — snake_case:</strong> <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">POST /push/register</code> response used camelCase <code>userId</code> while the entire API uses snake_case <code>user_id</code> in responses. Fixed. <strong style="color:var(--text)">Bug 3 — ISO 8601 dates:</strong> <code>created_at</code>, <code>started_at</code>, and <code>ended_at</code> were returning SQLite's native format (<code>"2026-05-02 13:43:28"</code>) while other fields returned proper ISO 8601. A centralised <code>normalizeDates</code> function was added to <code>db/helpers.js</code> — it automatically converts every <code>*_at</code> field in every query to ISO 8601, covering both existing and future records.</p>
+    <div class="article-byline"><span class="byline-author">&#127477;&#127481; Sergio Moniz &middot; V2 Lead</span><span class="byline-date">4 May 2026</span></div>
+  </article>
+
+  <article class="article side-story reveal" data-category="sprint">
+    <div class="article-category cat-sprint"><span class="cat-dot"></span>Sprint 2</div>
+    <div class="status-pill pill-resolved">&#x2714;&nbsp;Shipped</div>
+    <h2 class="article-headline">Five M2 Features Delivered — Doctor Dashboard Now Fully Supported</h2>
+    <p class="article-deck">M2 (Clinical Web Dashboard, led by Yihang Li) submitted a formal list of five missing features. All five were implemented after a full codebase review.</p>
+    <p class="article-body">New endpoints live: <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">GET /patients</code>, <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">GET /patients/:id</code>, <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">GET /auth/status</code>, <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">PATCH /auth/approve/:userId</code>. Schema additions: <code>age</code> field on users, <code>notes</code> field on recommendations. Measurements now support <code>?startDate=&amp;endDate=</code> query parameters for date-range filtering.</p>
+    <div class="article-byline"><span class="byline-author">&#127477;&#127481; Sergio Moniz &middot; V2 Lead</span><span class="byline-date">4 May 2026</span></div>
+  </article>
+
+  <article class="article full-story reveal" data-category="doc">
+    <div>
+      <div class="article-category cat-doc"><span class="cat-dot"></span>Feature Detail</div>
+      <div class="status-pill pill-resolved">&#x2714;&nbsp;Live</div>
+      <h2 class="article-headline">Clinician Registration Now Requires Admin Approval — Patient Flow Untouched</h2>
+      <p class="article-deck">M2's medical professionals operate under a new two-step identity verification workflow. Clinician accounts enter a <em>pending</em> state after registration and cannot log in until an admin activates them.</p>
+    </div>
+    <div>
+      <p class="article-body">Clinicians register via <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">POST /auth/register</code> sending <code>multipart/form-data</code> (with an optional <code>license</code> file field). The server responds with <code>{"userId": 1, "status": "pending"}</code> — no JWT is issued. Attempting to log in while pending returns <code>403 Account pending approval</code>. An admin calls <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">PATCH /auth/approve/:userId</code> to activate the account; from that point login works normally and the user object includes the <code>status</code> field. The new <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">GET /auth/status</code> endpoint lets any authenticated user check their current approval state. Patients are completely unaffected — they register via JSON body and receive a token immediately, as before.</p>
+      <div class="article-byline"><span class="byline-author">&#127477;&#127481; Sergio Moniz &middot; V2 Lead</span><span class="byline-date">4 May 2026</span></div>
+    </div>
+  </article>
 
   <!-- ── SPRINT 2 / DEPLOYMENT EDITION ── -->
   <div class="edition-divider" data-category="sprint">

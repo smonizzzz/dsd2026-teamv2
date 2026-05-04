@@ -67,7 +67,7 @@ async function endSession(req, res, next) {
     if (!session) { const e = new Error('Session not found'); e.status = 404; return next(e); }
     if (session.ended_at) { const e = new Error('Session already closed'); e.status = 409; return next(e); }
 
-    run(db, "UPDATE sessions SET ended_at = datetime('now') WHERE id = ?", [req.params.id]);
+    run(db, "UPDATE sessions SET ended_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?", [req.params.id]);
     save();
     res.json(queryOne(db, 'SELECT * FROM sessions WHERE id = ?', [req.params.id]));
   } catch (err) { next(err); }

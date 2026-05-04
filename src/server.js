@@ -5,6 +5,7 @@ const initDb  = require('./db/init');
 const errorHandler          = require('./middleware/errorHandler');
 const authRouter            = require('./routes/auth');
 const usersRouter           = require('./routes/users');
+const patientsRouter        = require('./routes/patients');
 const sessionsRouter        = require('./routes/sessions');
 const measurementsRouter    = require('./routes/measurements');
 const recommendationsRouter = require('./routes/recommendations');
@@ -26,6 +27,7 @@ app.get('/health', (req, res) => res.json({
 
 app.use('/auth',            authRouter);
 app.use('/users',           usersRouter);
+app.use('/patients',        patientsRouter);
 app.use('/sessions',        sessionsRouter);
 app.use('/measurements',    measurementsRouter);
 app.use('/recommendations', recommendationsRouter);

@@ -16,7 +16,7 @@ async function getRecommendationsBySession(req, res, next) {
 async function createRecommendation(req, res, next) {
   try {
     const { db, save } = await getDb();
-    const { sessionId, movement, confidence = 0.0, status = 'pending' } = req.body;
+    const { sessionId, movement, confidence = 0.0, status = 'pending', notes = null } = req.body;
 
     if (!sessionId || !movement) {
       const e = new Error('sessionId and movement are required'); e.status = 400; return next(e);
@@ -29,8 +29,8 @@ async function createRecommendation(req, res, next) {
     if (!session) { const e = new Error('Session not found'); e.status = 404; return next(e); }
 
     const result = run(db,
-      'INSERT INTO recommendations (session_id, movement, status, confidence) VALUES (?, ?, ?, ?)',
-      [sessionId, movement, status, confidence]
+      'INSERT INTO recommendations (session_id, movement, status, confidence, notes) VALUES (?, ?, ?, ?, ?)',
+      [sessionId, movement, status, confidence, notes]
     );
     save();
     res.status(201).json(queryOne(db, 'SELECT * FROM recommendations WHERE id = ?', [result.lastInsertRowid]));
@@ -64,7 +64,7 @@ async function generateRecommendations(req, res, next) {
       [req.params.userId]
     );
     if (sessions.length === 0) {
-      return res.json({ userId: req.params.userId, sessions_analysed: 0, suggestions: [] });
+      return res.json({ userId: Number(req.params.userId), sessions_analysed: 0, suggestions: [] });
     }
 
     const ids = sessions.map(s => s.id);
@@ -97,7 +97,7 @@ async function generateRecommendations(req, res, next) {
     }).sort((a, b) => a.accuracy_percent - b.accuracy_percent);
 
     res.json({
-      userId: req.params.userId,
+      userId: Number(req.params.userId),
       sessions_analysed: sessions.length,
       generated_at: new Date().toISOString(),
       suggestions

@@ -26,7 +26,7 @@ async function registerToken(req, res, next) {
       save();
     }
 
-    res.status(201).json({ message: 'Push token registered', userId, token });
+    res.status(201).json({ message: 'Push token registered', user_id: userId, token });
   } catch (err) { next(err); }
 }
 
