@@ -275,6 +275,7 @@
     <a href="#progress">Progress</a>
     <a href="#conflicts">Conflicts</a>
     <a href="news.html">Dispatch</a>
+    <a href="#srs">SRS</a>
     <a href="#members">Members</a>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -291,6 +292,7 @@
   <a href="#progress"     onclick="closeMobile()">Progress</a>
   <a href="#conflicts"    onclick="closeMobile()">Conflicts</a>
   <a href="news.html"     onclick="closeMobile()">Dispatch</a>
+  <a href="#srs"          onclick="closeMobile()">SRS</a>
   <a href="#members"      onclick="closeMobile()">Members</a>
 </div>
 
@@ -1073,9 +1075,440 @@
 
 </section>
 
+<!-- SRS -->
+<section id="srs">
+  <p class="section-label reveal">08 &middot; SRS</p>
+  <h2 class="reveal">Software Requirements Specification</h2>
+  <p class="section-intro reveal">V2 — Backend API &amp; Storage &middot; Version 1.0 &middot; May 5, 2026 &middot; DSD 2025–2026 &middot; UTAD &times; Jilin University</p>
+
+  <style>
+    #srs { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); }
+    .srs-h2 { font-family:var(--mono); font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin:2.2rem 0 0.8rem; padding-bottom:0.4rem; border-bottom:1px solid rgba(255,255,255,0.07); }
+    .srs-h3 { font-size:0.85rem; font-weight:700; color:var(--text); margin:1.4rem 0 0.5rem; }
+    .srs-p  { font-size:0.84rem; color:var(--text-dim); line-height:1.7; margin-bottom:0.6rem; }
+    .srs-ul { font-size:0.84rem; color:var(--text-dim); padding-left:1.3rem; margin-bottom:0.6rem; }
+    .srs-ul li { margin-bottom:0.2rem; }
+    .srs-table-wrap { overflow-x:auto; margin:0.8rem 0 1.2rem; border-radius:8px; border:1px solid rgba(255,255,255,0.07); }
+    .srs-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+    .srs-table thead { background:rgba(255,255,255,0.04); }
+    .srs-table th { padding:0.55rem 0.9rem; text-align:left; font-family:var(--mono); font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-xs); border-bottom:1px solid rgba(255,255,255,0.07); white-space:nowrap; }
+    .srs-table td { padding:0.55rem 0.9rem; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--text-dim); vertical-align:top; }
+    .srs-table tr:last-child td { border-bottom:none; }
+    .srs-table td:first-child { font-family:var(--mono); font-size:0.75rem; color:var(--gold); white-space:nowrap; }
+    .uc { background:rgba(17,17,32,0.9); border:1px solid rgba(255,255,255,0.07); border-radius:8px; margin:0.8rem 0; overflow:hidden; }
+    .uc-head { display:flex; align-items:center; gap:0.7rem; padding:0.6rem 1rem; background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.06); }
+    .uc-id { font-family:var(--mono); font-size:0.68rem; color:var(--gold); white-space:nowrap; }
+    .uc-title { font-size:0.87rem; font-weight:700; }
+    .uc-body { padding:0.8rem 1rem; display:grid; grid-template-columns:1fr 1fr; gap:0.6rem 1.2rem; }
+    @media(max-width:580px){ .uc-body { grid-template-columns:1fr; } }
+    .uc-f label { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-xs); display:block; margin-bottom:0.15rem; }
+    .uc-f p, .uc-f ul { font-size:0.82rem; color:var(--text-dim); margin:0; padding-left:1rem; }
+    .uc-f p { padding-left:0; }
+    .uc-full { grid-column:1/-1; }
+    .srs-badge { display:inline-block; font-family:var(--mono); font-size:0.58rem; letter-spacing:0.07em; text-transform:uppercase; padding:0.12rem 0.45rem; border-radius:4px; }
+    .sb-done   { background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); }
+    .sb-open   { background:rgba(232,56,42,0.1);   color:var(--red); border:1px solid rgba(232,56,42,0.3); }
+    .sb-sprint { background:rgba(96,165,250,0.1);  color:#60a5fa;  border:1px solid rgba(96,165,250,0.3); }
+    .nfr { padding:0.6rem 0.9rem; border-left:2px solid rgba(201,150,42,0.3); margin-bottom:0.4rem; background:rgba(255,255,255,0.02); border-radius:0 6px 6px 0; }
+    .nfr-id { font-family:var(--mono); font-size:0.65rem; color:var(--gold); margin-bottom:0.15rem; }
+    .nfr-txt { font-size:0.82rem; color:var(--text-dim); }
+  </style>
+
+  <!-- PART 1 -->
+  <p class="srs-h2 reveal">Part 1 — Introduction</p>
+
+  <p class="srs-h3 reveal">1. Revision History</p>
+  <div class="srs-table-wrap reveal">
+    <table class="srs-table">
+      <thead><tr><th>Date</th><th>Author</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>May 5, 2026</td><td>Sergio Moniz</td><td>Initial SRS — Sprint 2 baseline. Covers all functional requirements implemented and verified in production.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="srs-h3 reveal">2. Scope</p>
+  <p class="srs-p reveal">V2 is the central Node.js + Express REST API backed by SQLite (sql.js). It acts as the single integration point for all subsystems: receives sensor data from S2, serves measurement and session data to M1 and M2, forwards AI inputs to V1, and manages all persistent storage for the platform.</p>
+  <p class="srs-p reveal">The V2 module covers the following functional areas:</p>
+  <ul class="srs-ul reveal">
+    <li><strong>Authentication &amp; Authorisation:</strong> Registration, JWT login, clinician approval workflow (pending &rarr; active).</li>
+    <li><strong>User &amp; Patient Management:</strong> Create and retrieve accounts; patient list and profiles for M2.</li>
+    <li><strong>Session Lifecycle:</strong> Create and close rehabilitation sessions.</li>
+    <li><strong>Measurement Ingestion &amp; Retrieval:</strong> Single and batch inserts from S2/M1; query by session with date-range filtering.</li>
+    <li><strong>Recommendations:</strong> Full CRUD for clinical recommendations with free-text notes field.</li>
+    <li><strong>Schedule:</strong> Store and serve rehabilitation plans.</li>
+    <li><strong>Push Notifications:</strong> Register device tokens and dispatch payloads.</li>
+  </ul>
+  <p class="srs-p reveal">Out of scope: sensor hardware (S1), raw data acquisition (S2), mobile UI (M1), doctor dashboard UI (M2), AI model training (V1).</p>
+
+  <p class="srs-h3 reveal">3. Glossary</p>
+  <div class="srs-table-wrap reveal">
+    <table class="srs-table">
+      <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+      <tbody>
+        <tr><td>Session</td><td>Bounded exercise event with <code>started_at</code> and <code>ended_at</code>. Measurements only accepted on open sessions.</td></tr>
+        <tr><td>Measurement</td><td>Joint-angle reading with <code>joint_angles</code> (JSON), <code>is_correct</code> (boolean, set by V1), and ISO 8601 timestamp.</td></tr>
+        <tr><td>Pending</td><td>Clinician account status after registration, before admin approval — cannot log in.</td></tr>
+        <tr><td>Active</td><td>Operational account status required for login.</td></tr>
+        <tr><td>JWT</td><td>JSON Web Token — stateless bearer token issued on login, required on all protected endpoints.</td></tr>
+        <tr><td>ISO 8601</td><td>Timestamp format throughout V2: <code>YYYY-MM-DDTHH:MM:SS.sssZ</code>. All <code>*_at</code> fields normalised on read.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PART 2 -->
+  <p class="srs-h2 reveal">Part 2 — Use Cases</p>
+  <p class="srs-h3 reveal">Authentication</p>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-01</span><span class="uc-title">Patient Registration</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>POST /auth/register</code> — JSON</p></div>
+      <div class="uc-f"><label>Actor</label><p>Patient (M1)</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Submits username, password, email, role=patient, optional age. Account created as active, JWT returned immediately.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>201</code> — <code>{token, user}</code></p></div>
+      <div class="uc-f"><label>Errors</label><p><code>400</code> missing fields · <code>409</code> conflict</p></div>
+    </div>
+  </div>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-02</span><span class="uc-title">Clinician Registration</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>POST /auth/register</code> — multipart/form-data</p></div>
+      <div class="uc-f"><label>Actor</label><p>Clinician (M2)</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Submits credentials + license file (max 5 MB). Account created as <em>pending</em>, no JWT returned — requires admin approval before login.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>201</code> — <code>{message: "Registration pending approval"}</code></p></div>
+      <div class="uc-f"><label>Errors</label><p><code>400</code> · <code>409</code> · <code>413</code> file too large</p></div>
+    </div>
+  </div>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-03</span><span class="uc-title">User Login</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>POST /auth/login</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>Any user (M1, M2)</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Verifies bcrypt hash and checks status=active. Returns signed JWT. Pending accounts blocked with 403.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>200</code> — <code>{token, user}</code></p></div>
+      <div class="uc-f"><label>Errors</label><p><code>401</code> invalid credentials · <code>403</code> account pending</p></div>
+    </div>
+  </div>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-04</span><span class="uc-title">Clinician Approval</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>PATCH /auth/approve/:userId</code> — JWT required</p></div>
+      <div class="uc-f"><label>Actor</label><p>Admin (M2)</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Sets a pending clinician's status to active, enabling login.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>200</code> — <code>{message: "User approved"}</code></p></div>
+      <div class="uc-f"><label>Errors</label><p><code>401</code> · <code>404</code></p></div>
+    </div>
+  </div>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-05</span><span class="uc-title">Get Auth Status</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>GET /auth/status</code> — JWT required</p></div>
+      <div class="uc-f"><label>Actor</label><p>Any authenticated user</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Returns <code>{userId, role, status}</code> decoded from the bearer token.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>200</code> — <code>{userId, role, status}</code></p></div>
+      <div class="uc-f"><label>Errors</label><p><code>401</code></p></div>
+    </div>
+  </div>
+
+  <p class="srs-h3 reveal">Sessions</p>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-06</span><span class="uc-title">Create Session</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>POST /sessions</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>M1 / S2</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Creates an open session for a userId. Server generates integer id and started_at. Client must use returned id for all subsequent measurement uploads.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>201</code> — session object</p></div>
+      <div class="uc-f"><label>Errors</label><p><code>400</code> · <code>404</code> user not found</p></div>
+    </div>
+  </div>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-07</span><span class="uc-title">End Session</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>PATCH /sessions/:id/end</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>M1 / S2</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Closes an open session by setting ended_at to current ISO 8601 UTC timestamp. No further measurements accepted after this.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>200</code> — updated session object</p></div>
+      <div class="uc-f"><label>Errors</label><p><code>404</code> · <code>409</code> already closed</p></div>
+    </div>
+  </div>
+
+  <p class="srs-h3 reveal">Measurements</p>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-08</span><span class="uc-title">Record Single Measurement</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>POST /measurements</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>S2 / M1</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Required: sessionId, jointAngles (JSON object). Optional: isCorrect (default false), timestamp (auto-generated if omitted). Rejected if session is closed.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>201</code> — full measurement record</p></div>
+      <div class="uc-f"><label>Errors</label><p><code>400</code> · <code>404</code> · <code>409</code> session closed</p></div>
+    </div>
+  </div>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-09</span><span class="uc-title">Record Measurement Batch</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>POST /measurements/batch</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>S2</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Bulk inserts an array of measurements in a single atomic transaction. Payload: <code>{sessionId, measurements: [{jointAngles, isCorrect?, timestamp?}]}</code>.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>201</code> — <code>{inserted, sessionId}</code></p></div>
+      <div class="uc-f"><label>Errors</label><p><code>400</code> · <code>404</code> · <code>409</code></p></div>
+    </div>
+  </div>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-10</span><span class="uc-title">Query Measurements by Session</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>GET /measurements/:sessionId?startDate=&amp;endDate=</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>M1, M2, V1</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Returns all measurements ordered by timestamp ASC. Optional date-range filtering accepts YYYY-MM-DD or full ISO 8601. Dates normalised internally.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>200</code> — array of measurements</p></div>
+      <div class="uc-f"><label>Errors</label><p><code>404</code> session not found</p></div>
+    </div>
+  </div>
+
+  <p class="srs-h3 reveal">Patients</p>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-11</span><span class="uc-title">Get Patient List</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>GET /patients</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>M2 (Doctor)</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Returns all users with role=patient including id, username, email, age, status.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>200</code> — array of patient objects</p></div>
+      <div class="uc-f"><label>Errors</label><p><code>401</code></p></div>
+    </div>
+  </div>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-12</span><span class="uc-title">Get Patient by ID</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>GET /patients/:id</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>M2 (Doctor)</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Returns the full profile of a single patient. Returns 404 if the user does not exist or is not a patient.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>200</code> — patient object</p></div>
+      <div class="uc-f"><label>Errors</label><p><code>404</code></p></div>
+    </div>
+  </div>
+
+  <p class="srs-h3 reveal">Recommendations</p>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-13</span><span class="uc-title">Create Recommendation</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>POST /recommendations</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>M2 (Doctor)</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Required: userId, content. Optional: notes (free-text). Returns the created record with integer userId.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>201</code> — recommendation object</p></div>
+      <div class="uc-f"><label>Errors</label><p><code>400</code> · <code>404</code></p></div>
+    </div>
+  </div>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-14</span><span class="uc-title">Get Recommendations by Patient</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>GET /recommendations/:userId</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>M1, M2</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Returns all recommendations ordered by date descending. Empty array if none (not 404). userId always integer.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>200</code> — array</p></div>
+      <div class="uc-f"><label>Errors</label><p><code>404</code> user not found</p></div>
+    </div>
+  </div>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-15</span><span class="uc-title">Update Recommendation</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>PUT /recommendations/:id</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>M2 (Doctor)</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Updates content and/or notes of an existing recommendation.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>200</code> — updated record</p></div>
+      <div class="uc-f"><label>Errors</label><p><code>404</code></p></div>
+    </div>
+  </div>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-16</span><span class="uc-title">Delete Recommendation</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>DELETE /recommendations/:id</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>M2 (Doctor)</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Permanently removes a recommendation by its integer ID.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>200</code> — <code>{message: "Deleted"}</code></p></div>
+      <div class="uc-f"><label>Errors</label><p><code>404</code></p></div>
+    </div>
+  </div>
+
+  <p class="srs-h3 reveal">Schedule &amp; Push</p>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-17</span><span class="uc-title">Get Schedule</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>GET /schedule/:userId</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>M1, M2</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Returns the rehabilitation schedule entries for a patient.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>200</code> — array of schedule entries</p></div>
+      <div class="uc-f"><label>Errors</label><p><code>404</code></p></div>
+    </div>
+  </div>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-18</span><span class="uc-title">Create Schedule Entry</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>POST /schedule</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>M2 (Doctor)</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Required: userId, scheduledAt (ISO 8601), description.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>201</code> — schedule entry</p></div>
+      <div class="uc-f"><label>Errors</label><p><code>400</code> · <code>404</code></p></div>
+    </div>
+  </div>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-19</span><span class="uc-title">Register Push Token</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>POST /push/register</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>M1</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Stores device push token for a userId. Response includes both user_id and token to confirm registration.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>201</code> — <code>{user_id, token}</code></p></div>
+      <div class="uc-f"><label>Errors</label><p><code>400</code></p></div>
+    </div>
+  </div>
+
+  <div class="uc reveal">
+    <div class="uc-head"><span class="uc-id">UC-V2-20</span><span class="uc-title">Send Push Notification</span></div>
+    <div class="uc-body">
+      <div class="uc-f"><label>Endpoint</label><p><code>POST /push/send</code></p></div>
+      <div class="uc-f"><label>Actor</label><p>M2, V1</p></div>
+      <div class="uc-f uc-full"><label>Description</label><p>Dispatches a push notification payload to the registered token for a given userId.</p></div>
+      <div class="uc-f"><label>Success</label><p><code>200</code> — delivery confirmation</p></div>
+      <div class="uc-f"><label>Errors</label><p><code>404</code> no token registered</p></div>
+    </div>
+  </div>
+
+  <!-- PART 3 -->
+  <p class="srs-h2 reveal">Part 3 — Internal Use Cases</p>
+
+  <p class="srs-h3 reveal">V2 ↔ S2 — Sensor Data Ingestion</p>
+  <div class="srs-table-wrap reveal">
+    <table class="srs-table">
+      <thead><tr><th>ID</th><th>Interaction</th><th>Direction</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>INT-S2-V2-01</td><td>S2 opens session via <code>POST /sessions</code> before streaming</td><td>S2 → V2</td><td><span class="srs-badge sb-done">Resolved</span></td></tr>
+        <tr><td>INT-S2-V2-02</td><td>S2 sends batches via <code>POST /measurements/batch</code></td><td>S2 → V2</td><td><span class="srs-badge sb-done">Resolved</span></td></tr>
+        <tr><td>INT-S2-V2-03</td><td>S2 closes session via <code>PATCH /sessions/:id/end</code></td><td>S2 → V2</td><td><span class="srs-badge sb-done">Resolved</span></td></tr>
+        <tr><td>INT-S2-V2-04</td><td>Raw IMU ingestion (<code>POST /ingest</code>) — full sensorData array</td><td>S2 → V2</td><td><span class="srs-badge sb-open">Open — Conflict 4</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="srs-h3 reveal">V2 ↔ V1 — AI Classification</p>
+  <div class="srs-table-wrap reveal">
+    <table class="srs-table">
+      <thead><tr><th>ID</th><th>Interaction</th><th>Direction</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>INT-V1-V2-01</td><td>V1 reads measurements via <code>GET /measurements/:sessionId</code></td><td>V1 → V2</td><td><span class="srs-badge sb-sprint">Sprint 3</span></td></tr>
+        <tr><td>INT-V1-V2-02</td><td>V1 writes <code>is_correct</code> back to measurements after classification</td><td>V1 → V2</td><td><span class="srs-badge sb-open">Pending V1 schema</span></td></tr>
+        <tr><td>INT-V1-V2-03</td><td>V1 confirms <code>joint_angles</code> field format and key naming</td><td>V1 ↔ V2</td><td><span class="srs-badge sb-open">Pending V1 input</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="srs-h3 reveal">V2 ↔ M1 — Patient Mobile App</p>
+  <div class="srs-table-wrap reveal">
+    <table class="srs-table">
+      <thead><tr><th>ID</th><th>Interaction</th><th>Direction</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>INT-M1-V2-01</td><td>M1 registers and logs in via <code>/auth</code></td><td>M1 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
+        <tr><td>INT-M1-V2-02</td><td>M1 creates and ends sessions</td><td>M1 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
+        <tr><td>INT-M1-V2-03</td><td>M1 queries measurements and recommendations</td><td>M1 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
+        <tr><td>INT-M1-V2-04</td><td>M1 registers push token via <code>/push/register</code></td><td>M1 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
+        <tr><td>INT-M1-V2-05</td><td>Real-time WebSocket channel for live session streaming</td><td>V2 → M1</td><td><span class="srs-badge sb-sprint">Sprint 3</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="srs-h3 reveal">V2 ↔ M2 — Doctor Web Dashboard</p>
+  <div class="srs-table-wrap reveal">
+    <table class="srs-table">
+      <thead><tr><th>ID</th><th>Interaction</th><th>Direction</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>INT-M2-V2-01</td><td>M2 registers clinicians with license upload</td><td>M2 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
+        <tr><td>INT-M2-V2-02</td><td>M2 admin approves clinician accounts</td><td>M2 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
+        <tr><td>INT-M2-V2-03</td><td>M2 retrieves patient list and profiles</td><td>M2 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
+        <tr><td>INT-M2-V2-04</td><td>M2 reads measurements with date-range filter</td><td>M2 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
+        <tr><td>INT-M2-V2-05</td><td>M2 manages recommendations with notes field</td><td>M2 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PART 4 -->
+  <p class="srs-h2 reveal">Part 4 — Others</p>
+
+  <p class="srs-h3 reveal">1. Assumptions</p>
+  <div class="srs-table-wrap reveal">
+    <table class="srs-table">
+      <thead><tr><th>ID</th><th>Assumption</th></tr></thead>
+      <tbody>
+        <tr><td>A-V2-01</td><td>One active account per patient. No duplicate account handling.</td></tr>
+        <tr><td>A-V2-02</td><td>V2 does not validate clinical content of recommendations.</td></tr>
+        <tr><td>A-V2-03</td><td>Admin approval done by a real user in the system. Full RBAC planned for Sprint 3.</td></tr>
+        <tr><td>A-V2-04</td><td>Academic prototype — no GDPR compliance obligation assumed for this phase.</td></tr>
+        <tr><td>A-V2-05</td><td>Session data volume within SQLite capacity. No sharding required.</td></tr>
+        <tr><td>A-V2-06</td><td>Server requires Node.js ≥ 18. Database at <code>data/v2.db</code>, no native compilation.</td></tr>
+        <tr><td>A-V2-07</td><td>All inter-team communication is HTTP REST. WebSocket added in Sprint 3 without breaking REST.</td></tr>
+        <tr><td>A-V2-08</td><td>All timestamps are ISO 8601 UTC. V2 normalises SQLite-format dates automatically on read.</td></tr>
+        <tr><td>A-V2-09</td><td>License files stored locally at <code>data/licenses/</code>. No cloud storage in Sprint 2.</td></tr>
+        <tr><td>A-V2-10</td><td>IF1 (V2–S2 contract) is frozen except for Conflict 4.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="srs-h3 reveal">2. Non-Functional Requirements</p>
+
+  <p class="srs-h3 reveal" style="font-size:0.78rem;color:var(--text-dim);margin-top:1rem;">Performance</p>
+  <div class="nfr reveal"><div class="nfr-id">NFR-V2-01</div><div class="nfr-txt">Simple read endpoints respond in under <strong>200 ms</strong> for datasets up to 10,000 records.</div></div>
+  <div class="nfr reveal"><div class="nfr-id">NFR-V2-02</div><div class="nfr-txt">Batch measurement inserts complete in under <strong>500 ms</strong> for up to 500 records.</div></div>
+  <div class="nfr reveal"><div class="nfr-id">NFR-V2-03</div><div class="nfr-txt">Server handles at least <strong>10 concurrent connections</strong> without degradation.</div></div>
+
+  <p class="srs-h3 reveal" style="font-size:0.78rem;color:var(--text-dim);margin-top:1rem;">Security</p>
+  <div class="nfr reveal"><div class="nfr-id">NFR-V2-04</div><div class="nfr-txt">Passwords hashed with <strong>bcryptjs</strong> (cost factor 10+). Never stored in plaintext.</div></div>
+  <div class="nfr reveal"><div class="nfr-id">NFR-V2-05</div><div class="nfr-txt">All protected endpoints require valid <strong>JWT bearer token</strong>. Expired tokens return 401.</div></div>
+  <div class="nfr reveal"><div class="nfr-id">NFR-V2-06</div><div class="nfr-txt">License uploads limited to <strong>5 MB</strong>. <code>license_path</code> never returned in API responses.</div></div>
+
+  <p class="srs-h3 reveal" style="font-size:0.78rem;color:var(--text-dim);margin-top:1rem;">Reliability</p>
+  <div class="nfr reveal"><div class="nfr-id">NFR-V2-07</div><div class="nfr-txt">Schema initialised automatically on start. ALTER TABLE migrations wrapped in try/catch — works on fresh and existing databases.</div></div>
+  <div class="nfr reveal"><div class="nfr-id">NFR-V2-08</div><div class="nfr-txt">Batch inserts are <strong>atomic transactions</strong>. Failure on any record rolls back the entire batch.</div></div>
+  <div class="nfr reveal"><div class="nfr-id">NFR-V2-09</div><div class="nfr-txt"><code>GET /health</code> returns 200 OK at all times with no authentication required.</div></div>
+
+  <p class="srs-h3 reveal" style="font-size:0.78rem;color:var(--text-dim);margin-top:1rem;">Maintainability</p>
+  <div class="nfr reveal"><div class="nfr-id">NFR-V2-10</div><div class="nfr-txt">Strict <strong>MVC pattern</strong>: routes, controllers, middleware, DB helpers in separate directories. No business logic in route files.</div></div>
+  <div class="nfr reveal"><div class="nfr-id">NFR-V2-11</div><div class="nfr-txt">Date normalisation centralised in <code>src/db/helpers.js</code> only. No individual controller performs date conversion.</div></div>
+  <div class="nfr reveal"><div class="nfr-id">NFR-V2-12</div><div class="nfr-txt">No native module compilation required. Install via <code>npm install</code> on any platform.</div></div>
+
+  <p class="srs-h3 reveal">3. Open Items</p>
+  <div class="srs-table-wrap reveal">
+    <table class="srs-table">
+      <thead><tr><th>Item</th><th>Status</th><th>Resolution Path</th></tr></thead>
+      <tbody>
+        <tr><td>Conflict 4 — raw IMU ingestion schema (<code>POST /ingest</code>)</td><td><span class="srs-badge sb-open">Open</span></td><td>Joint call: S2 + V1 + V2. V1 must confirm joint_angles consumption format first.</td></tr>
+        <tr><td>V1 write-back — how V1 sets <code>is_correct</code> on measurements</td><td><span class="srs-badge sb-open">Open</span></td><td>V1 to define endpoint or confirm approach.</td></tr>
+        <tr><td>WebSocket channel for M1 real-time streaming</td><td><span class="srs-badge sb-sprint">Sprint 3</span></td><td>M1 defines event schema; V2 implements.</td></tr>
+        <tr><td>RBAC enforcement on admin-only routes</td><td><span class="srs-badge sb-sprint">Sprint 3</span></td><td>Design agreed with M2 before implementation.</td></tr>
+        <tr><td>Push notification service provider selection</td><td><span class="srs-badge sb-sprint">Sprint 3</span></td><td>V2 selects (FCM / APNs / Expo); M1 integrates SDK.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</section>
+
 <!-- MEMBERS -->
 <section id="members">
-  <p class="section-label reveal">08 &middot; The Team</p>
+  <p class="section-label reveal">09 &middot; The Team</p>
   <h2 class="reveal">Who We Are</h2>
   <p class="section-intro reveal">Five engineers. Two continents. One shared codebase.</p>
   <div class="members-grid">
@@ -1126,6 +1559,7 @@
     <a href="#background">Home</a>
     <a href="#progress">Progress</a>
     <a href="news.html">Dispatch</a>
+    <a href="#srs">SRS</a>
     <a href="#members">Members</a>
   </div>
 </footer>
