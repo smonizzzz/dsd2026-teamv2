@@ -1078,430 +1078,350 @@
 <!-- SRS -->
 <section id="srs">
   <p class="section-label reveal">08 &middot; SRS</p>
-  <h2 class="reveal">Software Requirements Specification</h2>
+  <h2 class="reveal">Requirements Analysis</h2>
   <p class="section-intro reveal">V2 — Backend API &amp; Storage &middot; Version 1.0 &middot; May 5, 2026 &middot; DSD 2025–2026 &middot; UTAD &times; Jilin University</p>
 
   <style>
     #srs { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); }
-    .srs-h2 { font-family:var(--mono); font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin:2.2rem 0 0.8rem; padding-bottom:0.4rem; border-bottom:1px solid rgba(255,255,255,0.07); }
-    .srs-h3 { font-size:0.85rem; font-weight:700; color:var(--text); margin:1.4rem 0 0.5rem; }
-    .srs-p  { font-size:0.84rem; color:var(--text-dim); line-height:1.7; margin-bottom:0.6rem; }
-    .srs-ul { font-size:0.84rem; color:var(--text-dim); padding-left:1.3rem; margin-bottom:0.6rem; }
-    .srs-ul li { margin-bottom:0.2rem; }
+    .srs-h2 { font-family:var(--mono); font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin:2.5rem 0 0.9rem; padding-bottom:0.4rem; border-bottom:1px solid rgba(255,255,255,0.07); }
+    .srs-h3 { font-size:0.88rem; font-weight:700; color:var(--text); margin:1.6rem 0 0.5rem; }
+    .srs-h4 { font-family:var(--mono); font-size:0.7rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-xs); margin:1.2rem 0 0.4rem; }
+    .srs-p  { font-size:0.84rem; color:var(--text-dim); line-height:1.75; margin-bottom:0.6rem; }
+    .srs-ul { font-size:0.84rem; color:var(--text-dim); padding-left:1.4rem; margin-bottom:0.7rem; line-height:1.7; }
+    .srs-ul li { margin-bottom:0.25rem; }
     .srs-table-wrap { overflow-x:auto; margin:0.8rem 0 1.2rem; border-radius:8px; border:1px solid rgba(255,255,255,0.07); }
     .srs-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
     .srs-table thead { background:rgba(255,255,255,0.04); }
     .srs-table th { padding:0.55rem 0.9rem; text-align:left; font-family:var(--mono); font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-xs); border-bottom:1px solid rgba(255,255,255,0.07); white-space:nowrap; }
-    .srs-table td { padding:0.55rem 0.9rem; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--text-dim); vertical-align:top; }
+    .srs-table td { padding:0.55rem 0.9rem; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--text-dim); vertical-align:top; line-height:1.6; }
     .srs-table tr:last-child td { border-bottom:none; }
     .srs-table td:first-child { font-family:var(--mono); font-size:0.75rem; color:var(--gold); white-space:nowrap; }
-    .uc { background:rgba(17,17,32,0.9); border:1px solid rgba(255,255,255,0.07); border-radius:8px; margin:0.8rem 0; overflow:hidden; }
-    .uc-head { display:flex; align-items:center; gap:0.7rem; padding:0.6rem 1rem; background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.06); }
-    .uc-id { font-family:var(--mono); font-size:0.68rem; color:var(--gold); white-space:nowrap; }
-    .uc-title { font-size:0.87rem; font-weight:700; }
-    .uc-body { padding:0.8rem 1rem; display:grid; grid-template-columns:1fr 1fr; gap:0.6rem 1.2rem; }
-    @media(max-width:580px){ .uc-body { grid-template-columns:1fr; } }
-    .uc-f label { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-xs); display:block; margin-bottom:0.15rem; }
-    .uc-f p, .uc-f ul { font-size:0.82rem; color:var(--text-dim); margin:0; padding-left:1rem; }
-    .uc-f p { padding-left:0; }
-    .uc-full { grid-column:1/-1; }
+    .srs-actor-list { display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.6rem 0 1.2rem; }
+    .srs-actor { font-family:var(--mono); font-size:0.73rem; padding:0.3rem 0.8rem; border-radius:5px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:var(--text-dim); }
+    .iuc { border:1px solid rgba(255,255,255,0.07); border-radius:8px; margin:1rem 0; overflow:hidden; }
+    .iuc-head { display:flex; align-items:center; gap:0.7rem; padding:0.65rem 1rem; background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.06); }
+    .iuc-id { font-family:var(--mono); font-size:0.68rem; color:var(--gold); white-space:nowrap; }
+    .iuc-name { font-size:0.88rem; font-weight:700; }
+    .iuc-actors { font-family:var(--mono); font-size:0.65rem; color:var(--text-xs); margin-left:auto; white-space:nowrap; }
+    .iuc-body { padding:0.9rem 1rem; font-size:0.84rem; color:var(--text-dim); line-height:1.75; }
+    .iuc-body strong { color:var(--text); }
     .srs-badge { display:inline-block; font-family:var(--mono); font-size:0.58rem; letter-spacing:0.07em; text-transform:uppercase; padding:0.12rem 0.45rem; border-radius:4px; }
     .sb-done   { background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); }
     .sb-open   { background:rgba(232,56,42,0.1);   color:var(--red); border:1px solid rgba(232,56,42,0.3); }
     .sb-sprint { background:rgba(96,165,250,0.1);  color:#60a5fa;  border:1px solid rgba(96,165,250,0.3); }
-    .nfr { padding:0.6rem 0.9rem; border-left:2px solid rgba(201,150,42,0.3); margin-bottom:0.4rem; background:rgba(255,255,255,0.02); border-radius:0 6px 6px 0; }
-    .nfr-id { font-family:var(--mono); font-size:0.65rem; color:var(--gold); margin-bottom:0.15rem; }
-    .nfr-txt { font-size:0.82rem; color:var(--text-dim); }
+    /* UC Diagram */
+    .ucd-wrap { margin:1.2rem 0; display:flex; gap:1.5rem; align-items:flex-start; flex-wrap:wrap; }
+    .ucd-actors { display:flex; flex-direction:column; gap:0.5rem; min-width:110px; }
+    .ucd-actor { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:6px; padding:0.35rem 0.7rem; font-family:var(--mono); font-size:0.7rem; color:var(--text-dim); text-align:center; }
+    .ucd-actor.ext { border-color:rgba(201,150,42,0.3); color:var(--gold); }
+    .ucd-system { flex:1; min-width:260px; border:1.5px dashed rgba(201,150,42,0.25); border-radius:10px; padding:1rem; }
+    .ucd-system-label { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); margin-bottom:0.8rem; }
+    .ucd-ucs { display:flex; flex-direction:column; gap:0.4rem; }
+    .ucd-uc { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); border-radius:5px; padding:0.3rem 0.7rem; font-size:0.78rem; color:var(--text-dim); display:flex; align-items:center; gap:0.5rem; }
+    .ucd-uc-id { font-family:var(--mono); font-size:0.65rem; color:var(--gold); }
   </style>
 
   <!-- PART 1 -->
   <p class="srs-h2 reveal">Part 1 — Introduction</p>
 
-  <p class="srs-h3 reveal">1. Revision History</p>
+  <p class="srs-h3 reveal">1. Version History</p>
   <div class="srs-table-wrap reveal">
     <table class="srs-table">
       <thead><tr><th>Date</th><th>Author</th><th>Description</th></tr></thead>
       <tbody>
-        <tr><td>May 5, 2026</td><td>Sergio Moniz</td><td>Initial SRS — Sprint 2 baseline. Covers all functional requirements implemented and verified in production.</td></tr>
+        <tr><td>May 5, 2026</td><td>Sergio Moniz</td><td>Initial version — Sprint 2 baseline. Covers all internal use cases implemented and verified in production.</td></tr>
       </tbody>
     </table>
   </div>
 
   <p class="srs-h3 reveal">2. Scope</p>
-  <p class="srs-p reveal">V2 is the central Node.js + Express REST API backed by SQLite (sql.js). It acts as the single integration point for all subsystems: receives sensor data from S2, serves measurement and session data to M1 and M2, forwards AI inputs to V1, and manages all persistent storage for the platform.</p>
-  <p class="srs-p reveal">The V2 module covers the following functional areas:</p>
+  <p class="srs-p reveal">V2 — Backend API &amp; Storage is the central server-side component of the Limb Motion Recognition and Assistant system. It is implemented as a Node.js + Express REST API backed by a SQLite database (sql.js). V2 is the single integration point for all other subsystems: it receives sensor measurement data from S2, serves session and measurement data to M1 and M2, provides AI classification inputs to V1, and manages all persistent storage for the platform.</p>
+  <p class="srs-p reveal">V2 does not have a direct user-facing interface. It provides the following services to other groups:</p>
   <ul class="srs-ul reveal">
-    <li><strong>Authentication &amp; Authorisation:</strong> Registration, JWT login, clinician approval workflow (pending &rarr; active).</li>
-    <li><strong>User &amp; Patient Management:</strong> Create and retrieve accounts; patient list and profiles for M2.</li>
-    <li><strong>Session Lifecycle:</strong> Create and close rehabilitation sessions.</li>
-    <li><strong>Measurement Ingestion &amp; Retrieval:</strong> Single and batch inserts from S2/M1; query by session with date-range filtering.</li>
-    <li><strong>Recommendations:</strong> Full CRUD for clinical recommendations with free-text notes field.</li>
-    <li><strong>Schedule:</strong> Store and serve rehabilitation plans.</li>
-    <li><strong>Push Notifications:</strong> Register device tokens and dispatch payloads.</li>
+    <li>User registration, authentication (JWT), and clinician approval workflow</li>
+    <li>Session lifecycle management (create, close)</li>
+    <li>Measurement ingestion (single and batch) and retrieval with date-range filtering</li>
+    <li>Patient list and profile access for the doctor dashboard</li>
+    <li>Rehabilitation recommendation management (create, read, update, delete)</li>
+    <li>Rehabilitation schedule storage and retrieval</li>
+    <li>Push notification token registration and dispatch</li>
   </ul>
-  <p class="srs-p reveal">Out of scope: sensor hardware (S1), raw data acquisition (S2), mobile UI (M1), doctor dashboard UI (M2), AI model training (V1).</p>
+  <p class="srs-p reveal">The following are out of scope for V2: sensor hardware and firmware (S1), raw sensor data acquisition and mock generation (S2), patient mobile application UI (M1), doctor web dashboard UI (M2), and AI motion classification model training (V1).</p>
 
   <p class="srs-h3 reveal">3. Glossary</p>
   <div class="srs-table-wrap reveal">
     <table class="srs-table">
       <thead><tr><th>Term</th><th>Definition</th></tr></thead>
       <tbody>
-        <tr><td>Session</td><td>Bounded exercise event with <code>started_at</code> and <code>ended_at</code>. Measurements only accepted on open sessions.</td></tr>
-        <tr><td>Measurement</td><td>Joint-angle reading with <code>joint_angles</code> (JSON), <code>is_correct</code> (boolean, set by V1), and ISO 8601 timestamp.</td></tr>
-        <tr><td>Pending</td><td>Clinician account status after registration, before admin approval — cannot log in.</td></tr>
-        <tr><td>Active</td><td>Operational account status required for login.</td></tr>
-        <tr><td>JWT</td><td>JSON Web Token — stateless bearer token issued on login, required on all protected endpoints.</td></tr>
-        <tr><td>ISO 8601</td><td>Timestamp format throughout V2: <code>YYYY-MM-DDTHH:MM:SS.sssZ</code>. All <code>*_at</code> fields normalised on read.</td></tr>
+        <tr><td>Session</td><td>A bounded rehabilitation exercise event with a <code>started_at</code> timestamp and an optional <code>ended_at</code>. Measurements may only be added to an open (not ended) session.</td></tr>
+        <tr><td>Measurement</td><td>A single joint-angle reading associated with a session. Contains <code>joint_angles</code> (JSON object), <code>is_correct</code> (boolean, set by V1), and an ISO 8601 timestamp.</td></tr>
+        <tr><td>Pending</td><td>Clinician account status after self-registration, before admin approval. A pending account cannot log in.</td></tr>
+        <tr><td>Active</td><td>Fully operational user account status. Required for login.</td></tr>
+        <tr><td>JWT</td><td>JSON Web Token — stateless bearer token issued by V2 on successful login, required on all protected endpoints.</td></tr>
+        <tr><td>ISO 8601</td><td>Timestamp format used throughout V2: <code>YYYY-MM-DDTHH:MM:SS.sssZ</code>. All date fields are normalised to this format on every database read.</td></tr>
       </tbody>
     </table>
   </div>
 
   <!-- PART 2 -->
-  <p class="srs-h2 reveal">Part 2 — Use Cases</p>
-  <p class="srs-h3 reveal">Authentication</p>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-01</span><span class="uc-title">Patient Registration</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>POST /auth/register</code> — JSON</p></div>
-      <div class="uc-f"><label>Actor</label><p>Patient (M1)</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Submits username, password, email, role=patient, optional age. Account created as active, JWT returned immediately.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>201</code> — <code>{token, user}</code></p></div>
-      <div class="uc-f"><label>Errors</label><p><code>400</code> missing fields · <code>409</code> conflict</p></div>
-    </div>
-  </div>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-02</span><span class="uc-title">Clinician Registration</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>POST /auth/register</code> — multipart/form-data</p></div>
-      <div class="uc-f"><label>Actor</label><p>Clinician (M2)</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Submits credentials + license file (max 5 MB). Account created as <em>pending</em>, no JWT returned — requires admin approval before login.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>201</code> — <code>{message: "Registration pending approval"}</code></p></div>
-      <div class="uc-f"><label>Errors</label><p><code>400</code> · <code>409</code> · <code>413</code> file too large</p></div>
-    </div>
-  </div>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-03</span><span class="uc-title">User Login</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>POST /auth/login</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>Any user (M1, M2)</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Verifies bcrypt hash and checks status=active. Returns signed JWT. Pending accounts blocked with 403.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>200</code> — <code>{token, user}</code></p></div>
-      <div class="uc-f"><label>Errors</label><p><code>401</code> invalid credentials · <code>403</code> account pending</p></div>
-    </div>
-  </div>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-04</span><span class="uc-title">Clinician Approval</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>PATCH /auth/approve/:userId</code> — JWT required</p></div>
-      <div class="uc-f"><label>Actor</label><p>Admin (M2)</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Sets a pending clinician's status to active, enabling login.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>200</code> — <code>{message: "User approved"}</code></p></div>
-      <div class="uc-f"><label>Errors</label><p><code>401</code> · <code>404</code></p></div>
-    </div>
-  </div>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-05</span><span class="uc-title">Get Auth Status</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>GET /auth/status</code> — JWT required</p></div>
-      <div class="uc-f"><label>Actor</label><p>Any authenticated user</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Returns <code>{userId, role, status}</code> decoded from the bearer token.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>200</code> — <code>{userId, role, status}</code></p></div>
-      <div class="uc-f"><label>Errors</label><p><code>401</code></p></div>
-    </div>
-  </div>
-
-  <p class="srs-h3 reveal">Sessions</p>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-06</span><span class="uc-title">Create Session</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>POST /sessions</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>M1 / S2</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Creates an open session for a userId. Server generates integer id and started_at. Client must use returned id for all subsequent measurement uploads.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>201</code> — session object</p></div>
-      <div class="uc-f"><label>Errors</label><p><code>400</code> · <code>404</code> user not found</p></div>
-    </div>
-  </div>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-07</span><span class="uc-title">End Session</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>PATCH /sessions/:id/end</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>M1 / S2</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Closes an open session by setting ended_at to current ISO 8601 UTC timestamp. No further measurements accepted after this.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>200</code> — updated session object</p></div>
-      <div class="uc-f"><label>Errors</label><p><code>404</code> · <code>409</code> already closed</p></div>
-    </div>
-  </div>
-
-  <p class="srs-h3 reveal">Measurements</p>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-08</span><span class="uc-title">Record Single Measurement</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>POST /measurements</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>S2 / M1</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Required: sessionId, jointAngles (JSON object). Optional: isCorrect (default false), timestamp (auto-generated if omitted). Rejected if session is closed.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>201</code> — full measurement record</p></div>
-      <div class="uc-f"><label>Errors</label><p><code>400</code> · <code>404</code> · <code>409</code> session closed</p></div>
-    </div>
-  </div>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-09</span><span class="uc-title">Record Measurement Batch</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>POST /measurements/batch</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>S2</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Bulk inserts an array of measurements in a single atomic transaction. Payload: <code>{sessionId, measurements: [{jointAngles, isCorrect?, timestamp?}]}</code>.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>201</code> — <code>{inserted, sessionId}</code></p></div>
-      <div class="uc-f"><label>Errors</label><p><code>400</code> · <code>404</code> · <code>409</code></p></div>
-    </div>
-  </div>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-10</span><span class="uc-title">Query Measurements by Session</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>GET /measurements/:sessionId?startDate=&amp;endDate=</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>M1, M2, V1</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Returns all measurements ordered by timestamp ASC. Optional date-range filtering accepts YYYY-MM-DD or full ISO 8601. Dates normalised internally.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>200</code> — array of measurements</p></div>
-      <div class="uc-f"><label>Errors</label><p><code>404</code> session not found</p></div>
-    </div>
-  </div>
-
-  <p class="srs-h3 reveal">Patients</p>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-11</span><span class="uc-title">Get Patient List</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>GET /patients</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>M2 (Doctor)</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Returns all users with role=patient including id, username, email, age, status.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>200</code> — array of patient objects</p></div>
-      <div class="uc-f"><label>Errors</label><p><code>401</code></p></div>
-    </div>
-  </div>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-12</span><span class="uc-title">Get Patient by ID</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>GET /patients/:id</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>M2 (Doctor)</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Returns the full profile of a single patient. Returns 404 if the user does not exist or is not a patient.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>200</code> — patient object</p></div>
-      <div class="uc-f"><label>Errors</label><p><code>404</code></p></div>
-    </div>
-  </div>
-
-  <p class="srs-h3 reveal">Recommendations</p>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-13</span><span class="uc-title">Create Recommendation</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>POST /recommendations</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>M2 (Doctor)</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Required: userId, content. Optional: notes (free-text). Returns the created record with integer userId.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>201</code> — recommendation object</p></div>
-      <div class="uc-f"><label>Errors</label><p><code>400</code> · <code>404</code></p></div>
-    </div>
-  </div>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-14</span><span class="uc-title">Get Recommendations by Patient</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>GET /recommendations/:userId</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>M1, M2</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Returns all recommendations ordered by date descending. Empty array if none (not 404). userId always integer.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>200</code> — array</p></div>
-      <div class="uc-f"><label>Errors</label><p><code>404</code> user not found</p></div>
-    </div>
-  </div>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-15</span><span class="uc-title">Update Recommendation</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>PUT /recommendations/:id</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>M2 (Doctor)</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Updates content and/or notes of an existing recommendation.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>200</code> — updated record</p></div>
-      <div class="uc-f"><label>Errors</label><p><code>404</code></p></div>
-    </div>
-  </div>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-16</span><span class="uc-title">Delete Recommendation</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>DELETE /recommendations/:id</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>M2 (Doctor)</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Permanently removes a recommendation by its integer ID.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>200</code> — <code>{message: "Deleted"}</code></p></div>
-      <div class="uc-f"><label>Errors</label><p><code>404</code></p></div>
-    </div>
-  </div>
-
-  <p class="srs-h3 reveal">Schedule &amp; Push</p>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-17</span><span class="uc-title">Get Schedule</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>GET /schedule/:userId</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>M1, M2</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Returns the rehabilitation schedule entries for a patient.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>200</code> — array of schedule entries</p></div>
-      <div class="uc-f"><label>Errors</label><p><code>404</code></p></div>
-    </div>
-  </div>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-18</span><span class="uc-title">Create Schedule Entry</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>POST /schedule</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>M2 (Doctor)</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Required: userId, scheduledAt (ISO 8601), description.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>201</code> — schedule entry</p></div>
-      <div class="uc-f"><label>Errors</label><p><code>400</code> · <code>404</code></p></div>
-    </div>
-  </div>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-19</span><span class="uc-title">Register Push Token</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>POST /push/register</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>M1</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Stores device push token for a userId. Response includes both user_id and token to confirm registration.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>201</code> — <code>{user_id, token}</code></p></div>
-      <div class="uc-f"><label>Errors</label><p><code>400</code></p></div>
-    </div>
-  </div>
-
-  <div class="uc reveal">
-    <div class="uc-head"><span class="uc-id">UC-V2-20</span><span class="uc-title">Send Push Notification</span></div>
-    <div class="uc-body">
-      <div class="uc-f"><label>Endpoint</label><p><code>POST /push/send</code></p></div>
-      <div class="uc-f"><label>Actor</label><p>M2, V1</p></div>
-      <div class="uc-f uc-full"><label>Description</label><p>Dispatches a push notification payload to the registered token for a given userId.</p></div>
-      <div class="uc-f"><label>Success</label><p><code>200</code> — delivery confirmation</p></div>
-      <div class="uc-f"><label>Errors</label><p><code>404</code> no token registered</p></div>
-    </div>
-  </div>
+  <p class="srs-h2 reveal">Part 2 — External Use Cases</p>
+  <p class="srs-p reveal">V2 is a backend service with no direct user-facing interface. External use cases are not applicable to V2. This part is handled exclusively by M1 (Patient Mobile App) and M2 (Doctor Web Dashboard), which are the only groups that interact directly with end users.</p>
 
   <!-- PART 3 -->
   <p class="srs-h2 reveal">Part 3 — Internal Use Cases</p>
 
-  <p class="srs-h3 reveal">V2 ↔ S2 — Sensor Data Ingestion</p>
+  <p class="srs-h3 reveal">1. Actor List</p>
+  <div class="srs-actor-list reveal">
+    <span class="srs-actor">Patient</span>
+    <span class="srs-actor">Doctor</span>
+    <span class="srs-actor">System Administrator</span>
+    <span class="srs-actor">S2</span>
+    <span class="srs-actor">V1</span>
+    <span class="srs-actor">M1</span>
+    <span class="srs-actor">M2</span>
+  </div>
+
+  <p class="srs-h3 reveal">2. Use Case List</p>
   <div class="srs-table-wrap reveal">
     <table class="srs-table">
-      <thead><tr><th>ID</th><th>Interaction</th><th>Direction</th><th>Status</th></tr></thead>
+      <thead><tr><th>ID</th><th>Name</th><th>Primary Actor(s)</th></tr></thead>
       <tbody>
-        <tr><td>INT-S2-V2-01</td><td>S2 opens session via <code>POST /sessions</code> before streaming</td><td>S2 → V2</td><td><span class="srs-badge sb-done">Resolved</span></td></tr>
-        <tr><td>INT-S2-V2-02</td><td>S2 sends batches via <code>POST /measurements/batch</code></td><td>S2 → V2</td><td><span class="srs-badge sb-done">Resolved</span></td></tr>
-        <tr><td>INT-S2-V2-03</td><td>S2 closes session via <code>PATCH /sessions/:id/end</code></td><td>S2 → V2</td><td><span class="srs-badge sb-done">Resolved</span></td></tr>
-        <tr><td>INT-S2-V2-04</td><td>Raw IMU ingestion (<code>POST /ingest</code>) — full sensorData array</td><td>S2 → V2</td><td><span class="srs-badge sb-open">Open — Conflict 4</span></td></tr>
+        <tr><td>IUC-V2-01</td><td>Patient Registration</td><td>Patient, M1</td></tr>
+        <tr><td>IUC-V2-02</td><td>Clinician Registration</td><td>Doctor, M2</td></tr>
+        <tr><td>IUC-V2-03</td><td>User Login</td><td>Patient, Doctor, M1, M2</td></tr>
+        <tr><td>IUC-V2-04</td><td>Clinician Approval</td><td>System Administrator, M2</td></tr>
+        <tr><td>IUC-V2-05</td><td>Create Rehabilitation Session</td><td>M1, S2</td></tr>
+        <tr><td>IUC-V2-06</td><td>End Rehabilitation Session</td><td>M1, S2</td></tr>
+        <tr><td>IUC-V2-07</td><td>Record Measurement(s)</td><td>S2, M1</td></tr>
+        <tr><td>IUC-V2-08</td><td>Query Measurements</td><td>M1, M2, V1</td></tr>
+        <tr><td>IUC-V2-09</td><td>Access Patient Records</td><td>M2, Doctor</td></tr>
+        <tr><td>IUC-V2-10</td><td>Manage Recommendations</td><td>M2, Doctor, M1, Patient</td></tr>
+        <tr><td>IUC-V2-11</td><td>Manage Schedule</td><td>M2, Doctor, M1, Patient</td></tr>
+        <tr><td>IUC-V2-12</td><td>Register Push Token</td><td>M1</td></tr>
+        <tr><td>IUC-V2-13</td><td>Send Push Notification</td><td>M2, V1</td></tr>
       </tbody>
     </table>
   </div>
 
-  <p class="srs-h3 reveal">V2 ↔ V1 — AI Classification</p>
-  <div class="srs-table-wrap reveal">
-    <table class="srs-table">
-      <thead><tr><th>ID</th><th>Interaction</th><th>Direction</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td>INT-V1-V2-01</td><td>V1 reads measurements via <code>GET /measurements/:sessionId</code></td><td>V1 → V2</td><td><span class="srs-badge sb-sprint">Sprint 3</span></td></tr>
-        <tr><td>INT-V1-V2-02</td><td>V1 writes <code>is_correct</code> back to measurements after classification</td><td>V1 → V2</td><td><span class="srs-badge sb-open">Pending V1 schema</span></td></tr>
-        <tr><td>INT-V1-V2-03</td><td>V1 confirms <code>joint_angles</code> field format and key naming</td><td>V1 ↔ V2</td><td><span class="srs-badge sb-open">Pending V1 input</span></td></tr>
-      </tbody>
-    </table>
+  <p class="srs-h3 reveal">3. Specific Use Cases</p>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-01</span>
+      <span class="iuc-name">Patient Registration</span>
+      <span class="iuc-actors">Actor: Patient · M1</span>
+    </div>
+    <div class="iuc-body">
+      M1 uses the <strong>"Patient Registration"</strong> use case of V2. In this use case, a patient opens M1 and fills in their credentials. M1 sends a registration request containing <code>username</code>, <code>password</code>, <code>email</code>, <code>role=patient</code>, and an optional <code>age</code> field to V2's <code>POST /auth/register</code> endpoint as a JSON body. V2 hashes the password using bcryptjs, creates a new user record in the database with <code>status=active</code>, generates a signed JWT token, and returns it to M1 alongside the user profile. M1 stores the token and the patient gains immediate access to the application.
+    </div>
   </div>
 
-  <p class="srs-h3 reveal">V2 ↔ M1 — Patient Mobile App</p>
-  <div class="srs-table-wrap reveal">
-    <table class="srs-table">
-      <thead><tr><th>ID</th><th>Interaction</th><th>Direction</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td>INT-M1-V2-01</td><td>M1 registers and logs in via <code>/auth</code></td><td>M1 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
-        <tr><td>INT-M1-V2-02</td><td>M1 creates and ends sessions</td><td>M1 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
-        <tr><td>INT-M1-V2-03</td><td>M1 queries measurements and recommendations</td><td>M1 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
-        <tr><td>INT-M1-V2-04</td><td>M1 registers push token via <code>/push/register</code></td><td>M1 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
-        <tr><td>INT-M1-V2-05</td><td>Real-time WebSocket channel for live session streaming</td><td>V2 → M1</td><td><span class="srs-badge sb-sprint">Sprint 3</span></td></tr>
-      </tbody>
-    </table>
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-02</span>
+      <span class="iuc-name">Clinician Registration</span>
+      <span class="iuc-actors">Actor: Doctor · M2</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Clinician Registration"</strong> use case of V2. In this use case, a doctor fills in their credentials and attaches a professional license file (PDF or image, maximum 5 MB) in M2's registration form. M2 sends a <code>multipart/form-data</code> request to V2's <code>POST /auth/register</code> endpoint. V2 stores the license file on disk under <code>data/licenses/</code>, creates a user record with <code>status=pending</code>, and returns a confirmation message to M2 without issuing a JWT token. The clinician must wait for a System Administrator to approve the account before being able to log in.
+    </div>
   </div>
 
-  <p class="srs-h3 reveal">V2 ↔ M2 — Doctor Web Dashboard</p>
-  <div class="srs-table-wrap reveal">
-    <table class="srs-table">
-      <thead><tr><th>ID</th><th>Interaction</th><th>Direction</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td>INT-M2-V2-01</td><td>M2 registers clinicians with license upload</td><td>M2 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
-        <tr><td>INT-M2-V2-02</td><td>M2 admin approves clinician accounts</td><td>M2 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
-        <tr><td>INT-M2-V2-03</td><td>M2 retrieves patient list and profiles</td><td>M2 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
-        <tr><td>INT-M2-V2-04</td><td>M2 reads measurements with date-range filter</td><td>M2 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
-        <tr><td>INT-M2-V2-05</td><td>M2 manages recommendations with notes field</td><td>M2 → V2</td><td><span class="srs-badge sb-done">Done</span></td></tr>
-      </tbody>
-    </table>
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-03</span>
+      <span class="iuc-name">User Login</span>
+      <span class="iuc-actors">Actor: Patient · Doctor · M1 · M2</span>
+    </div>
+    <div class="iuc-body">
+      M1 and M2 use the <strong>"User Login"</strong> use case of V2. In this use case, the user submits their <code>username</code> and <code>password</code> through their respective application. The application sends these credentials to V2's <code>POST /auth/login</code> endpoint. V2 looks up the user record, verifies the password against the stored bcrypt hash, and checks that the account <code>status</code> is <code>active</code>. If both checks pass, V2 returns a signed JWT token encoding <code>userId</code> and <code>role</code>. If the account is <code>pending</code>, V2 rejects the request with a 403 response. The client stores the token and includes it in subsequent requests as a bearer token.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-04</span>
+      <span class="iuc-name">Clinician Approval</span>
+      <span class="iuc-actors">Actor: System Administrator · M2</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Clinician Approval"</strong> use case of V2. In this use case, a System Administrator reviews a pending clinician registration in M2's admin panel. The administrator selects the clinician and confirms the approval. M2 sends a <code>PATCH /auth/approve/:userId</code> request to V2 with the administrator's JWT token in the Authorization header. V2 verifies the token, locates the user record, sets <code>status=active</code>, and returns a confirmation to M2. The clinician can now log in successfully.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-05</span>
+      <span class="iuc-name">Create Rehabilitation Session</span>
+      <span class="iuc-actors">Actor: M1 · S2</span>
+    </div>
+    <div class="iuc-body">
+      M1 uses the <strong>"Create Rehabilitation Session"</strong> use case of V2. In this use case, when a patient begins an exercise in M1, M1 sends a <code>POST /sessions</code> request to V2 containing the patient's <code>userId</code>. V2 validates that the user exists, creates a new session record with a server-generated integer <code>id</code> and a <code>started_at</code> timestamp in ISO 8601 UTC, and returns the session object to M1. M1 stores the returned session <code>id</code> and provides it to S2. S2 uses this <code>id</code> to associate all subsequent measurement uploads with the correct session.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-06</span>
+      <span class="iuc-name">End Rehabilitation Session</span>
+      <span class="iuc-actors">Actor: M1 · S2</span>
+    </div>
+    <div class="iuc-body">
+      M1 uses the <strong>"End Rehabilitation Session"</strong> use case of V2. In this use case, when the patient finishes their exercise, M1 sends a <code>PATCH /sessions/:id/end</code> request to V2 with the session's integer <code>id</code>. V2 verifies the session exists and is still open, sets <code>ended_at</code> to the current ISO 8601 UTC timestamp, and returns the updated session object. From this point, V2 rejects any attempt to add new measurements to this session with a 409 Conflict response.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-07</span>
+      <span class="iuc-name">Record Measurement(s)</span>
+      <span class="iuc-actors">Actor: S2 · M1</span>
+    </div>
+    <div class="iuc-body">
+      S2 uses the <strong>"Record Measurement(s)"</strong> use case of V2. In this use case, after S2 processes raw IMU data from S1 into formal sensor data, S2 sends the data to V2. For individual measurements, S2 sends a <code>POST /measurements</code> request with <code>sessionId</code> and <code>jointAngles</code> (a JSON object keyed by joint name). For high-frequency streaming, S2 sends a <code>POST /measurements/batch</code> request with an array of measurement objects in a single atomic transaction. V2 validates that the target session is open, inserts the record(s) into the database, and returns confirmation to S2. The <code>is_correct</code> field defaults to <code>false</code> and is later updated by V1 after AI classification.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-08</span>
+      <span class="iuc-name">Query Measurements</span>
+      <span class="iuc-actors">Actor: M1 · M2 · V1</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Query Measurements"</strong> use case of V2. In this use case, a doctor opens a patient's session detail view in M2. M2 sends a <code>GET /measurements/:sessionId</code> request to V2, optionally including <code>?startDate=</code> and <code>?endDate=</code> query parameters to filter by date range. V2 looks up the session, applies the date filters if provided (accepting both <code>YYYY-MM-DD</code> and full ISO 8601 formats, normalised internally), and returns the filtered measurement array ordered by timestamp ascending to M2. M2 uses this data to render motion visualisation charts. V1 uses the same endpoint to retrieve measurements for AI classification.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-09</span>
+      <span class="iuc-name">Access Patient Records</span>
+      <span class="iuc-actors">Actor: Doctor · M2</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Access Patient Records"</strong> use case of V2. In this use case, a doctor opens the patient management panel in M2. M2 sends a <code>GET /patients</code> request to V2, which returns the list of all users with <code>role=patient</code>, including their <code>id</code>, <code>username</code>, <code>email</code>, <code>age</code>, and <code>status</code>. To view a specific patient's full profile, M2 sends a <code>GET /patients/:id</code> request. V2 returns the patient object, or a 404 response if the user does not exist or is not a patient. M2 displays this information in the doctor's dashboard.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-10</span>
+      <span class="iuc-name">Manage Recommendations</span>
+      <span class="iuc-actors">Actor: Doctor · M2 · Patient · M1</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Manage Recommendations"</strong> use case of V2. In this use case, after reviewing a patient's motion data, a doctor writes a rehabilitation recommendation in M2. M2 sends a <code>POST /recommendations</code> request to V2 with the patient's <code>userId</code>, the recommendation <code>content</code>, and an optional <code>notes</code> field for supplementary free-text. V2 stores the record and returns it with a server-generated integer <code>id</code> and the correct integer <code>userId</code>. The doctor may subsequently update the recommendation via <code>PUT /recommendations/:id</code> or delete it via <code>DELETE /recommendations/:id</code>. M1 retrieves the recommendations for a patient via <code>GET /recommendations/:userId</code> to display them to the patient. V2 returns an empty array (not a 404) if no recommendations exist yet.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-11</span>
+      <span class="iuc-name">Manage Schedule</span>
+      <span class="iuc-actors">Actor: Doctor · M2 · Patient · M1</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Manage Schedule"</strong> use case of V2. In this use case, a doctor assigns a rehabilitation schedule to a patient via M2. M2 sends a <code>POST /schedule</code> request to V2 with the patient's <code>userId</code>, a <code>scheduledAt</code> timestamp in ISO 8601 format, and a <code>description</code> of the planned exercise. V2 stores the entry and returns it to M2. M1 retrieves the patient's schedule via <code>GET /schedule/:userId</code> and displays upcoming sessions to the patient in the mobile application.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-12</span>
+      <span class="iuc-name">Register Push Token</span>
+      <span class="iuc-actors">Actor: M1</span>
+    </div>
+    <div class="iuc-body">
+      M1 uses the <strong>"Register Push Token"</strong> use case of V2. In this use case, after a patient successfully logs in, M1 obtains the device's push notification token from the operating system. M1 sends a <code>POST /push/register</code> request to V2 containing the <code>userId</code> and the device <code>token</code>. V2 stores the token associated with the user account and returns a confirmation including both <code>user_id</code> and <code>token</code>. This token is used in IUC-V2-13 to deliver push notifications to the patient's device.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-13</span>
+      <span class="iuc-name">Send Push Notification</span>
+      <span class="iuc-actors">Actor: M2 · V1</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Send Push Notification"</strong> use case of V2. In this use case, when a doctor publishes a new recommendation or when V1 generates a real-time feedback alert, the triggering system sends a <code>POST /push/send</code> request to V2 with the target <code>userId</code> and the notification payload. V2 looks up the device push token registered for that user via IUC-V2-12 and forwards the payload to the external push notification service. V2 returns a delivery confirmation or a 404 if no token has been registered for the user.
+    </div>
   </div>
 
   <!-- PART 4 -->
   <p class="srs-h2 reveal">Part 4 — Others</p>
 
-  <p class="srs-h3 reveal">1. Assumptions</p>
-  <div class="srs-table-wrap reveal">
-    <table class="srs-table">
-      <thead><tr><th>ID</th><th>Assumption</th></tr></thead>
-      <tbody>
-        <tr><td>A-V2-01</td><td>One active account per patient. No duplicate account handling.</td></tr>
-        <tr><td>A-V2-02</td><td>V2 does not validate clinical content of recommendations.</td></tr>
-        <tr><td>A-V2-03</td><td>Admin approval done by a real user in the system. Full RBAC planned for Sprint 3.</td></tr>
-        <tr><td>A-V2-04</td><td>Academic prototype — no GDPR compliance obligation assumed for this phase.</td></tr>
-        <tr><td>A-V2-05</td><td>Session data volume within SQLite capacity. No sharding required.</td></tr>
-        <tr><td>A-V2-06</td><td>Server requires Node.js ≥ 18. Database at <code>data/v2.db</code>, no native compilation.</td></tr>
-        <tr><td>A-V2-07</td><td>All inter-team communication is HTTP REST. WebSocket added in Sprint 3 without breaking REST.</td></tr>
-        <tr><td>A-V2-08</td><td>All timestamps are ISO 8601 UTC. V2 normalises SQLite-format dates automatically on read.</td></tr>
-        <tr><td>A-V2-09</td><td>License files stored locally at <code>data/licenses/</code>. No cloud storage in Sprint 2.</td></tr>
-        <tr><td>A-V2-10</td><td>IF1 (V2–S2 contract) is frozen except for Conflict 4.</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <p class="srs-h3 reveal">1. Assumptions and Dependencies</p>
+  <ul class="srs-ul reveal">
+    <li>Each patient has exactly one active account. The system does not handle duplicate accounts for the same person.</li>
+    <li>V2 does not validate the clinical content of recommendations. Clinical correctness is the responsibility of the doctor using M2.</li>
+    <li>The admin role responsible for approving clinician accounts (IUC-V2-04) is a real user in the system. Full role-based access control (RBAC) enforcement is planned for Sprint 3 and is not enforced at the route level in Sprint 2.</li>
+    <li>The system is an academic prototype. No GDPR or health data compliance obligation is assumed for this phase.</li>
+    <li>The server requires Node.js &ge; 18. The SQLite database is managed by sql.js (pure JavaScript — no native module compilation). The database file is located at <code>data/v2.db</code> and is created automatically on first startup.</li>
+    <li>All inter-team communication uses HTTP REST in Sprint 2. A WebSocket channel for real-time M1 streaming will be added in Sprint 3 without breaking existing REST endpoints.</li>
+    <li>All timestamps exchanged between teams use ISO 8601 UTC format. V2 normalises any SQLite-format dates automatically on every database read via a centralised helper function.</li>
+    <li>License files submitted during clinician registration are stored on the local filesystem at <code>data/licenses/</code>. Cloud storage integration is not in scope for Sprint 2.</li>
+    <li>The interface contract between V2 and S2 (IF1) is frozen for all conflicts except Conflict 4, which is pending a joint S2 + V1 + V2 decision on the raw IMU ingestion schema.</li>
+    <li>The external push notification service and its credentials are configured via environment variables. V2 does not select or manage the third-party push provider.</li>
+  </ul>
 
   <p class="srs-h3 reveal">2. Non-Functional Requirements</p>
+  <p class="srs-h4 reveal">Performance</p>
+  <ul class="srs-ul reveal">
+    <li>Simple read endpoints (<code>GET /patients</code>, <code>GET /measurements/:sessionId</code>) must respond within 200 ms for datasets up to 10,000 records.</li>
+    <li>Batch measurement inserts (<code>POST /measurements/batch</code>) must complete within 500 ms for batches of up to 500 records.</li>
+    <li>The server must handle at least 10 concurrent connections during integration testing without degradation in response time.</li>
+  </ul>
+  <p class="srs-h4 reveal">Security</p>
+  <ul class="srs-ul reveal">
+    <li>Passwords must never be stored in plaintext. All passwords are hashed using bcryptjs with a cost factor of 10 or higher before being written to the database.</li>
+    <li>All protected API endpoints require a valid JWT bearer token in the Authorization header. Expired or malformed tokens must result in a 401 Unauthorized response.</li>
+    <li>License file uploads are limited to 5 MB. The server-side path of the stored license file (<code>license_path</code>) must never be included in any API response to prevent filesystem path disclosure.</li>
+  </ul>
+  <p class="srs-h4 reveal">Reliability</p>
+  <ul class="srs-ul reveal">
+    <li>The database schema is initialised automatically each time the server starts. ALTER TABLE migration statements are wrapped in try/catch blocks so the server starts correctly on both a fresh database and an existing one.</li>
+    <li>Batch measurement inserts are executed as a single atomic transaction. A failure on any individual record must roll back the entire batch.</li>
+    <li>The <code>GET /health</code> endpoint must return 200 OK at all times when the server process is running, with no authentication required.</li>
+  </ul>
+  <p class="srs-h4 reveal">Maintainability</p>
+  <ul class="srs-ul reveal">
+    <li>The codebase follows a strict MVC pattern: routes, controllers, middleware, and database helpers are placed in separate directories. No business logic is permitted in route definition files.</li>
+    <li>Date normalisation is implemented exclusively in <code>src/db/helpers.js</code> (<code>normalizeDates</code>). No individual controller performs date conversion.</li>
+    <li>All commit messages and code comments are written in English.</li>
+    <li>No native module compilation is required. The project must be fully installable via a standard <code>npm install</code> on any platform.</li>
+  </ul>
 
-  <p class="srs-h3 reveal" style="font-size:0.78rem;color:var(--text-dim);margin-top:1rem;">Performance</p>
-  <div class="nfr reveal"><div class="nfr-id">NFR-V2-01</div><div class="nfr-txt">Simple read endpoints respond in under <strong>200 ms</strong> for datasets up to 10,000 records.</div></div>
-  <div class="nfr reveal"><div class="nfr-id">NFR-V2-02</div><div class="nfr-txt">Batch measurement inserts complete in under <strong>500 ms</strong> for up to 500 records.</div></div>
-  <div class="nfr reveal"><div class="nfr-id">NFR-V2-03</div><div class="nfr-txt">Server handles at least <strong>10 concurrent connections</strong> without degradation.</div></div>
-
-  <p class="srs-h3 reveal" style="font-size:0.78rem;color:var(--text-dim);margin-top:1rem;">Security</p>
-  <div class="nfr reveal"><div class="nfr-id">NFR-V2-04</div><div class="nfr-txt">Passwords hashed with <strong>bcryptjs</strong> (cost factor 10+). Never stored in plaintext.</div></div>
-  <div class="nfr reveal"><div class="nfr-id">NFR-V2-05</div><div class="nfr-txt">All protected endpoints require valid <strong>JWT bearer token</strong>. Expired tokens return 401.</div></div>
-  <div class="nfr reveal"><div class="nfr-id">NFR-V2-06</div><div class="nfr-txt">License uploads limited to <strong>5 MB</strong>. <code>license_path</code> never returned in API responses.</div></div>
-
-  <p class="srs-h3 reveal" style="font-size:0.78rem;color:var(--text-dim);margin-top:1rem;">Reliability</p>
-  <div class="nfr reveal"><div class="nfr-id">NFR-V2-07</div><div class="nfr-txt">Schema initialised automatically on start. ALTER TABLE migrations wrapped in try/catch — works on fresh and existing databases.</div></div>
-  <div class="nfr reveal"><div class="nfr-id">NFR-V2-08</div><div class="nfr-txt">Batch inserts are <strong>atomic transactions</strong>. Failure on any record rolls back the entire batch.</div></div>
-  <div class="nfr reveal"><div class="nfr-id">NFR-V2-09</div><div class="nfr-txt"><code>GET /health</code> returns 200 OK at all times with no authentication required.</div></div>
-
-  <p class="srs-h3 reveal" style="font-size:0.78rem;color:var(--text-dim);margin-top:1rem;">Maintainability</p>
-  <div class="nfr reveal"><div class="nfr-id">NFR-V2-10</div><div class="nfr-txt">Strict <strong>MVC pattern</strong>: routes, controllers, middleware, DB helpers in separate directories. No business logic in route files.</div></div>
-  <div class="nfr reveal"><div class="nfr-id">NFR-V2-11</div><div class="nfr-txt">Date normalisation centralised in <code>src/db/helpers.js</code> only. No individual controller performs date conversion.</div></div>
-  <div class="nfr reveal"><div class="nfr-id">NFR-V2-12</div><div class="nfr-txt">No native module compilation required. Install via <code>npm install</code> on any platform.</div></div>
-
-  <p class="srs-h3 reveal">3. Open Items</p>
-  <div class="srs-table-wrap reveal">
-    <table class="srs-table">
-      <thead><tr><th>Item</th><th>Status</th><th>Resolution Path</th></tr></thead>
-      <tbody>
-        <tr><td>Conflict 4 — raw IMU ingestion schema (<code>POST /ingest</code>)</td><td><span class="srs-badge sb-open">Open</span></td><td>Joint call: S2 + V1 + V2. V1 must confirm joint_angles consumption format first.</td></tr>
-        <tr><td>V1 write-back — how V1 sets <code>is_correct</code> on measurements</td><td><span class="srs-badge sb-open">Open</span></td><td>V1 to define endpoint or confirm approach.</td></tr>
-        <tr><td>WebSocket channel for M1 real-time streaming</td><td><span class="srs-badge sb-sprint">Sprint 3</span></td><td>M1 defines event schema; V2 implements.</td></tr>
-        <tr><td>RBAC enforcement on admin-only routes</td><td><span class="srs-badge sb-sprint">Sprint 3</span></td><td>Design agreed with M2 before implementation.</td></tr>
-        <tr><td>Push notification service provider selection</td><td><span class="srs-badge sb-sprint">Sprint 3</span></td><td>V2 selects (FCM / APNs / Expo); M1 integrates SDK.</td></tr>
-      </tbody>
-    </table>
+  <p class="srs-h3 reveal">3. Internal Use Case Diagram</p>
+  <div class="ucd-wrap reveal">
+    <div class="ucd-actors">
+      <p style="font-family:var(--mono);font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-xs);margin-bottom:0.5rem;">Actors</p>
+      <div class="ucd-actor ext">Patient</div>
+      <div class="ucd-actor ext">Doctor</div>
+      <div class="ucd-actor ext">Sys Admin</div>
+      <div class="ucd-actor">M1</div>
+      <div class="ucd-actor">M2</div>
+      <div class="ucd-actor">S2</div>
+      <div class="ucd-actor">V1</div>
+    </div>
+    <div class="ucd-system">
+      <div class="ucd-system-label">V2 — Backend API &amp; Storage</div>
+      <div class="ucd-ucs">
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-01</span> Patient Registration</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-02</span> Clinician Registration</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-03</span> User Login</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-04</span> Clinician Approval</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-05</span> Create Rehabilitation Session</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-06</span> End Rehabilitation Session</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-07</span> Record Measurement(s)</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-08</span> Query Measurements</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-09</span> Access Patient Records</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-10</span> Manage Recommendations</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-11</span> Manage Schedule</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-12</span> Register Push Token</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-13</span> Send Push Notification</div>
+      </div>
+    </div>
   </div>
 
 </section>
