@@ -1,3 +1,5 @@
+const path  = require('path');
+const fs    = require('fs');
 const getDb = require('../db/connection');
 const { queryAll, queryOne, run } = require('../db/helpers');
 const { logAudit } = require('../db/audit');
@@ -112,4 +114,18 @@ async function getPatientById(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { getUsers, getUserById, createUser, updateUser, getPatients, getPatientById };
+async function getLicense(req, res, next) {
+  try {
+    const { db } = await getDb();
+    const user = queryOne(db, 'SELECT license_path FROM users WHERE id = ?', [req.params.id]);
+    if (!user) { const e = new Error('User not found'); e.status = 404; return next(e); }
+    if (!user.license_path) { const e = new Error('No license on file for this user'); e.status = 404; return next(e); }
+
+    const absPath = path.resolve(user.license_path);
+    if (!fs.existsSync(absPath)) { const e = new Error('License file not found on server'); e.status = 404; return next(e); }
+
+    res.download(absPath);
+  } catch (err) { next(err); }
+}
+
+module.exports = { getUsers, getUserById, createUser, updateUser, getLicense, getPatients, getPatientById };
