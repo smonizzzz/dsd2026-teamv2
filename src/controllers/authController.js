@@ -4,6 +4,7 @@ const getDb  = require('../db/connection');
 const { queryOne, run } = require('../db/helpers');
 const { JWT_SECRET }    = require('../middleware/auth');
 const upload            = require('../middleware/upload');
+const { logAudit }      = require('../db/audit');
 
 // Patients send JSON; clinicians send multipart/form-data (with optional license file).
 // This middleware applies multer only when the request is multipart.
@@ -105,6 +106,7 @@ async function approveUser(req, res, next) {
       const e = new Error('User is not pending approval'); e.status = 409; return next(e);
     }
     run(db, "UPDATE users SET status = 'active' WHERE id = ?", [req.params.userId]);
+    logAudit(db, { userId: req.user?.id, action: 'APPROVE_USER', targetType: 'user', targetId: req.params.userId });
     save();
     res.json({ userId: user.id, role: user.role, status: 'active' });
   } catch (err) { next(err); }
