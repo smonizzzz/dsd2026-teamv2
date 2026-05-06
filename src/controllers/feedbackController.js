@@ -1,5 +1,6 @@
 const getDb = require('../db/connection');
 const { queryAll, queryOne, run } = require('../db/helpers');
+const { logAudit } = require('../db/audit');
 
 async function getFeedback(req, res, next) {
   try {
@@ -68,6 +69,7 @@ async function updateFeedback(req, res, next) {
     if (response !== undefined) { fields.push('response = ?'); values.push(response); }
     values.push(req.params.id);
     run(db, `UPDATE feedback SET ${fields.join(', ')} WHERE id = ?`, values);
+    logAudit(db, { userId: req.user?.id, action: 'UPDATE_FEEDBACK', targetType: 'feedback', targetId: req.params.id, details: req.body });
     save();
     res.json(queryOne(db, 'SELECT * FROM feedback WHERE id = ?', [req.params.id]));
   } catch (err) { next(err); }

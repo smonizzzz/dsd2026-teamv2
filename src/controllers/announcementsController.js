@@ -1,5 +1,6 @@
 const getDb = require('../db/connection');
 const { queryAll, queryOne, run } = require('../db/helpers');
+const { logAudit } = require('../db/audit');
 
 async function getAnnouncements(req, res, next) {
   try {
@@ -49,6 +50,7 @@ async function createAnnouncement(req, res, next) {
       'INSERT INTO announcements (title, content, created_by, status) VALUES (?, ?, ?, ?)',
       [title, content, createdBy, status]
     );
+    logAudit(db, { userId: createdBy, action: 'CREATE_ANNOUNCEMENT', targetType: 'announcement', targetId: result.lastInsertRowid, details: { title, status } });
     save();
     res.status(201).json(queryOne(db, 'SELECT * FROM announcements WHERE id = ?', [result.lastInsertRowid]));
   } catch (err) { next(err); }
@@ -75,6 +77,7 @@ async function updateAnnouncement(req, res, next) {
     if (status)  { fields.push('status = ?');  values.push(status); }
     values.push(req.params.id);
     run(db, `UPDATE announcements SET ${fields.join(', ')} WHERE id = ?`, values);
+    logAudit(db, { userId: req.user?.id, action: 'UPDATE_ANNOUNCEMENT', targetType: 'announcement', targetId: req.params.id, details: req.body });
     save();
     res.json(queryOne(db, 'SELECT * FROM announcements WHERE id = ?', [req.params.id]));
   } catch (err) { next(err); }
@@ -87,6 +90,7 @@ async function deleteAnnouncement(req, res, next) {
       const e = new Error('Announcement not found'); e.status = 404; return next(e);
     }
     run(db, 'DELETE FROM announcements WHERE id = ?', [req.params.id]);
+    logAudit(db, { userId: req.user?.id, action: 'DELETE_ANNOUNCEMENT', targetType: 'announcement', targetId: req.params.id });
     save();
     res.status(204).send();
   } catch (err) { next(err); }

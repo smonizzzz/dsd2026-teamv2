@@ -1,5 +1,6 @@
 const getDb = require('../db/connection');
 const { queryAll, queryOne, run } = require('../db/helpers');
+const { logAudit } = require('../db/audit');
 
 async function getUsers(req, res, next) {
   try {
@@ -79,6 +80,7 @@ async function updateUser(req, res, next) {
     values.push(req.params.id);
 
     run(db, `UPDATE users SET ${fields.join(', ')} WHERE id = ?`, values);
+    logAudit(db, { userId: req.user?.id, action: 'UPDATE_USER', targetType: 'user', targetId: req.params.id, details: req.body });
     save();
 
     const updated = queryOne(db, 'SELECT id, name, email, role, age, status, created_at FROM users WHERE id = ?', [req.params.id]);
