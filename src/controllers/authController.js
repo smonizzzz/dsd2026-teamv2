@@ -112,4 +112,19 @@ async function approveUser(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { register, login, me, getStatus, approveUser, conditionalUpload };
+async function rejectUser(req, res, next) {
+  try {
+    const { db, save } = await getDb();
+    const user = queryOne(db, 'SELECT id, role, status FROM users WHERE id = ?', [req.params.userId]);
+    if (!user) { const e = new Error('User not found'); e.status = 404; return next(e); }
+    if (user.status !== 'pending') {
+      const e = new Error('User is not pending approval'); e.status = 409; return next(e);
+    }
+    run(db, "UPDATE users SET status = 'rejected' WHERE id = ?", [req.params.userId]);
+    logAudit(db, { userId: req.user?.id, action: 'REJECT_USER', targetType: 'user', targetId: req.params.userId });
+    save();
+    res.json({ userId: user.id, role: user.role, status: 'rejected' });
+  } catch (err) { next(err); }
+}
+
+module.exports = { register, login, me, getStatus, approveUser, rejectUser, conditionalUpload };
