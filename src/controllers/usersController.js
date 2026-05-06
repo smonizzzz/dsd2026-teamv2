@@ -4,6 +4,14 @@ const { queryAll, queryOne, run } = require('../db/helpers');
 async function getUsers(req, res, next) {
   try {
     const { db } = await getDb();
+    const { role } = req.query;
+    if (role) {
+      if (!['patient', 'clinician'].includes(role)) {
+        const e = new Error('role must be patient or clinician'); e.status = 400; return next(e);
+      }
+      const users = queryAll(db, 'SELECT id, name, email, role, age, status, created_at FROM users WHERE role = ? ORDER BY created_at DESC', [role]);
+      return res.json(users);
+    }
     const users = queryAll(db, 'SELECT id, name, email, role, age, status, created_at FROM users ORDER BY created_at DESC');
     res.json(users);
   } catch (err) { next(err); }
@@ -44,6 +52,40 @@ async function createUser(req, res, next) {
   } catch (err) { next(err); }
 }
 
+async function updateUser(req, res, next) {
+  try {
+    const { db, save } = await getDb();
+    const { name, age, role, status } = req.body;
+
+    if (!name && age === undefined && !role && !status) {
+      const e = new Error('at least one field is required: name, age, role, status'); e.status = 400; return next(e);
+    }
+    if (role && !['patient', 'clinician'].includes(role)) {
+      const e = new Error('role must be patient or clinician'); e.status = 400; return next(e);
+    }
+    if (status && !['active', 'pending', 'disabled'].includes(status)) {
+      const e = new Error('status must be active, pending or disabled'); e.status = 400; return next(e);
+    }
+
+    const user = queryOne(db, 'SELECT id FROM users WHERE id = ?', [req.params.id]);
+    if (!user) { const e = new Error('User not found'); e.status = 404; return next(e); }
+
+    const fields = [];
+    const values = [];
+    if (name)            { fields.push('name = ?');   values.push(name); }
+    if (age !== undefined) { fields.push('age = ?');  values.push(age); }
+    if (role)            { fields.push('role = ?');   values.push(role); }
+    if (status)          { fields.push('status = ?'); values.push(status); }
+    values.push(req.params.id);
+
+    run(db, `UPDATE users SET ${fields.join(', ')} WHERE id = ?`, values);
+    save();
+
+    const updated = queryOne(db, 'SELECT id, name, email, role, age, status, created_at FROM users WHERE id = ?', [req.params.id]);
+    res.json(updated);
+  } catch (err) { next(err); }
+}
+
 async function getPatients(req, res, next) {
   try {
     const { db } = await getDb();
@@ -68,4 +110,4 @@ async function getPatientById(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { getUsers, getUserById, createUser, getPatients, getPatientById };
+module.exports = { getUsers, getUserById, createUser, updateUser, getPatients, getPatientById };
