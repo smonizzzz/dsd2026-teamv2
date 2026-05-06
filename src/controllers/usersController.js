@@ -128,4 +128,29 @@ async function getLicense(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { getUsers, getUserById, createUser, updateUser, getLicense, getPatients, getPatientById };
+async function updateLicense(req, res, next) {
+  try {
+    const { db, save } = await getDb();
+
+    if (!req.file) {
+      const e = new Error('license file is required'); e.status = 400; return next(e);
+    }
+
+    const user = queryOne(db, 'SELECT id, role, status FROM users WHERE id = ?', [req.params.id]);
+    if (!user) { const e = new Error('User not found'); e.status = 404; return next(e); }
+    if (user.role !== 'clinician') {
+      const e = new Error('Only clinician users can upload a license'); e.status = 400; return next(e);
+    }
+    if (!['pending', 'rejected'].includes(user.status)) {
+      const e = new Error('License can only be replaced while account is pending or rejected'); e.status = 409; return next(e);
+    }
+
+    run(db, "UPDATE users SET license_path = ?, status = 'pending' WHERE id = ?", [req.file.path, req.params.id]);
+    logAudit(db, { userId: req.user?.id, action: 'UPDATE_LICENSE', targetType: 'user', targetId: req.params.id });
+    save();
+
+    res.json({ userId: user.id, role: user.role, status: 'pending' });
+  } catch (err) { next(err); }
+}
+
+module.exports = { getUsers, getUserById, createUser, updateUser, getLicense, updateLicense, getPatients, getPatientById };

@@ -30,6 +30,37 @@ async function request(method, path, body, token) {
   return { status: response.status, data };
 }
 
+async function multipartRequest(method, path, fields, files, token) {
+  const form = new FormData();
+  for (const [key, value] of Object.entries(fields)) {
+    form.append(key, String(value));
+  }
+  for (const file of files) {
+    form.append(file.field, new Blob([file.content], { type: file.type }), file.name);
+  }
+
+  const headers = { Accept: 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const response = await fetch(`${BASE_URL}${path}`, {
+    method,
+    headers,
+    body: form,
+  });
+
+  const text = await response.text();
+  let data = null;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
+  }
+
+  return { status: response.status, data };
+}
+
 function expectStatus(result, expected, label) {
   assert.strictEqual(
     result.status,
@@ -100,6 +131,42 @@ async function main() {
 
   const token = login.data.token;
   const userId = login.data.user.id;
+
+  const clinicianEmail = `doctor-${runId}@example.com`;
+  const clinicianPassword = 'DoctorPassword123!';
+  const clinicianRegister = await multipartRequest('POST', '/auth/register', {
+    name: 'Pending Doctor',
+    email: clinicianEmail,
+    password: clinicianPassword,
+    role: 'clinician',
+  }, [
+    { field: 'license', name: 'license-old.txt', content: 'old license photo', type: 'text/plain' },
+  ]);
+  expectStatus(clinicianRegister, 201, 'POST /auth/register clinician with license');
+  assert.strictEqual(clinicianRegister.data.status, 'pending');
+
+  const clinicianPendingLogin = await request('POST', '/auth/login', { email: clinicianEmail, password: clinicianPassword });
+  expectStatus(clinicianPendingLogin, 403, 'POST /auth/login pending clinician');
+
+  const rejectClinician = await request('PATCH', `/auth/reject/${clinicianRegister.data.userId}`, undefined, token);
+  expectStatus(rejectClinician, 200, 'PATCH /auth/reject/:userId');
+  assert.strictEqual(rejectClinician.data.status, 'rejected');
+
+  const clinicianRejectedLogin = await request('POST', '/auth/login', { email: clinicianEmail, password: clinicianPassword });
+  expectStatus(clinicianRejectedLogin, 403, 'POST /auth/login rejected clinician');
+
+  const updateClinicianLicense = await multipartRequest('PATCH', `/users/${clinicianRegister.data.userId}/license`, {}, [
+    { field: 'license', name: 'license-new.txt', content: 'new license photo', type: 'text/plain' },
+  ]);
+  expectStatus(updateClinicianLicense, 200, 'PATCH /users/:id/license');
+  assert.strictEqual(updateClinicianLicense.data.status, 'pending');
+
+  const approveClinician = await request('PATCH', `/auth/approve/${clinicianRegister.data.userId}`, undefined, token);
+  expectStatus(approveClinician, 200, 'PATCH /auth/approve/:userId');
+
+  const clinicianApprovedLogin = await request('POST', '/auth/login', { email: clinicianEmail, password: clinicianPassword });
+  expectStatus(clinicianApprovedLogin, 200, 'POST /auth/login approved clinician');
+  assert.ok(clinicianApprovedLogin.data.token, 'approved clinician login should return a token');
 
   const me = await request('GET', '/auth/me', undefined, token);
   expectStatus(me, 200, 'GET /auth/me');

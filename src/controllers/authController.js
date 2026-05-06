@@ -72,6 +72,9 @@ async function login(req, res, next) {
     if (user.status === 'pending') {
       const e = new Error('Account pending approval'); e.status = 403; return next(e);
     }
+    if (user.status === 'rejected') {
+      const e = new Error('Account rejected. Please upload a new license photo'); e.status = 403; return next(e);
+    }
 
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     const { password: _, license_path: __, ...safeUser } = user;
