@@ -12,6 +12,7 @@ const recommendationsRouter = require('./routes/recommendations');
 const scheduleRouter        = require('./routes/schedule');
 const pushRouter            = require('./routes/push');
 const feedbackRouter        = require('./routes/feedback');
+const announcementsRouter   = require('./routes/announcements');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -35,6 +36,7 @@ app.use('/recommendations', recommendationsRouter);
 app.use('/schedule',        scheduleRouter);
 app.use('/push',            pushRouter);
 app.use('/feedback',        feedbackRouter);
+app.use('/announcements',   announcementsRouter);
 
 app.use((req, res) => res.status(404).json({ error: `${req.method} ${req.path} not found` }));
 app.use(errorHandler);
