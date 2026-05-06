@@ -1,6 +1,8 @@
 @echo off
 title V2 Backend - DSD 2025-2026
 
+cd /d "%~dp0"
+
 echo.
 echo  ================================
 echo   V2 Backend - Team V2
