@@ -237,6 +237,54 @@
 <!-- NEWS GRID -->
 <div class="news-container" id="newsGrid">
 
+  <!-- ── SPRINT 3 / ADMIN EDITION ── -->
+  <div class="edition-divider" data-category="sprint">
+    <div class="edition-divider-line"></div>
+    <div class="edition-divider-label">Sprint 3 &mdash; Admin &amp; Security Edition &middot; May 2026</div>
+    <div class="edition-divider-cn">管理与安全版</div>
+    <div class="edition-divider-line"></div>
+  </div>
+
+  <article class="article hero-story reveal" data-category="milestone">
+    <div class="article-category cat-milestone"><span class="cat-dot"></span>Milestone</div>
+    <div class="status-pill pill-resolved">&#x2714;&nbsp;Shipped</div>
+    <h2 class="article-headline">Six M2 Admin Use Cases Implemented — Dashboard Backend Now Complete</h2>
+    <p class="article-deck">The M2 team (Clinical Web Dashboard) submitted a formal list of six missing backend functions. All six were analysed, prioritised, and implemented in a single session.</p>
+    <div class="pull-quote"><p>"Account management, feedback, announcements, audit logs — the M2 dashboard now has everything it needs to operate as a real clinical administration tool."</p></div>
+    <p class="article-body">
+      <strong style="color:var(--text)">ADMIN-03 &amp; 04 — Account Management:</strong> New <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">PATCH /users/:id</code> endpoint allows modifying name, age, role, and status (including the new <code>disabled</code> state) for both doctors and patients. <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">GET /users</code> now accepts an optional <code>?role=clinician</code> or <code>?role=patient</code> filter.<br><br>
+      <strong style="color:var(--text)">ADMIN-08 — Role Management:</strong> Covered by the same <code>PATCH /users/:id</code> endpoint — role updates are included in the same request.<br><br>
+      <strong style="color:var(--text)">ADMIN-06 — Feedback:</strong> Full CRUD via <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">/feedback</code> — submit, list (filterable by status), view, and update with admin response.<br><br>
+      <strong style="color:var(--text)">ADMIN-07 — Announcements:</strong> Full lifecycle via <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">/announcements</code> — create, edit, publish, unpublish, and delete.<br><br>
+      <strong style="color:var(--text)">ADMIN-09 — Audit Log:</strong> Every admin action (approve, reject, update user, create/update/delete announcement, update feedback) is automatically recorded in a new <code>audit_logs</code> table and queryable via <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">GET /audit-logs</code> with filters for user, action type, and target entity.
+    </p>
+    <div class="article-byline"><span class="byline-author">&#127477;&#127481; João Lima &middot; V2 Backend</span><span class="byline-date">6 May 2026</span></div>
+  </article>
+
+  <article class="article side-story reveal" data-category="sprint">
+    <div class="article-category cat-sprint"><span class="cat-dot"></span>Sprint 3</div>
+    <div class="status-pill pill-resolved">&#x2714;&nbsp;Shipped</div>
+    <h2 class="article-headline">Doctor License Workflow Completed — Upload, Download, and Replace</h2>
+    <p class="article-deck">The full license management cycle is now operational: doctors upload during registration, admins download to verify, and rejected doctors can replace without creating a new account.</p>
+    <p class="article-body">
+      Registration via <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">POST /auth/register</code> accepts <code>multipart/form-data</code> with a <code>license</code> file field (max 5 MB). Admins retrieve the file via <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">GET /users/:id/license</code>. If the license is rejected, the doctor calls <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">PATCH /users/:id/license</code> to upload a new file — the account resets to <code>pending</code> automatically. A new <code>rejected</code> status was also added alongside the existing <code>pending</code> and <code>active</code> states, with a dedicated <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">PATCH /auth/reject/:userId</code> endpoint for admins.
+    </p>
+    <div class="article-byline"><span class="byline-author">&#127477;&#127481; Sergio Moniz &middot; João Lima &middot; V2</span><span class="byline-date">6 May 2026</span></div>
+  </article>
+
+  <article class="article full-story reveal" data-category="milestone">
+    <div>
+      <div class="article-category cat-milestone"><span class="cat-dot"></span>Milestone</div>
+      <div class="status-pill pill-resolved">&#x2714;&nbsp;Live</div>
+      <h2 class="article-headline">Huawei Cloud Server Live &amp; Admin Account Seeded Automatically</h2>
+      <p class="article-deck">A second production environment is now running on Huawei Cloud at <code style="font-family:var(--mono);font-size:0.85em">113.44.220.94:3000</code>, managed by PM2 with auto-restart. A critical fix ensures the admin account is seeded on every fresh deployment.</p>
+    </div>
+    <div>
+      <p class="article-body">The Huawei Cloud server (Ubuntu 24.04, Node 18, PM2) runs in parallel with Railway and serves the Chinese partner teams. On first deploy, the database was empty — the admin account <code>admin@v2.dsd</code> did not exist, causing login failures for other teams. The fix adds an idempotent seed step to <code>initDb()</code>: on every startup, if the admin email is not found in the database, it is created with <code>status: active</code> and a bcrypt-hashed password. Credentials can be overridden via <code>ADMIN_EMAIL</code> and <code>ADMIN_PASSWORD</code> environment variables. WebSocket support is also now live on both environments — connect via <code style="font-family:var(--mono);font-size:0.8em;color:var(--blue)">ws://host/ws?sessionId=</code> for real-time sensor streaming.</p>
+      <div class="article-byline"><span class="byline-author">&#127477;&#127481; Sergio Moniz &middot; João Lima &middot; V2</span><span class="byline-date">6 May 2026</span></div>
+    </div>
+  </article>
+
   <!-- ── M2 INTEGRATION EDITION ── -->
   <div class="edition-divider" data-category="milestone">
     <div class="edition-divider-line"></div>
