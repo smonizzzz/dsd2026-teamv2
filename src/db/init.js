@@ -1,4 +1,5 @@
-const getDb = require('./connection');
+const bcrypt = require('bcryptjs');
+const getDb  = require('./connection');
 
 async function initDb() {
   const { db, save } = await getDb();
@@ -89,6 +90,19 @@ async function initDb() {
   db.run('CREATE INDEX IF NOT EXISTS idx_recs_session   ON recommendations(session_id);');
   db.run('CREATE INDEX IF NOT EXISTS idx_schedule_user  ON schedules(user_id);');
   db.run('CREATE INDEX IF NOT EXISTS idx_push_user      ON push_tokens(user_id);');
+
+  // Seed default admin account if it does not exist yet.
+  const adminEmail = process.env.ADMIN_EMAIL    || 'admin@v2.dsd';
+  const adminPass  = process.env.ADMIN_PASSWORD || 'Admin2026!';
+  const existing   = db.exec('SELECT id FROM users WHERE email = ?', [adminEmail]);
+  if (!existing || existing.length === 0 || existing[0].values.length === 0) {
+    const hash = bcrypt.hashSync(adminPass, 10);
+    db.run(
+      "INSERT INTO users (name, email, role, password, status) VALUES (?, ?, 'clinician', ?, 'active')",
+      ['Admin', adminEmail, hash]
+    );
+    console.log(`  Admin seeded: ${adminEmail}`);
+  }
 
   save();
   console.log('  Database ready: data/v2.db');
