@@ -64,8 +64,8 @@ async function updateUser(req, res, next) {
     if (role && !['patient', 'clinician'].includes(role)) {
       const e = new Error('role must be patient or clinician'); e.status = 400; return next(e);
     }
-    if (status && !['active', 'pending', 'disabled'].includes(status)) {
-      const e = new Error('status must be active, pending or disabled'); e.status = 400; return next(e);
+    if (status && !['active', 'pending', 'disabled', 'rejected'].includes(status)) {
+      const e = new Error('status must be active, pending, disabled or rejected'); e.status = 400; return next(e);
     }
 
     const user = queryOne(db, 'SELECT id FROM users WHERE id = ?', [req.params.id]);
