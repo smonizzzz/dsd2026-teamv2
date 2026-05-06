@@ -1,5 +1,6 @@
 const getDb = require('../db/connection');
 const { queryAll, queryOne, run } = require('../db/helpers');
+const { broadcastMovementFeedback } = require('../realtime/feedbackSocket');
 
 async function getMeasurementsBySession(req, res, next) {
   try {
@@ -51,6 +52,7 @@ async function createMeasurement(req, res, next) {
     save();
 
     const created = queryOne(db, 'SELECT * FROM measurements WHERE id = ?', [result.lastInsertRowid]);
+    broadcastMovementFeedback({ sessionId, timestamp: ts, isCorrect, jointAngles });
     res.status(201).json({
       ...created,
       joint_angles: JSON.parse(created.joint_angles),
@@ -78,6 +80,12 @@ async function createMeasurementsBatch(req, res, next) {
         INSERT INTO measurements (session_id, joint_angles, is_correct, timestamp)
         VALUES (?, ?, ?, ?)
       `, [sessionId, JSON.stringify(m.jointAngles), m.isCorrect ? 1 : 0, ts]);
+      broadcastMovementFeedback({
+        sessionId,
+        timestamp: ts,
+        isCorrect: m.isCorrect,
+        jointAngles: m.jointAngles
+      });
     }
     save();
 

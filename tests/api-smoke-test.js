@@ -1,6 +1,8 @@
 const assert = require('assert');
+const { WebSocket } = require('ws');
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+const WS_URL = BASE_URL.replace(/^http/, 'ws');
 const runId = Date.now();
 const passedTests = [];
 
@@ -35,6 +37,40 @@ function expectStatus(result, expected, label) {
     `${label}: expected HTTP ${expected}, got ${result.status}: ${JSON.stringify(result.data)}`
   );
   passedTests.push(`${label} returned HTTP ${expected}`);
+}
+
+function connectFeedbackSocket(sessionId) {
+  return new Promise((resolve, reject) => {
+    const socket = new WebSocket(`${WS_URL}/ws?sessionId=${sessionId}`);
+    const timeout = setTimeout(() => reject(new Error('WebSocket connection timed out')), 5000);
+
+    socket.on('open', () => {
+      clearTimeout(timeout);
+      resolve(socket);
+    });
+    socket.on('error', reject);
+  });
+}
+
+function waitForSocketMessage(socket, predicate, label) {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      socket.off('message', onMessage);
+      reject(new Error(`${label}: timed out waiting for WebSocket message`));
+    }, 5000);
+
+    function onMessage(raw) {
+      const message = JSON.parse(raw.toString());
+      if (!predicate(message)) return;
+
+      clearTimeout(timeout);
+      socket.off('message', onMessage);
+      passedTests.push(label);
+      resolve(message);
+    }
+
+    socket.on('message', onMessage);
+  });
 }
 
 async function main() {
@@ -74,6 +110,23 @@ async function main() {
   assert.ok(session.data.id, 'session should return an id');
 
   const sessionId = session.data.id;
+  const feedbackSocket = await connectFeedbackSocket(sessionId);
+  const connectedMessage = await waitForSocketMessage(
+    feedbackSocket,
+    (message) => message.type === 'connected' && message.data.sessionId === sessionId,
+    'WebSocket /ws connected to session'
+  );
+  assert.strictEqual(connectedMessage.data.sessionId, sessionId);
+
+  const movementFeedbackPromise = waitForSocketMessage(
+    feedbackSocket,
+    (message) => (
+      message.type === 'movement_feedback' &&
+      message.data.sessionId === sessionId &&
+      message.data.joint === 'knee'
+    ),
+    'WebSocket movement_feedback event received'
+  );
 
   const measurement = await request('POST', '/measurements', {
     sessionId,
@@ -84,6 +137,15 @@ async function main() {
   assert.strictEqual(measurement.data.session_id, sessionId);
   assert.deepStrictEqual(measurement.data.joint_angles, { knee: 45.2, hip: 30.1 });
   assert.strictEqual(measurement.data.is_correct, true);
+
+  const movementFeedback = await movementFeedbackPromise;
+  assert.deepStrictEqual(movementFeedback.data, {
+    sessionId,
+    timestamp: measurement.data.timestamp,
+    isCorrect: true,
+    joint: 'knee',
+    angle: 45.2,
+  });
 
   const batch = await request('POST', '/measurements/batch', {
     sessionId,
@@ -126,9 +188,22 @@ async function main() {
   expectStatus(scheduleList, 200, 'GET /schedule/:userId');
   assert.ok(scheduleList.data.some((item) => item.id === schedule.data.id));
 
+  const sessionEndedPromise = waitForSocketMessage(
+    feedbackSocket,
+    (message) => message.type === 'session_ended' && message.data.sessionId === sessionId,
+    'WebSocket session_ended event received'
+  );
+
   const endSession = await request('PATCH', `/sessions/${sessionId}/end`);
   expectStatus(endSession, 200, 'PATCH /sessions/:id/end');
   assert.ok(endSession.data.ended_at, 'ended session should have ended_at');
+
+  const sessionEnded = await sessionEndedPromise;
+  assert.deepStrictEqual(sessionEnded.data, {
+    sessionId,
+    timestamp: endSession.data.ended_at,
+  });
+  feedbackSocket.close();
 
   const closedMeasurement = await request('POST', '/measurements', {
     sessionId,

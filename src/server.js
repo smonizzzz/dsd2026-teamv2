@@ -1,6 +1,8 @@
 const express = require('express');
 const cors    = require('cors');
+const http    = require('http');
 const initDb  = require('./db/init');
+const { setupFeedbackSocket } = require('./realtime/feedbackSocket');
 
 const errorHandler          = require('./middleware/errorHandler');
 const authRouter            = require('./routes/auth');
@@ -17,6 +19,7 @@ const auditLogsRouter       = require('./routes/auditLogs');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
+const server = http.createServer(app);
 
 app.use(cors());
 app.use(express.json());
@@ -45,11 +48,13 @@ app.use(errorHandler);
 
 // Init DB then start server
 initDb().then(() => {
-  app.listen(PORT, () => {
+  setupFeedbackSocket(server);
+  server.listen(PORT, () => {
     console.log('');
     console.log('  ================================');
     console.log('   V2 Backend is running!');
     console.log('   http://localhost:' + PORT + '/health');
+    console.log('   ws://localhost:' + PORT + '/ws?sessionId=1');
     console.log('  ================================');
     console.log('');
   });

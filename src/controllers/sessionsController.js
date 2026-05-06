@@ -1,5 +1,6 @@
 const getDb = require('../db/connection');
 const { queryAll, queryOne, run } = require('../db/helpers');
+const { broadcastSessionEnded } = require('../realtime/feedbackSocket');
 
 async function getSessions(req, res, next) {
   try {
@@ -69,7 +70,9 @@ async function endSession(req, res, next) {
 
     run(db, "UPDATE sessions SET ended_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?", [req.params.id]);
     save();
-    res.json(queryOne(db, 'SELECT * FROM sessions WHERE id = ?', [req.params.id]));
+    const updated = queryOne(db, 'SELECT * FROM sessions WHERE id = ?', [req.params.id]);
+    broadcastSessionEnded({ sessionId: req.params.id, timestamp: updated.ended_at });
+    res.json(updated);
   } catch (err) { next(err); }
 }
 
