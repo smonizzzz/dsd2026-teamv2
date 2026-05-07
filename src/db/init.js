@@ -81,6 +81,7 @@ async function initDb() {
     "ALTER TABLE users ADD COLUMN age          INTEGER",
     "ALTER TABLE users ADD COLUMN license_path TEXT",
     "ALTER TABLE recommendations ADD COLUMN notes TEXT",
+    "ALTER TABLE measurements ADD COLUMN sensor_data TEXT",
   ];
   for (const sql of migrations) {
     try { db.run(sql); } catch { /* column already exists */ }

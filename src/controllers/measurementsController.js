@@ -25,7 +25,12 @@ async function getMeasurementsBySession(req, res, next) {
     sql += ' ORDER BY timestamp ASC';
 
     const rows = queryAll(db, sql, params)
-      .map(m => ({ ...m, joint_angles: JSON.parse(m.joint_angles), is_correct: Boolean(m.is_correct) }));
+      .map(m => ({
+        ...m,
+        joint_angles: JSON.parse(m.joint_angles),
+        sensor_data: m.sensor_data ? JSON.parse(m.sensor_data) : null,
+        is_correct: Boolean(m.is_correct)
+      }));
 
     res.json(rows);
   } catch (err) { next(err); }
@@ -93,4 +98,35 @@ async function createMeasurementsBatch(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { getMeasurementsBySession, createMeasurement, createMeasurementsBatch };
+async function createRawMeasurement(req, res, next) {
+  try {
+    const { db, save } = await getDb();
+    const { sessionId, targetAngles, sensorData, errors } = req.body;
+
+    if (!sessionId || !Array.isArray(targetAngles) || targetAngles.length === 0) {
+      const e = new Error('sessionId and targetAngles array are required'); e.status = 400; return next(e);
+    }
+
+    const session = queryOne(db, 'SELECT id, ended_at FROM sessions WHERE id = ?', [sessionId]);
+    if (!session) { const e = new Error('Session not found'); e.status = 404; return next(e); }
+    if (session.ended_at) { const e = new Error('Session is closed'); e.status = 409; return next(e); }
+
+    const ts = targetAngles[0].timestamp || new Date().toISOString();
+    const result = run(db, `
+      INSERT INTO measurements (session_id, joint_angles, is_correct, timestamp, sensor_data)
+      VALUES (?, ?, 0, ?, ?)
+    `, [sessionId, JSON.stringify(targetAngles), ts, sensorData ? JSON.stringify(sensorData) : null]);
+    save();
+
+    const created = queryOne(db, 'SELECT * FROM measurements WHERE id = ?', [result.lastInsertRowid]);
+    broadcastMovementFeedback({ sessionId, timestamp: ts, isCorrect: false, jointAngles: {} });
+    res.status(201).json({
+      ...created,
+      joint_angles: JSON.parse(created.joint_angles),
+      sensor_data: created.sensor_data ? JSON.parse(created.sensor_data) : null,
+      is_correct: false
+    });
+  } catch (err) { next(err); }
+}
+
+module.exports = { getMeasurementsBySession, createMeasurement, createMeasurementsBatch, createRawMeasurement };
