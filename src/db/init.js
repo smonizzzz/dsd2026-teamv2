@@ -1,4 +1,6 @@
-const getDb = require('./connection');
+const bcrypt = require('bcryptjs');
+const getDb  = require('./connection');
+const { queryOne, run } = require('./helpers');
 
 async function initDb() {
   const { db, save } = await getDb();
@@ -84,11 +86,61 @@ async function initDb() {
     try { db.run(sql); } catch { /* column already exists */ }
   }
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS feedback (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id    INTEGER NOT NULL REFERENCES users(id),
+      content    TEXT    NOT NULL,
+      status     TEXT    NOT NULL DEFAULT 'pending',
+      response   TEXT,
+      created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+      updated_at TEXT
+    );
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS announcements (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      title        TEXT NOT NULL,
+      content      TEXT NOT NULL,
+      status       TEXT NOT NULL DEFAULT 'draft',
+      created_by   INTEGER NOT NULL REFERENCES users(id),
+      created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+      updated_at   TEXT
+    );
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id     INTEGER REFERENCES users(id),
+      action      TEXT NOT NULL,
+      target_type TEXT,
+      target_id   INTEGER,
+      details     TEXT,
+      created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+    );
+  `);
+
   db.run('CREATE INDEX IF NOT EXISTS idx_sessions_user  ON sessions(user_id);');
   db.run('CREATE INDEX IF NOT EXISTS idx_meas_session   ON measurements(session_id);');
   db.run('CREATE INDEX IF NOT EXISTS idx_recs_session   ON recommendations(session_id);');
   db.run('CREATE INDEX IF NOT EXISTS idx_schedule_user  ON schedules(user_id);');
   db.run('CREATE INDEX IF NOT EXISTS idx_push_user      ON push_tokens(user_id);');
+  db.run('CREATE INDEX IF NOT EXISTS idx_feedback_user  ON feedback(user_id);');
+  db.run('CREATE INDEX IF NOT EXISTS idx_audit_user     ON audit_logs(user_id);');
+
+  // Seed default admin account if it does not exist yet.
+  const adminEmail = process.env.ADMIN_EMAIL    || 'admin@v2.dsd';
+  const adminPass  = process.env.ADMIN_PASSWORD || 'Admin2026!';
+  if (!queryOne(db, 'SELECT id FROM users WHERE email = ?', [adminEmail])) {
+    const hash = bcrypt.hashSync(adminPass, 10);
+    run(db,
+      "INSERT INTO users (name, email, role, password, status) VALUES (?, ?, 'admin', ?, 'active')",
+      ['V2 Admin', adminEmail, hash]
+    );
+    console.log(`  Admin seeded: ${adminEmail}`);
+  }
 
   save();
   console.log('  Database ready: data/v2.db');
