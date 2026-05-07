@@ -1,9 +1,20 @@
+const path  = require('path');
+const fs    = require('fs');
 const getDb = require('../db/connection');
 const { queryAll, queryOne, run } = require('../db/helpers');
+const { logAudit } = require('../db/audit');
 
 async function getUsers(req, res, next) {
   try {
     const { db } = await getDb();
+    const { role } = req.query;
+    if (role) {
+      if (!['patient', 'clinician'].includes(role)) {
+        const e = new Error('role must be patient or clinician'); e.status = 400; return next(e);
+      }
+      const users = queryAll(db, 'SELECT id, name, email, role, age, status, created_at FROM users WHERE role = ? ORDER BY created_at DESC', [role]);
+      return res.json(users);
+    }
     const users = queryAll(db, 'SELECT id, name, email, role, age, status, created_at FROM users ORDER BY created_at DESC');
     res.json(users);
   } catch (err) { next(err); }
@@ -44,6 +55,41 @@ async function createUser(req, res, next) {
   } catch (err) { next(err); }
 }
 
+async function updateUser(req, res, next) {
+  try {
+    const { db, save } = await getDb();
+    const { name, age, role, status } = req.body;
+
+    if (!name && age === undefined && !role && !status) {
+      const e = new Error('at least one field is required: name, age, role, status'); e.status = 400; return next(e);
+    }
+    if (role && !['patient', 'clinician'].includes(role)) {
+      const e = new Error('role must be patient or clinician'); e.status = 400; return next(e);
+    }
+    if (status && !['active', 'pending', 'disabled', 'rejected'].includes(status)) {
+      const e = new Error('status must be active, pending, disabled or rejected'); e.status = 400; return next(e);
+    }
+
+    const user = queryOne(db, 'SELECT id FROM users WHERE id = ?', [req.params.id]);
+    if (!user) { const e = new Error('User not found'); e.status = 404; return next(e); }
+
+    const fields = [];
+    const values = [];
+    if (name)            { fields.push('name = ?');   values.push(name); }
+    if (age !== undefined) { fields.push('age = ?');  values.push(age); }
+    if (role)            { fields.push('role = ?');   values.push(role); }
+    if (status)          { fields.push('status = ?'); values.push(status); }
+    values.push(req.params.id);
+
+    run(db, `UPDATE users SET ${fields.join(', ')} WHERE id = ?`, values);
+    logAudit(db, { userId: req.user?.id, action: 'UPDATE_USER', targetType: 'user', targetId: req.params.id, details: req.body });
+    save();
+
+    const updated = queryOne(db, 'SELECT id, name, email, role, age, status, created_at FROM users WHERE id = ?', [req.params.id]);
+    res.json(updated);
+  } catch (err) { next(err); }
+}
+
 async function getPatients(req, res, next) {
   try {
     const { db } = await getDb();
@@ -68,4 +114,43 @@ async function getPatientById(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { getUsers, getUserById, createUser, getPatients, getPatientById };
+async function getLicense(req, res, next) {
+  try {
+    const { db } = await getDb();
+    const user = queryOne(db, 'SELECT license_path FROM users WHERE id = ?', [req.params.id]);
+    if (!user) { const e = new Error('User not found'); e.status = 404; return next(e); }
+    if (!user.license_path) { const e = new Error('No license on file for this user'); e.status = 404; return next(e); }
+
+    const absPath = path.resolve(user.license_path);
+    if (!fs.existsSync(absPath)) { const e = new Error('License file not found on server'); e.status = 404; return next(e); }
+
+    res.download(absPath);
+  } catch (err) { next(err); }
+}
+
+async function updateLicense(req, res, next) {
+  try {
+    const { db, save } = await getDb();
+
+    if (!req.file) {
+      const e = new Error('license file is required'); e.status = 400; return next(e);
+    }
+
+    const user = queryOne(db, 'SELECT id, role, status FROM users WHERE id = ?', [req.params.id]);
+    if (!user) { const e = new Error('User not found'); e.status = 404; return next(e); }
+    if (user.role !== 'clinician') {
+      const e = new Error('Only clinician users can upload a license'); e.status = 400; return next(e);
+    }
+    if (!['pending', 'rejected'].includes(user.status)) {
+      const e = new Error('License can only be replaced while account is pending or rejected'); e.status = 409; return next(e);
+    }
+
+    run(db, "UPDATE users SET license_path = ?, status = 'pending' WHERE id = ?", [req.file.path, req.params.id]);
+    logAudit(db, { userId: req.user?.id, action: 'UPDATE_LICENSE', targetType: 'user', targetId: req.params.id });
+    save();
+
+    res.json({ userId: user.id, role: user.role, status: 'pending' });
+  } catch (err) { next(err); }
+}
+
+module.exports = { getUsers, getUserById, createUser, updateUser, getLicense, updateLicense, getPatients, getPatientById };

@@ -4,6 +4,7 @@ const getDb  = require('../db/connection');
 const { queryOne, run } = require('../db/helpers');
 const { JWT_SECRET }    = require('../middleware/auth');
 const upload            = require('../middleware/upload');
+const { logAudit }      = require('../db/audit');
 
 // Patients send JSON; clinicians send multipart/form-data (with optional license file).
 // This middleware applies multer only when the request is multipart.
@@ -71,6 +72,9 @@ async function login(req, res, next) {
     if (user.status === 'pending') {
       const e = new Error('Account pending approval'); e.status = 403; return next(e);
     }
+    if (user.status === 'rejected') {
+      const e = new Error('Account rejected. Please upload a new license photo'); e.status = 403; return next(e);
+    }
 
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     const { password: _, license_path: __, ...safeUser } = user;
@@ -105,9 +109,25 @@ async function approveUser(req, res, next) {
       const e = new Error('User is not pending approval'); e.status = 409; return next(e);
     }
     run(db, "UPDATE users SET status = 'active' WHERE id = ?", [req.params.userId]);
+    logAudit(db, { userId: req.user?.id, action: 'APPROVE_USER', targetType: 'user', targetId: req.params.userId });
     save();
     res.json({ userId: user.id, role: user.role, status: 'active' });
   } catch (err) { next(err); }
 }
 
-module.exports = { register, login, me, getStatus, approveUser, conditionalUpload };
+async function rejectUser(req, res, next) {
+  try {
+    const { db, save } = await getDb();
+    const user = queryOne(db, 'SELECT id, role, status FROM users WHERE id = ?', [req.params.userId]);
+    if (!user) { const e = new Error('User not found'); e.status = 404; return next(e); }
+    if (user.status !== 'pending') {
+      const e = new Error('User is not pending approval'); e.status = 409; return next(e);
+    }
+    run(db, "UPDATE users SET status = 'rejected' WHERE id = ?", [req.params.userId]);
+    logAudit(db, { userId: req.user?.id, action: 'REJECT_USER', targetType: 'user', targetId: req.params.userId });
+    save();
+    res.json({ userId: user.id, role: user.role, status: 'rejected' });
+  } catch (err) { next(err); }
+}
+
+module.exports = { register, login, me, getStatus, approveUser, rejectUser, conditionalUpload };

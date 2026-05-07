@@ -637,14 +637,18 @@
           <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/auth/me</span><span class="ep-desc">requires Bearer token</span></div>
           <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/auth/status</span><span class="ep-desc">account approval status</span></div>
           <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/auth/approve/:userId</span><span class="ep-desc">admin: approve clinician</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/auth/reject/:userId</span><span class="ep-desc">admin: reject clinician</span></div>
         </div>
       </div>
       <div class="endpoint-group">
         <div class="endpoint-group-title">Users</div>
         <div class="endpoint-list">
           <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/users</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/users</span><span class="ep-desc">?role=clinician|patient</span></div>
           <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/users/:id</span></div>
-          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/users</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/users/:id</span><span class="ep-desc">modify name, age, role, status</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/users/:id/license</span><span class="ep-desc">download license file</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/users/:id/license</span><span class="ep-desc">replace license &amp; reset to pending</span></div>
         </div>
       </div>
       <div class="endpoint-group">
@@ -693,6 +697,32 @@
         </div>
       </div>
       <div class="endpoint-group">
+        <div class="endpoint-group-title">Feedback</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/feedback</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/feedback</span><span class="ep-desc">?status=pending|reviewed|resolved</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/feedback/:id</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/feedback/:id</span><span class="ep-desc">update status &amp; response</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Announcements</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/announcements</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/announcements</span><span class="ep-desc">?status=draft|published</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/announcements/:id</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/announcements/:id</span></div>
+          <div class="endpoint-row"><span class="method m-delete">DELETE</span><span class="ep-path">/announcements/:id</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Audit Log</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/audit-logs</span><span class="ep-desc">?userId= &amp;action= &amp;targetType=</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/audit-logs/:id</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
         <div class="endpoint-group-title">Push Tokens</div>
         <div class="endpoint-list">
           <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/push/register</span></div>
@@ -722,8 +752,8 @@
       </ul>
       <div class="progress-bar-wrap"><div class="progress-bar" style="width:100%"></div></div>
     </div>
-    <div class="sprint-card reveal active" data-cn="二">
-      <div class="sprint-header"><span class="sprint-num">Sprint 2</span><span class="sprint-status status-active">Active</span></div>
+    <div class="sprint-card reveal" data-cn="二">
+      <div class="sprint-header"><span class="sprint-num">Sprint 2</span><span class="sprint-status status-complete">Completed</span></div>
       <div class="sprint-title">Core Implementation</div>
       <ul class="sprint-items">
         <li>JWT auth system live (register / login / me)</li>
@@ -736,11 +766,21 @@
         <li>GET /patients &amp; GET /patients/:id added for M2</li>
         <li>Date range filtering on measurements (?startDate &amp; ?endDate)</li>
         <li>Optional notes on recommendations; age field on users</li>
+        <li>Admin account seeded automatically on every fresh deployment</li>
+        <li>Rejected status for clinicians + PATCH /auth/reject/:userId</li>
+        <li>PATCH /users/:id — modify name, age, role, status (ADMIN-03/04/08)</li>
+        <li>GET /users?role= filter for clinician/patient queries</li>
+        <li>GET + PATCH /users/:id/license — download &amp; replace license file</li>
+        <li>Feedback endpoints live — /feedback (ADMIN-06)</li>
+        <li>Announcements endpoints live — /announcements (ADMIN-07)</li>
+        <li>Audit log system — /audit-logs with automatic action recording (ADMIN-09)</li>
+        <li>WebSocket channel live — ws://host/ws?sessionId=</li>
+        <li>Huawei Cloud server deployed — 113.44.220.94:3000</li>
       </ul>
-      <div class="progress-bar-wrap"><div class="progress-bar" style="width:85%"></div></div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:100%"></div></div>
     </div>
-    <div class="sprint-card reveal" data-cn="三">
-      <div class="sprint-header"><span class="sprint-num">Sprint 3</span><span class="sprint-status status-upcoming">Upcoming</span></div>
+    <div class="sprint-card reveal active" data-cn="三">
+      <div class="sprint-header"><span class="sprint-num">Sprint 3</span><span class="sprint-status status-active">Active</span></div>
       <div class="sprint-title">Integration &amp; Hardening</div>
       <ul class="sprint-items">
         <li>V2 leads full-stack integration testing</li>

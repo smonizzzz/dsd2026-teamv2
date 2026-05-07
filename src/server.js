@@ -1,6 +1,8 @@
 const express = require('express');
 const cors    = require('cors');
+const http    = require('http');
 const initDb  = require('./db/init');
+const { setupFeedbackSocket } = require('./realtime/feedbackSocket');
 
 const errorHandler          = require('./middleware/errorHandler');
 const authRouter            = require('./routes/auth');
@@ -11,9 +13,13 @@ const measurementsRouter    = require('./routes/measurements');
 const recommendationsRouter = require('./routes/recommendations');
 const scheduleRouter        = require('./routes/schedule');
 const pushRouter            = require('./routes/push');
+const feedbackRouter        = require('./routes/feedback');
+const announcementsRouter   = require('./routes/announcements');
+const auditLogsRouter       = require('./routes/auditLogs');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
+const server = http.createServer(app);
 
 app.use(cors());
 app.use(express.json());
@@ -33,17 +39,22 @@ app.use('/measurements',    measurementsRouter);
 app.use('/recommendations', recommendationsRouter);
 app.use('/schedule',        scheduleRouter);
 app.use('/push',            pushRouter);
+app.use('/feedback',        feedbackRouter);
+app.use('/announcements',   announcementsRouter);
+app.use('/audit-logs',      auditLogsRouter);
 
 app.use((req, res) => res.status(404).json({ error: `${req.method} ${req.path} not found` }));
 app.use(errorHandler);
 
 // Init DB then start server
 initDb().then(() => {
-  app.listen(PORT, () => {
+  setupFeedbackSocket(server);
+  server.listen(PORT, () => {
     console.log('');
     console.log('  ================================');
     console.log('   V2 Backend is running!');
     console.log('   http://localhost:' + PORT + '/health');
+    console.log('   ws://localhost:' + PORT + '/ws?sessionId=1');
     console.log('  ================================');
     console.log('');
   });
