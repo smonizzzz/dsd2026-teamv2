@@ -228,6 +228,15 @@ async function main() {
   expectStatus(measurements, 200, 'GET /measurements/:sessionId');
   assert.strictEqual(measurements.data.length, 3);
 
+  const progress = await request('GET', `/progress/${userId}`);
+  expectStatus(progress, 200, 'GET /progress/:userId');
+  assert.strictEqual(progress.data.userId, userId);
+  assert.ok(progress.data.summary.total_sessions >= 1);
+  assert.ok(progress.data.summary.total_measurements >= 3);
+  assert.ok(progress.data.joint_progress.some((item) => item.joint === 'knee'));
+  assert.ok(Array.isArray(progress.data.recent_sessions));
+  assert.ok(Array.isArray(progress.data.daily_trend));
+
   const recommendation = await request('POST', '/recommendations', {
     sessionId,
     movement: 'knee flexion',
