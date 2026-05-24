@@ -1,14 +1,14 @@
 const getDb = require('../db/connection');
 const { queryAll, queryOne, run } = require('../db/helpers');
 const { broadcastMovementFeedback } = require('../realtime/feedbackSocket');
+const { ensureCanAccessSession } = require('../utils/accessControl');
 
 async function getMeasurementsBySession(req, res, next) {
   try {
     const { db } = await getDb();
-    const session = queryOne(db, 'SELECT id FROM sessions WHERE id = ?', [req.params.sessionId]);
-    if (!session) { const e = new Error('Session not found'); e.status = 404; return next(e); }
+    ensureCanAccessSession(db, req.user, req.params.sessionId);
 
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, limit, offset } = req.query;
     let sql = 'SELECT * FROM measurements WHERE session_id = ?';
     const params = [req.params.sessionId];
 
@@ -23,6 +23,15 @@ async function getMeasurementsBySession(req, res, next) {
       params.push(end);
     }
     sql += ' ORDER BY timestamp ASC';
+    if (limit !== undefined) {
+      const parsedLimit = Math.min(Math.max(Number(limit) || 0, 1), 5000);
+      sql += ' LIMIT ?';
+      params.push(parsedLimit);
+      if (offset !== undefined) {
+        sql += ' OFFSET ?';
+        params.push(Math.max(Number(offset) || 0, 0));
+      }
+    }
 
     const rows = queryAll(db, sql, params)
       .map(m => ({

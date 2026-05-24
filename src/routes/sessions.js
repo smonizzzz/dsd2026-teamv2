@@ -1,8 +1,10 @@
 const router = require('express').Router();
 const { getSessions, getSessionById, createSession, endSession, deleteSession } = require('../controllers/sessionsController');
-router.get('/',          getSessions);
-router.get('/:id',       getSessionById);
-router.post('/',         createSession);
-router.patch('/:id/end', endSession);
-router.delete('/:id',    deleteSession);
+const { requireAuth } = require('../middleware/auth');
+
+router.get('/',          requireAuth, getSessions);
+router.get('/:id',       requireAuth, getSessionById);
+router.post('/',         requireAuth, createSession);
+router.patch('/:id/end', requireAuth, endSession);
+router.delete('/:id',    requireAuth, deleteSession);
 module.exports = router;

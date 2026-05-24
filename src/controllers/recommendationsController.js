@@ -1,11 +1,11 @@
 const getDb = require('../db/connection');
 const { queryAll, queryOne, run } = require('../db/helpers');
+const { ensureCanAccessPatient, ensureCanAccessSession } = require('../utils/accessControl');
 
 async function getRecommendationsBySession(req, res, next) {
   try {
     const { db } = await getDb();
-    const session = queryOne(db, 'SELECT id FROM sessions WHERE id = ?', [req.params.sessionId]);
-    if (!session) { const e = new Error('Session not found'); e.status = 404; return next(e); }
+    ensureCanAccessSession(db, req.user, req.params.sessionId);
     res.json(queryAll(db,
       'SELECT * FROM recommendations WHERE session_id = ? ORDER BY confidence DESC',
       [req.params.sessionId]
@@ -58,6 +58,7 @@ async function generateRecommendations(req, res, next) {
     const { db } = await getDb();
     const user = queryOne(db, 'SELECT id FROM users WHERE id = ?', [req.params.userId]);
     if (!user) { const e = new Error('User not found'); e.status = 404; return next(e); }
+    ensureCanAccessPatient(db, req.user, req.params.userId);
 
     const sessions = queryAll(db,
       'SELECT id FROM sessions WHERE user_id = ? ORDER BY started_at DESC LIMIT 10',

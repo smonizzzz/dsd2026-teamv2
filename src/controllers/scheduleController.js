@@ -1,11 +1,13 @@
 const getDb = require('../db/connection');
 const { queryAll, queryOne, run } = require('../db/helpers');
+const { ensureCanAccessPatient } = require('../utils/accessControl');
 
 async function getSchedule(req, res, next) {
   try {
     const { db } = await getDb();
     const user = queryOne(db, 'SELECT id FROM users WHERE id = ?', [req.params.userId]);
     if (!user) { const e = new Error('User not found'); e.status = 404; return next(e); }
+    ensureCanAccessPatient(db, req.user, req.params.userId);
 
     const rows = queryAll(db,
       'SELECT * FROM schedules WHERE user_id = ? ORDER BY date ASC',
@@ -29,6 +31,7 @@ async function createScheduleItem(req, res, next) {
     if (!queryOne(db, 'SELECT id FROM users WHERE id = ?', [userId])) {
       const e = new Error('User not found'); e.status = 404; return next(e);
     }
+    ensureCanAccessPatient(db, req.user, userId);
 
     const result = run(db,
       'INSERT INTO schedules (user_id, exercise, date, duration, notes, status) VALUES (?, ?, ?, ?, ?, ?)',
@@ -44,6 +47,7 @@ async function updateScheduleItem(req, res, next) {
     const { db, save } = await getDb();
     const item = queryOne(db, 'SELECT * FROM schedules WHERE id = ?', [req.params.id]);
     if (!item) { const e = new Error('Schedule item not found'); e.status = 404; return next(e); }
+    ensureCanAccessPatient(db, req.user, item.user_id);
 
     const { exercise, date, duration, notes, status } = req.body;
     if (status && !['pending', 'completed', 'skipped'].includes(status)) {
@@ -70,9 +74,11 @@ async function updateScheduleItem(req, res, next) {
 async function deleteScheduleItem(req, res, next) {
   try {
     const { db, save } = await getDb();
-    if (!queryOne(db, 'SELECT id FROM schedules WHERE id = ?', [req.params.id])) {
+    const item = queryOne(db, 'SELECT * FROM schedules WHERE id = ?', [req.params.id]);
+    if (!item) {
       const e = new Error('Schedule item not found'); e.status = 404; return next(e);
     }
+    ensureCanAccessPatient(db, req.user, item.user_id);
     run(db, 'DELETE FROM schedules WHERE id = ?', [req.params.id]);
     save();
     res.status(204).send();

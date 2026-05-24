@@ -1,5 +1,6 @@
 const getDb = require('../db/connection');
 const { queryAll, queryOne } = require('../db/helpers');
+const { ensureCanAccessPatient } = require('../utils/accessControl');
 
 function round(value, digits = 2) {
   const factor = 10 ** digits;
@@ -52,6 +53,7 @@ async function getProgressByUser(req, res, next) {
       e.status = 404;
       return next(e);
     }
+    ensureCanAccessPatient(db, req.user, userId);
 
     const sessions = queryAll(db, `
       SELECT s.id, s.user_id, s.started_at, s.ended_at,

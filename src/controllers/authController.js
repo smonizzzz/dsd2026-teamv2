@@ -20,7 +20,7 @@ function conditionalUpload(req, res, next) {
 async function register(req, res, next) {
   try {
     const { db, save } = await getDb();
-    const { name, email, password, role = 'patient', age } = req.body;
+    const { name, email, password, role = 'patient', age, inviteToken } = req.body;
 
     if (!name || !email || !password) {
       const e = new Error('name, email and password are required'); e.status = 400; return next(e);
@@ -32,14 +32,48 @@ async function register(req, res, next) {
       const e = new Error('Email already exists'); e.status = 409; return next(e);
     }
 
+    let doctorId = null;
+    let invite = null;
+    if (role === 'patient') {
+      if (!inviteToken) {
+        const e = new Error('Patient registration requires a doctor invite token'); e.status = 400; return next(e);
+      }
+
+      invite = queryOne(db, `
+        SELECT i.*, u.role AS doctor_role, u.status AS doctor_status
+        FROM doctor_invites i
+        JOIN users u ON u.id = i.doctor_id
+        WHERE i.token = ?
+      `, [inviteToken]);
+      if (!invite || invite.status !== 'active' || invite.doctor_role !== 'clinician') {
+        const e = new Error('Invalid doctor invite token'); e.status = 400; return next(e);
+      }
+      if (invite.doctor_status !== 'active') {
+        const e = new Error('Doctor account is not active'); e.status = 409; return next(e);
+      }
+      if (invite.expires_at && new Date(invite.expires_at).getTime() < Date.now()) {
+        const e = new Error('Doctor invite token has expired'); e.status = 410; return next(e);
+      }
+      if (invite.used_count >= invite.max_uses) {
+        const e = new Error('Doctor invite token has already been used'); e.status = 409; return next(e);
+      }
+      doctorId = invite.doctor_id;
+    }
+
     const hash        = bcrypt.hashSync(password, 10);
     const status      = role === 'clinician' ? 'pending' : 'active';
     const licensePath = req.file ? req.file.path : null;
 
     const result = run(db,
-      'INSERT INTO users (name, email, role, password, status, age, license_path) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [name, email, role, hash, status, age || null, licensePath]
+      'INSERT INTO users (name, email, role, password, status, age, license_path, doctor_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [name, email, role, hash, status, age || null, licensePath, doctorId]
     );
+
+    if (invite) {
+      const nextUsedCount = invite.used_count + 1;
+      const nextStatus = nextUsedCount >= invite.max_uses ? 'used' : 'active';
+      run(db, 'UPDATE doctor_invites SET used_count = ?, status = ? WHERE id = ?', [nextUsedCount, nextStatus, invite.id]);
+    }
     save();
 
     // Clinicians wait for admin approval — no token issued yet.
@@ -47,8 +81,8 @@ async function register(req, res, next) {
       return res.status(201).json({ userId: result.lastInsertRowid, status: 'pending' });
     }
 
-    const user  = queryOne(db, 'SELECT id, name, email, role, status, age, created_at FROM users WHERE id = ?', [result.lastInsertRowid]);
-    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    const user  = queryOne(db, 'SELECT id, name, email, role, status, age, doctor_id, created_at FROM users WHERE id = ?', [result.lastInsertRowid]);
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role, doctorId: user.doctor_id }, JWT_SECRET, { expiresIn: '7d' });
     res.status(201).json({ token, user });
   } catch (err) { next(err); }
 }
@@ -76,7 +110,7 @@ async function login(req, res, next) {
       const e = new Error('Account rejected. Please upload a new license photo'); e.status = 403; return next(e);
     }
 
-    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role, doctorId: user.doctor_id }, JWT_SECRET, { expiresIn: '7d' });
     const { password: _, license_path: __, ...safeUser } = user;
     res.json({ token, user: safeUser });
   } catch (err) { next(err); }
@@ -85,7 +119,7 @@ async function login(req, res, next) {
 async function me(req, res, next) {
   try {
     const { db } = await getDb();
-    const user = queryOne(db, 'SELECT id, name, email, role, status, age, created_at FROM users WHERE id = ?', [req.user.id]);
+    const user = queryOne(db, 'SELECT id, name, email, role, status, age, doctor_id, created_at FROM users WHERE id = ?', [req.user.id]);
     if (!user) { const e = new Error('User not found'); e.status = 404; return next(e); }
     res.json(user);
   } catch (err) { next(err); }
@@ -94,9 +128,9 @@ async function me(req, res, next) {
 async function getStatus(req, res, next) {
   try {
     const { db } = await getDb();
-    const user = queryOne(db, 'SELECT id, role, status FROM users WHERE id = ?', [req.user.id]);
+    const user = queryOne(db, 'SELECT id, role, status, doctor_id FROM users WHERE id = ?', [req.user.id]);
     if (!user) { const e = new Error('User not found'); e.status = 404; return next(e); }
-    res.json({ userId: user.id, role: user.role, status: user.status });
+    res.json({ userId: user.id, role: user.role, status: user.status, doctor_id: user.doctor_id });
   } catch (err) { next(err); }
 }
 

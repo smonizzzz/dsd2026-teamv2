@@ -1,6 +1,7 @@
 const getDb = require('../db/connection');
 const { queryAll, queryOne, run } = require('../db/helpers');
 const { broadcastSessionEnded } = require('../realtime/feedbackSocket');
+const { ensureCanAccessPatient, ensureCanAccessSession } = require('../utils/accessControl');
 
 async function getSessions(req, res, next) {
   try {
@@ -13,7 +14,16 @@ async function getSessions(req, res, next) {
       LEFT JOIN measurements m ON m.session_id = s.id
     `;
     const params = [];
-    if (userId) { sql += ' WHERE s.user_id = ?'; params.push(userId); }
+    const where = [];
+    if (req.user.role === 'clinician') {
+      where.push('u.doctor_id = ?');
+      params.push(req.user.id);
+    } else if (req.user.role === 'patient') {
+      where.push('s.user_id = ?');
+      params.push(req.user.id);
+    }
+    if (userId) { where.push('s.user_id = ?'); params.push(userId); }
+    if (where.length) sql += ` WHERE ${where.join(' AND ')}`;
     sql += ' GROUP BY s.id ORDER BY s.started_at DESC';
     res.json(queryAll(db, sql, params));
   } catch (err) { next(err); }
@@ -23,11 +33,12 @@ async function getSessionById(req, res, next) {
   try {
     const { db } = await getDb();
     const session = queryOne(db, `
-      SELECT s.*, u.name AS user_name, u.email AS user_email
+      SELECT s.*, u.name AS user_name, u.email AS user_email, u.doctor_id
       FROM sessions s JOIN users u ON u.id = s.user_id
       WHERE s.id = ?
     `, [req.params.id]);
     if (!session) { const e = new Error('Session not found'); e.status = 404; return next(e); }
+    ensureCanAccessPatient(db, req.user, session.user_id);
 
     const measurements = queryAll(db,
       'SELECT * FROM measurements WHERE session_id = ? ORDER BY timestamp ASC',
@@ -50,6 +61,7 @@ async function createSession(req, res, next) {
 
     const user = queryOne(db, 'SELECT id FROM users WHERE id = ?', [userId]);
     if (!user) { const e = new Error('User not found'); e.status = 404; return next(e); }
+    ensureCanAccessPatient(db, req.user, userId);
 
     const result = run(db, 'INSERT INTO sessions (user_id) VALUES (?)', [userId]);
     save();
@@ -64,7 +76,7 @@ async function createSession(req, res, next) {
 async function endSession(req, res, next) {
   try {
     const { db, save } = await getDb();
-    const session = queryOne(db, 'SELECT * FROM sessions WHERE id = ?', [req.params.id]);
+    const session = ensureCanAccessSession(db, req.user, req.params.id);
     if (!session) { const e = new Error('Session not found'); e.status = 404; return next(e); }
     if (session.ended_at) { const e = new Error('Session already closed'); e.status = 409; return next(e); }
 
@@ -79,7 +91,7 @@ async function endSession(req, res, next) {
 async function deleteSession(req, res, next) {
   try {
     const { db, save } = await getDb();
-    const session = queryOne(db, 'SELECT id FROM sessions WHERE id = ?', [req.params.id]);
+    const session = ensureCanAccessSession(db, req.user, req.params.id);
     if (!session) { const e = new Error('Session not found'); e.status = 404; return next(e); }
 
     run(db, 'DELETE FROM measurements WHERE session_id = ?', [req.params.id]);

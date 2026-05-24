@@ -3,6 +3,7 @@ const fs    = require('fs');
 const getDb = require('../db/connection');
 const { queryAll, queryOne, run } = require('../db/helpers');
 const { logAudit } = require('../db/audit');
+const { canAccessPatient } = require('../utils/accessControl');
 
 async function getUsers(req, res, next) {
   try {
@@ -12,10 +13,10 @@ async function getUsers(req, res, next) {
       if (!['patient', 'clinician'].includes(role)) {
         const e = new Error('role must be patient or clinician'); e.status = 400; return next(e);
       }
-      const users = queryAll(db, 'SELECT id, name, email, role, age, status, created_at FROM users WHERE role = ? ORDER BY created_at DESC', [role]);
+      const users = queryAll(db, 'SELECT id, name, email, role, age, status, doctor_id, created_at FROM users WHERE role = ? ORDER BY created_at DESC', [role]);
       return res.json(users);
     }
-    const users = queryAll(db, 'SELECT id, name, email, role, age, status, created_at FROM users ORDER BY created_at DESC');
+    const users = queryAll(db, 'SELECT id, name, email, role, age, status, doctor_id, created_at FROM users ORDER BY created_at DESC');
     res.json(users);
   } catch (err) { next(err); }
 }
@@ -24,7 +25,7 @@ async function getUserById(req, res, next) {
   try {
     const { db } = await getDb();
     const user = queryOne(db, `
-      SELECT u.id, u.name, u.email, u.role, u.age, u.status, u.created_at, COUNT(s.id) AS session_count
+      SELECT u.id, u.name, u.email, u.role, u.age, u.status, u.doctor_id, u.created_at, COUNT(s.id) AS session_count
       FROM users u LEFT JOIN sessions s ON s.user_id = u.id
       WHERE u.id = ? GROUP BY u.id
     `, [req.params.id]);
@@ -36,7 +37,7 @@ async function getUserById(req, res, next) {
 async function createUser(req, res, next) {
   try {
     const { db, save } = await getDb();
-    const { name, email, role = 'patient', age } = req.body;
+    const { name, email, role = 'patient', age, doctorId } = req.body;
 
     if (!name || !email) {
       const e = new Error('name and email are required'); e.status = 400; return next(e);
@@ -48,9 +49,20 @@ async function createUser(req, res, next) {
       const e = new Error('Email already exists'); e.status = 409; return next(e);
     }
 
-    const result = run(db, 'INSERT INTO users (name, email, role, age) VALUES (?, ?, ?, ?)', [name, email, role, age || null]);
+    let boundDoctorId = null;
+    if (role === 'patient') {
+      if (!doctorId) {
+        const e = new Error('doctorId is required when creating a patient'); e.status = 400; return next(e);
+      }
+      if (!queryOne(db, "SELECT id FROM users WHERE id = ? AND role = 'clinician' AND status = 'active'", [doctorId])) {
+        const e = new Error('Doctor not found or inactive'); e.status = 404; return next(e);
+      }
+      boundDoctorId = doctorId;
+    }
+
+    const result = run(db, 'INSERT INTO users (name, email, role, age, doctor_id) VALUES (?, ?, ?, ?, ?)', [name, email, role, age || null, boundDoctorId]);
     save();
-    const created = queryOne(db, 'SELECT id, name, email, role, age, status, created_at FROM users WHERE id = ?', [result.lastInsertRowid]);
+    const created = queryOne(db, 'SELECT id, name, email, role, age, status, doctor_id, created_at FROM users WHERE id = ?', [result.lastInsertRowid]);
     res.status(201).json(created);
   } catch (err) { next(err); }
 }
@@ -85,7 +97,7 @@ async function updateUser(req, res, next) {
     logAudit(db, { userId: req.user?.id, action: 'UPDATE_USER', targetType: 'user', targetId: req.params.id, details: req.body });
     save();
 
-    const updated = queryOne(db, 'SELECT id, name, email, role, age, status, created_at FROM users WHERE id = ?', [req.params.id]);
+    const updated = queryOne(db, 'SELECT id, name, email, role, age, status, doctor_id, created_at FROM users WHERE id = ?', [req.params.id]);
     res.json(updated);
   } catch (err) { next(err); }
 }
@@ -93,10 +105,17 @@ async function updateUser(req, res, next) {
 async function getPatients(req, res, next) {
   try {
     const { db } = await getDb();
-    const patients = queryAll(db,
-      'SELECT id, name, email, role, age, status, created_at FROM users WHERE role = ? ORDER BY created_at DESC',
-      ['patient']
-    );
+    let sql = 'SELECT id, name, email, role, age, status, doctor_id, created_at FROM users WHERE role = ?';
+    const params = ['patient'];
+    if (req.user.role === 'clinician') {
+      sql += ' AND doctor_id = ?';
+      params.push(req.user.id);
+    } else if (req.user.role === 'patient') {
+      sql += ' AND id = ?';
+      params.push(req.user.id);
+    }
+    sql += ' ORDER BY created_at DESC';
+    const patients = queryAll(db, sql, params);
     res.json(patients);
   } catch (err) { next(err); }
 }
@@ -105,11 +124,14 @@ async function getPatientById(req, res, next) {
   try {
     const { db } = await getDb();
     const patient = queryOne(db, `
-      SELECT u.id, u.name, u.email, u.role, u.age, u.status, u.created_at, COUNT(s.id) AS session_count
+      SELECT u.id, u.name, u.email, u.role, u.age, u.status, u.doctor_id, u.created_at, COUNT(s.id) AS session_count
       FROM users u LEFT JOIN sessions s ON s.user_id = u.id
       WHERE u.id = ? AND u.role = 'patient' GROUP BY u.id
     `, [req.params.id]);
     if (!patient) { const e = new Error('Patient not found'); e.status = 404; return next(e); }
+    if (!canAccessPatient(req.user, patient)) {
+      const e = new Error('Forbidden'); e.status = 403; return next(e);
+    }
     res.json(patient);
   } catch (err) { next(err); }
 }
