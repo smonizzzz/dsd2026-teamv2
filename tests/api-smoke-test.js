@@ -171,6 +171,23 @@ async function main() {
   const me = await request('GET', '/auth/me', undefined, token);
   expectStatus(me, 200, 'GET /auth/me');
   assert.strictEqual(me.data.email, email);
+  assert.strictEqual(me.data.doctor_id, 0, 'unbound patient should have doctor_id 0');
+
+  // ── Doctor binding flow (M1 UC-M1-01-01) ──
+  const doctorId = clinicianRegister.data.userId;
+  const doctorLookup = await request('GET', `/users/${doctorId}`, undefined, token);
+  expectStatus(doctorLookup, 200, 'GET /users/:id (doctor verification)');
+  assert.strictEqual(doctorLookup.data.role, 'clinician');
+
+  const bindDoctor = await request('PATCH', `/users/${userId}`, { doctorId }, token);
+  expectStatus(bindDoctor, 200, 'PATCH /users/:id (bind doctor)');
+  assert.strictEqual(bindDoctor.data.doctor_id, doctorId);
+
+  const rebindDoctor = await request('PATCH', `/users/${userId}`, { doctorId }, token);
+  expectStatus(rebindDoctor, 409, 'PATCH /users/:id (rebind same doctor → conflict)');
+
+  const bindNonClinician = await request('PATCH', `/users/${userId}`, { doctorId: userId }, token);
+  expectStatus(bindNonClinician, 403, 'PATCH /users/:id (bind non-clinician → forbidden)');
 
   const session = await request('POST', '/sessions', { userId });
   expectStatus(session, 201, 'POST /sessions');
@@ -231,11 +248,11 @@ async function main() {
   const progress = await request('GET', `/progress/${userId}`);
   expectStatus(progress, 200, 'GET /progress/:userId');
   assert.strictEqual(progress.data.userId, userId);
-  assert.ok(progress.data.summary.total_sessions >= 1);
-  assert.ok(progress.data.summary.total_measurements >= 3);
-  assert.ok(progress.data.joint_progress.some((item) => item.joint === 'knee'));
-  assert.ok(Array.isArray(progress.data.recent_sessions));
-  assert.ok(Array.isArray(progress.data.daily_trend));
+  assert.ok(progress.data.weekLabel, 'progress should include weekLabel');
+  assert.ok(progress.data.rom && Array.isArray(progress.data.rom.history), 'progress.rom.history should be an array');
+  assert.strictEqual(progress.data.adherence.weekDays.length, 7, 'adherence.weekDays should have 7 entries');
+  assert.strictEqual(progress.data.pain.daily.length, 7, 'pain.daily should have 7 entries');
+  assert.ok(progress.data.weeklySummary, 'progress should include weeklySummary');
 
   const recommendation = await request('POST', '/recommendations', {
     sessionId,
@@ -262,7 +279,31 @@ async function main() {
 
   const scheduleList = await request('GET', `/schedule/${userId}`);
   expectStatus(scheduleList, 200, 'GET /schedule/:userId');
-  assert.ok(scheduleList.data.some((item) => item.id === schedule.data.id));
+  const planCard = scheduleList.data.find((item) => item.id === schedule.data.id);
+  assert.ok(planCard, 'schedule list should include the created item');
+  assert.ok('video_url' in planCard, 'schedule item should always include video_url');
+  assert.strictEqual(typeof planCard.notes, 'string', 'schedule notes should always be a string');
+  assert.strictEqual(planCard.doctor_name, 'Pending Doctor', 'schedule item should carry the bound doctor name');
+
+  // ── Plan details: exercises inside a schedule (M1 UC-M1-04-01/02/03) ──
+  const addExercise = await request('POST', `/schedule/${schedule.data.id}/exercises`, {
+    name: 'Ankle Pumps', phase: 'Warm Up', sets: 3, reps: 20, holdSeconds: 0,
+  }, token);
+  expectStatus(addExercise, 201, 'POST /schedule/:id/exercises');
+  const exerciseId = addExercise.data.id;
+
+  const planExercises = await request('GET', `/schedule/${schedule.data.id}/exercises`, undefined, token);
+  expectStatus(planExercises, 200, 'GET /schedule/:id/exercises');
+  assert.ok(Array.isArray(planExercises.data.exercises), 'plan should return an exercises array');
+  assert.ok(planExercises.data.exercises.some((e) => e.id === exerciseId), 'exercises should include the added one');
+
+  const completeExercise = await request('PATCH', `/schedule/${schedule.data.id}/exercises/${exerciseId}/complete`, { painLevel: 3 }, token);
+  expectStatus(completeExercise, 200, 'PATCH /schedule/:id/exercises/:exerciseId/complete');
+  assert.strictEqual(completeExercise.data.completed, true);
+  assert.strictEqual(completeExercise.data.painLevel, 3);
+
+  const badPain = await request('PATCH', `/schedule/${schedule.data.id}/exercises/${exerciseId}/complete`, { painLevel: 99 }, token);
+  expectStatus(badPain, 400, 'PATCH exercise complete (painLevel out of range → 400)');
 
   const sessionEndedPromise = waitForSocketMessage(
     feedbackSocket,

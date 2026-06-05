@@ -2,6 +2,24 @@ const getDb = require('../db/connection');
 const { queryAll, queryOne, run } = require('../db/helpers');
 const { broadcastMovementFeedback } = require('../realtime/feedbackSocket');
 
+// Serialises a stored measurement row to a response. `joint_angles` holds whatever the
+// client sent (either an object map {knee:45} or M1's targetAngles array); we expose it
+// under both `joint_angles` (legacy) and `target_angles` (M1). errors/sensor_data are
+// always arrays so M1 can iterate them without null guards.
+function measurementView(row) {
+  const angles = JSON.parse(row.joint_angles);
+  return {
+    id: row.id,
+    session_id: row.session_id,
+    timestamp: row.timestamp,
+    joint_angles: angles,
+    target_angles: angles,
+    errors: [],
+    sensor_data: row.sensor_data ? JSON.parse(row.sensor_data) : [],
+    is_correct: Boolean(row.is_correct)
+  };
+}
+
 async function getMeasurementsBySession(req, res, next) {
   try {
     const { db } = await getDb();
@@ -24,45 +42,34 @@ async function getMeasurementsBySession(req, res, next) {
     }
     sql += ' ORDER BY timestamp ASC';
 
-    const rows = queryAll(db, sql, params)
-      .map(m => ({
-        ...m,
-        joint_angles: JSON.parse(m.joint_angles),
-        sensor_data: m.sensor_data ? JSON.parse(m.sensor_data) : null,
-        is_correct: Boolean(m.is_correct)
-      }));
-
-    res.json(rows);
+    res.json(queryAll(db, sql, params).map(measurementView));
   } catch (err) { next(err); }
 }
 
 async function createMeasurement(req, res, next) {
   try {
     const { db, save } = await getDb();
-    const { sessionId, jointAngles, isCorrect = false, timestamp } = req.body;
+    const { sessionId, jointAngles, targetAngles, sensorData, isCorrect = false, timestamp } = req.body;
 
-    if (!sessionId || !jointAngles) {
-      const e = new Error('sessionId and jointAngles are required'); e.status = 400; return next(e);
+    // M1 sends targetAngles + sensorData; S2/legacy send jointAngles. Accept either.
+    const angles = targetAngles ?? jointAngles;
+    if (!sessionId || !angles) {
+      const e = new Error('sessionId and jointAngles (or targetAngles) are required'); e.status = 400; return next(e);
     }
 
     const session = queryOne(db, 'SELECT id, ended_at FROM sessions WHERE id = ?', [sessionId]);
     if (!session) { const e = new Error('Session not found'); e.status = 404; return next(e); }
     if (session.ended_at) { const e = new Error('Session is closed'); e.status = 409; return next(e); }
 
-    const ts = timestamp || new Date().toISOString();
+    const ts = timestamp || (Array.isArray(targetAngles) && targetAngles[0] && targetAngles[0].timestamp) || new Date().toISOString();
     const result = run(db, `
-      INSERT INTO measurements (session_id, joint_angles, is_correct, timestamp)
-      VALUES (?, ?, ?, ?)
-    `, [sessionId, JSON.stringify(jointAngles), isCorrect ? 1 : 0, ts]);
+      INSERT INTO measurements (session_id, joint_angles, is_correct, timestamp, sensor_data)
+      VALUES (?, ?, ?, ?, ?)
+    `, [sessionId, JSON.stringify(angles), isCorrect ? 1 : 0, ts, sensorData ? JSON.stringify(sensorData) : null]);
     save();
 
-    const created = queryOne(db, 'SELECT * FROM measurements WHERE id = ?', [result.lastInsertRowid]);
-    broadcastMovementFeedback({ sessionId, timestamp: ts, isCorrect, jointAngles });
-    res.status(201).json({
-      ...created,
-      joint_angles: JSON.parse(created.joint_angles),
-      is_correct: Boolean(created.is_correct)
-    });
+    broadcastMovementFeedback({ sessionId, timestamp: ts, isCorrect, jointAngles: angles });
+    res.status(201).json(measurementView(queryOne(db, 'SELECT * FROM measurements WHERE id = ?', [result.lastInsertRowid])));
   } catch (err) { next(err); }
 }
 
@@ -80,17 +87,14 @@ async function createMeasurementsBatch(req, res, next) {
     if (session.ended_at) { const e = new Error('Session is closed'); e.status = 409; return next(e); }
 
     for (const m of measurements) {
-      const ts = m.timestamp || new Date().toISOString();
+      const angles = m.targetAngles ?? m.jointAngles;
+      if (!angles) continue;
+      const ts = m.timestamp || (Array.isArray(m.targetAngles) && m.targetAngles[0] && m.targetAngles[0].timestamp) || new Date().toISOString();
       run(db, `
-        INSERT INTO measurements (session_id, joint_angles, is_correct, timestamp)
-        VALUES (?, ?, ?, ?)
-      `, [sessionId, JSON.stringify(m.jointAngles), m.isCorrect ? 1 : 0, ts]);
-      broadcastMovementFeedback({
-        sessionId,
-        timestamp: ts,
-        isCorrect: m.isCorrect,
-        jointAngles: m.jointAngles
-      });
+        INSERT INTO measurements (session_id, joint_angles, is_correct, timestamp, sensor_data)
+        VALUES (?, ?, ?, ?, ?)
+      `, [sessionId, JSON.stringify(angles), m.isCorrect ? 1 : 0, ts, m.sensorData ? JSON.stringify(m.sensorData) : null]);
+      broadcastMovementFeedback({ sessionId, timestamp: ts, isCorrect: m.isCorrect, jointAngles: angles });
     }
     save();
 
@@ -101,7 +105,7 @@ async function createMeasurementsBatch(req, res, next) {
 async function createRawMeasurement(req, res, next) {
   try {
     const { db, save } = await getDb();
-    const { sessionId, targetAngles, sensorData, errors } = req.body;
+    const { sessionId, targetAngles, sensorData } = req.body;
 
     if (!sessionId || !Array.isArray(targetAngles) || targetAngles.length === 0) {
       const e = new Error('sessionId and targetAngles array are required'); e.status = 400; return next(e);
@@ -118,14 +122,8 @@ async function createRawMeasurement(req, res, next) {
     `, [sessionId, JSON.stringify(targetAngles), ts, sensorData ? JSON.stringify(sensorData) : null]);
     save();
 
-    const created = queryOne(db, 'SELECT * FROM measurements WHERE id = ?', [result.lastInsertRowid]);
     broadcastMovementFeedback({ sessionId, timestamp: ts, isCorrect: false, jointAngles: {} });
-    res.status(201).json({
-      ...created,
-      joint_angles: JSON.parse(created.joint_angles),
-      sensor_data: created.sensor_data ? JSON.parse(created.sensor_data) : null,
-      is_correct: false
-    });
+    res.status(201).json(measurementView(queryOne(db, 'SELECT * FROM measurements WHERE id = ?', [result.lastInsertRowid])));
   } catch (err) { next(err); }
 }
 

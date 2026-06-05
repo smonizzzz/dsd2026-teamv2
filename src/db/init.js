@@ -7,15 +7,18 @@ async function initDb() {
 
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
-      id           INTEGER PRIMARY KEY AUTOINCREMENT,
-      name         TEXT    NOT NULL,
-      email        TEXT    NOT NULL UNIQUE,
-      role         TEXT    NOT NULL DEFAULT 'patient',
-      password     TEXT,
-      status       TEXT    NOT NULL DEFAULT 'active',
-      age          INTEGER,
-      license_path TEXT,
-      created_at   TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+      id              INTEGER PRIMARY KEY AUTOINCREMENT,
+      name            TEXT    NOT NULL,
+      email           TEXT    NOT NULL UNIQUE,
+      role            TEXT    NOT NULL DEFAULT 'patient',
+      password        TEXT,
+      status          TEXT    NOT NULL DEFAULT 'active',
+      age             INTEGER,
+      license_path    TEXT,
+      doctor_id       INTEGER REFERENCES users(id),
+      condition_label TEXT,
+      condition_date  TEXT,
+      created_at      TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
     );
   `);
 
@@ -58,8 +61,25 @@ async function initDb() {
       date       TEXT    NOT NULL,
       duration   INTEGER NOT NULL DEFAULT 30,
       notes      TEXT,
+      video_url  TEXT,
       status     TEXT    NOT NULL DEFAULT 'pending',
       created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+    );
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS schedule_exercises (
+      id              INTEGER PRIMARY KEY AUTOINCREMENT,
+      schedule_id     INTEGER NOT NULL REFERENCES schedules(id),
+      name            TEXT    NOT NULL,
+      phase           TEXT    NOT NULL DEFAULT 'Strength',
+      sets            INTEGER NOT NULL DEFAULT 1,
+      reps            INTEGER NOT NULL DEFAULT 1,
+      hold_seconds    INTEGER NOT NULL DEFAULT 0,
+      completed       INTEGER NOT NULL DEFAULT 0,
+      last_pain_level INTEGER,
+      completed_at    TEXT,
+      created_at      TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
     );
   `);
 
@@ -77,11 +97,15 @@ async function initDb() {
   // Migrate existing databases: add columns introduced after initial release.
   // ALTER TABLE ignores errors if the column already exists.
   const migrations = [
-    "ALTER TABLE users ADD COLUMN status       TEXT    NOT NULL DEFAULT 'active'",
-    "ALTER TABLE users ADD COLUMN age          INTEGER",
-    "ALTER TABLE users ADD COLUMN license_path TEXT",
+    "ALTER TABLE users ADD COLUMN status          TEXT    NOT NULL DEFAULT 'active'",
+    "ALTER TABLE users ADD COLUMN age             INTEGER",
+    "ALTER TABLE users ADD COLUMN license_path    TEXT",
+    "ALTER TABLE users ADD COLUMN doctor_id       INTEGER REFERENCES users(id)",
+    "ALTER TABLE users ADD COLUMN condition_label TEXT",
+    "ALTER TABLE users ADD COLUMN condition_date  TEXT",
     "ALTER TABLE recommendations ADD COLUMN notes TEXT",
     "ALTER TABLE measurements ADD COLUMN sensor_data TEXT",
+    "ALTER TABLE schedules ADD COLUMN video_url TEXT",
   ];
   for (const sql of migrations) {
     try { db.run(sql); } catch { /* column already exists */ }
@@ -130,6 +154,8 @@ async function initDb() {
   db.run('CREATE INDEX IF NOT EXISTS idx_push_user      ON push_tokens(user_id);');
   db.run('CREATE INDEX IF NOT EXISTS idx_feedback_user  ON feedback(user_id);');
   db.run('CREATE INDEX IF NOT EXISTS idx_audit_user     ON audit_logs(user_id);');
+  db.run('CREATE INDEX IF NOT EXISTS idx_users_doctor   ON users(doctor_id);');
+  db.run('CREATE INDEX IF NOT EXISTS idx_sched_ex_sched ON schedule_exercises(schedule_id);');
 
   // Seed default admin account if it does not exist yet.
   const adminEmail = process.env.ADMIN_EMAIL    || 'admin@v2.dsd';

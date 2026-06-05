@@ -32,11 +32,19 @@ async function getSessionById(req, res, next) {
     const measurements = queryAll(db,
       'SELECT * FROM measurements WHERE session_id = ? ORDER BY timestamp ASC',
       [req.params.id]
-    ).map(m => ({
-      ...m,
-      joint_angles: JSON.parse(m.joint_angles),
-      is_correct: Boolean(m.is_correct)
-    }));
+    ).map(m => {
+      const angles = JSON.parse(m.joint_angles);
+      return {
+        id: m.id,
+        session_id: m.session_id,
+        timestamp: m.timestamp,
+        target_angles: angles,
+        joint_angles: angles,
+        errors: [],
+        sensor_data: m.sensor_data ? JSON.parse(m.sensor_data) : [],
+        is_correct: Boolean(m.is_correct)
+      };
+    });
 
     res.json({ ...session, measurements });
   } catch (err) { next(err); }
@@ -70,7 +78,10 @@ async function endSession(req, res, next) {
 
     run(db, "UPDATE sessions SET ended_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?", [req.params.id]);
     save();
-    const updated = queryOne(db, 'SELECT * FROM sessions WHERE id = ?', [req.params.id]);
+    const updated = queryOne(db, `
+      SELECT s.*, u.name AS user_name FROM sessions s
+      JOIN users u ON u.id = s.user_id WHERE s.id = ?
+    `, [req.params.id]);
     broadcastSessionEnded({ sessionId: req.params.id, timestamp: updated.ended_at });
     res.json(updated);
   } catch (err) { next(err); }

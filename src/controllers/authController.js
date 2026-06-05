@@ -47,7 +47,7 @@ async function register(req, res, next) {
       return res.status(201).json({ userId: result.lastInsertRowid, status: 'pending' });
     }
 
-    const user  = queryOne(db, 'SELECT id, name, email, role, status, age, created_at FROM users WHERE id = ?', [result.lastInsertRowid]);
+    const user  = queryOne(db, 'SELECT id, name, email, role, status, age, COALESCE(doctor_id, 0) AS doctor_id, created_at FROM users WHERE id = ?', [result.lastInsertRowid]);
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     res.status(201).json({ token, user });
   } catch (err) { next(err); }
@@ -78,6 +78,7 @@ async function login(req, res, next) {
 
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     const { password: _, license_path: __, ...safeUser } = user;
+    safeUser.doctor_id = user.doctor_id || 0;
     res.json({ token, user: safeUser });
   } catch (err) { next(err); }
 }
@@ -85,9 +86,25 @@ async function login(req, res, next) {
 async function me(req, res, next) {
   try {
     const { db } = await getDb();
-    const user = queryOne(db, 'SELECT id, name, email, role, status, age, created_at FROM users WHERE id = ?', [req.user.id]);
+    const user = queryOne(db, `
+      SELECT id, name, email, role, status, age,
+             COALESCE(doctor_id, 0) AS doctor_id,
+             condition_label, condition_date, created_at
+      FROM users WHERE id = ?
+    `, [req.user.id]);
     if (!user) { const e = new Error('User not found'); e.status = 404; return next(e); }
-    res.json(user);
+
+    // Profile stats the M1 Profile screen displays. conditionLabel/conditionDate are
+    // stored on the user; the ROM/adherence/streak metrics are computed and served in
+    // full by GET /progress/:userId — exposed here as null so the screen degrades gracefully.
+    res.json({
+      ...user,
+      conditionLabel: user.condition_label || null,
+      conditionDate: user.condition_date || null,
+      currentRomDegrees: null,
+      adherencePercent: null,
+      streakWeeks: null
+    });
   } catch (err) { next(err); }
 }
 
