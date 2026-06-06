@@ -1,182 +1,139 @@
-# System Design 1.0
+# System Design 2.0
 
-**DSD 2025–2026 · UTAD × Jilin University · Team V2**
+**DSD 2025–2026 · UTAD × Jilin University · Team V2 — Backend API & Storage**
 
 ---
 
 ## Revision History
 
-| Date    | Description                     |
-| ------- | ------------------------------- |
-| April 9 | Initial version (1.0) completed |
+| Version | Date | Description |
+| ------- | ---- | ----------- |
+| 1.0 | April 9 | Initial version |
+| 2.0 | June 2026 | Sprint 3 baseline — JWT auth, doctor binding, schedule + exercises, progress, feedback/announcements/audit, WebSocket, dual deployment |
 
 ---
 
 ## Introduction
 
-The system is designed as a distributed architecture composed of multiple modules: front-end, server (V2), database, and algorithm components.
-
-The V2 backend acts as the central communication layer, handling API requests, managing data storage, and coordinating interactions between other teams.
-
----
-
-## Functional Requirement Clustering
-
-The system is divided into three main components:
-
-* **Front-end**: Mobile application and sensors (IMU devices)
-* **Intermediate**: V2 backend server
-* **Back-end**: Database and algorithm modules
-
-### Component Diagram (description)
-
-The architecture follows this structure:
-
-```
-[Mobile App / Sensors]
-          ↓
-       [V2 Server]
-      /           \
-[Database]     [AI Module]
-```
-
-### Description
-
-* The front-end collects user data and sensor measurements
-* The server processes requests and manages communication
-* The database stores persistent data
-* The AI module analyzes motion and generates recommendations
+The system is a distributed limb-motion rehabilitation platform built by six teams across
+three layers. The **V2 backend** is the central communication and storage layer: it
+authenticates users, stores all persistent data, ingests sensor measurements, serves data
+to the patient app and clinical dashboard, and exchanges data with the AI engine.
 
 ---
 
-## Front-end (draft)
+## Architecture
 
-*Version 1.0*
+```
+                 Sensor Layer            Server Layer              Monitor Layer
+   ┌────────────┐   ┌────────────┐   ┌──────────────────┐   ┌────────────────────┐
+   │ S1 Firmware│──▶│ S2 Data    │──▶│ V2 Backend  ◀──▶ V1│──▶│ M1 Patient App     │
+   │ & Protocol │   │ Acquisition│   │ API & Storage   AI │   │ M2 Clinical Dash   │
+   └────────────┘   └────────────┘   └──────────────────┘   └────────────────────┘
+                            (IF1)            (internal)            (IF2)
+```
 
-The front-end interacts with users through a mobile application and IMU sensors.
-
-### Responsibilities
-
-* User interaction (login, sessions)
-* Sending sensor data to the server
-* Displaying results and recommendations
+- **IF1** — Sensor → Server contract (S2 ↔ V2). One conflict open (Conflict 4, raw IMU schema).
+- **IF2** — Server → Monitor contract (V2 ↔ M1/M2). See `docs/IF2-InterfaceSpecification.md`.
+- **Internal** — V2 ↔ V1 (measurement read + recommendation write-back).
 
 ---
 
 ## Intermediate (V2 Backend)
 
-*Version 1.0*
-
-The V2 backend is implemented using **Node.js and Express**.
+*Version 2.0 — Node.js + Express, SQLite via sql.js*
 
 ### Responsibilities
+- User registration, JWT authentication, clinician approval/rejection, license upload/replace
+- Doctor ↔ patient binding
+- Session lifecycle and measurement ingestion (single, batch, raw IMU)
+- Patient records, recommendations, schedules and per-exercise tracking
+- Patient progress aggregation (ROM / adherence / pain)
+- Feedback, announcements and an admin audit log
+- Push-token registry and real-time WebSocket feedback
 
-The server acts as the central hub of the system:
+### API surface (by group)
+`/health` · `/auth` (register, login, me, status, approve, reject) · `/users`
+(incl. `:id/license`, doctor binding) · `/patients` · `/sessions` · `/measurements`
+(+`/batch`, +`/raw`) · `/recommendations` (engine, session) · `/schedule`
+(+`/:id/exercises`, +`.../complete`) · `/progress` · `/push` · `/feedback` ·
+`/announcements` · `/audit-logs` · WebSocket `ws://host/ws?sessionId=`.
 
-* Receives sensor data from **S2 (Sensors team)**
-* Receives processed results from **V1 (AI team)**
-* Provides data to:
+Full request/response detail: `docs/API.md`. Formal Monitor contract: `docs/IF2-InterfaceSpecification.md`.
 
-  * **M1 (Mobile App)**
-  * **M2 (Dashboard)**
-
-### API Endpoints
-
-The backend exposes RESTful APIs:
-
-* `/health` → server status
-* `/users` → user management
-* `/sessions` → session lifecycle
-* `/measurements` → sensor data collection
-* `/recommendations` → AI feedback and suggestions
-
-### Internal Architecture
-
-The backend follows an MVC-like structure:
-
-* **Controllers** → handle logic
-* **Routes** → define API endpoints
-* **Database layer** → data access
-* **Middleware** → error handling
+### Internal architecture (MVC)
+- **Routes** (`src/routes`) — endpoint definitions only
+- **Controllers** (`src/controllers`) — validation + business logic
+- **DB layer** (`src/db`) — `connection.js`, `init.js` (schema + migrations + admin seed), `helpers.js` (queries + date normalisation), `audit.js`
+- **Middleware** (`src/middleware`) — `auth.js` (JWT), `upload.js` (Multer), `errorHandler.js`
+- **Realtime** (`src/realtime/feedbackSocket.js`) — WebSocket broadcast
+- **Utils** (`src/utils`) — access-control helpers (groundwork for RBAC)
 
 ---
 
-## Back-end (Database & Algorithm)
+## Back-end (Database)
 
-*Version 1.0*
-
-### Database
-
-The system uses **SQLite** as the database management system.
-
-#### Stored Data
-
-* Users
-* Sessions
-* Measurements (joint angles)
-* Recommendations
-
-The database is automatically initialized on first run.
-
----
-
-### Algorithm Module (V1)
-
-* Processes motion data
-* Classifies movements
-* Generates feedback
-* Sends results back to the server
+SQLite (sql.js, pure JS). Tables: `users`, `sessions`, `measurements`, `recommendations`,
+`schedules`, `schedule_exercises`, `push_tokens`, `feedback`, `announcements`,
+`audit_logs`. Schema is created and migrated automatically on startup; the admin account is
+seeded if missing. Full detail in `docs/data-model.md`.
 
 ---
 
 ## System Workflow
 
-### Sequence Description
-
-1. The mobile app creates a session
-2. Sensors send measurements to the server
-3. The server stores data in the database
-4. The AI module processes the data
-5. Recommendations are generated
-6. Results are returned to the user
+1. Patient registers in M1 (open) and is bound to a doctor via `PATCH /users/:id`.
+2. M1 starts a session (`POST /sessions`).
+3. S2 / M1 stream measurements (`POST /measurements[/batch|/raw]`); V2 broadcasts live feedback over WebSocket.
+4. V1 reads measurements (`GET /measurements/:sessionId`), classifies, and writes recommendations (`POST /recommendations`). *(is_correct write-back still open.)*
+5. M1 ends the session (`PATCH /sessions/:id/end`).
+6. M1 shows plan, plan exercises and progress; M2 reviews patients, recommendations and admin data.
 
 ---
 
-## Data Flow
+## Request Lifecycle
 
 ```
-Sensors → Server → Database
-                 ↓
-              AI Module
-                 ↓
-        Recommendations → Front-end
+Client → CORS → express.json() → Router → (requireAuth?) → Controller
+       → DB helpers (+ normalizeDates) → sql.js → save() → JSON response
+       (uncaught errors → errorHandler → { "error": "..." })
 ```
 
 ---
 
-## Non-functional Requirement Response
+## Non-functional Requirements
 
-* **Performance**: Supports near real-time data collection via REST APIs
-* **Scalability**: Modular architecture allows independent scaling
-* **Reliability**: Error handling middleware ensures stable responses
-* **Maintainability**: Clear separation of concerns (MVC structure)
-* **Security**: Input validation and structured API endpoints
+- **Performance:** reads < 200 ms (≤10k rows); batch inserts < 500 ms (≤500 rows).
+- **Security:** bcrypt password hashing (cost ≥ 10); JWT on protected routes; license paths never exposed.
+- **Reliability:** idempotent schema migrations; atomic batch inserts; always-on `/health`.
+- **Maintainability:** strict MVC; centralised date normalisation; zero native modules.
+- **Scalability:** stateless API; modular routers.
 
 ---
 
 ## Technical Route Selection
 
-* **Backend**: Node.js + Express
-* **Database**: SQLite
-* **Communication**: REST API (JSON)
-* **Architecture**: Modular MVC-based design
+- **Backend:** Node.js ≥ 18 + Express
+- **Database:** SQLite (sql.js)
+- **Auth:** JWT (jsonwebtoken) + bcryptjs
+- **Realtime:** ws (WebSocket)
+- **Uploads:** Multer
+- **Deployment:** Railway (HTTPS, currently down) + Huawei Cloud (`113.44.220.94:3000`, PM2)
+
+---
+
+## Open Issues
+
+- **Conflict 4 (IF1):** raw IMU ingestion schema pending S2 + V1 + V2 decision.
+- **V1 `is_correct` write-back:** mechanism undefined; measurements stay `is_correct=false`.
+- **RBAC:** route-level role enforcement not yet applied (Sprint 3).
+- **HTTPS on Huawei:** server is HTTP-only (no domain); Mixed-Content blocks HTTPS frontends.
 
 ---
 
 ## Conclusion
 
-The system design ensures a clear separation between data collection, processing, and presentation layers.
-
-The V2 backend plays a central role in integrating all modules, ensuring efficient communication and reliable data management across the distributed system.
-
----
+V2 remains the integration backbone of the platform. Version 2.0 reflects the Sprint 3
+reality: a complete authenticated REST + WebSocket surface consumed by every other team,
+with the remaining work concentrated in cross-team contracts (Conflict 4, is_correct) and
+hardening (RBAC, HTTPS).

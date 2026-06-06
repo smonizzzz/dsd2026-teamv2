@@ -1119,7 +1119,7 @@
 <section id="srs">
   <p class="section-label reveal">08 &middot; SRS</p>
   <h2 class="reveal">Requirements Analysis</h2>
-  <p class="section-intro reveal">V2 — Backend API &amp; Storage &middot; Version 1.0 &middot; May 5, 2026 &middot; DSD 2025–2026 &middot; UTAD &times; Jilin University</p>
+  <p class="section-intro reveal">V2 — Backend API &amp; Storage &middot; Version 1.1 &middot; June 6, 2026 &middot; DSD 2025–2026 &middot; UTAD &times; Jilin University</p>
 
   <style>
     #srs { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); }
@@ -1170,6 +1170,7 @@
       <thead><tr><th>Date</th><th>Author</th><th>Description</th></tr></thead>
       <tbody>
         <tr><td>May 5, 2026</td><td>Sergio Moniz</td><td>Initial version — Sprint 2 baseline. Covers all internal use cases implemented and verified in production.</td></tr>
+        <tr><td>June 6, 2026</td><td>João Lima</td><td>v1.1 — Sprint 3 update. Added IUC-V2-14 to IUC-V2-19 (doctor binding, account management, plan exercises, progress, feedback/announcements, audit log). Corrected recommendation, schedule and push endpoint references to match the deployed API.</td></tr>
       </tbody>
     </table>
   </div>
@@ -1178,13 +1179,16 @@
   <p class="srs-p reveal">V2 — Backend API &amp; Storage is the central server-side component of the Limb Motion Recognition and Assistant system. It is implemented as a Node.js + Express REST API backed by a SQLite database (sql.js). V2 is the single integration point for all other subsystems: it receives sensor measurement data from S2, serves session and measurement data to M1 and M2, provides AI classification inputs to V1, and manages all persistent storage for the platform.</p>
   <p class="srs-p reveal">V2 does not have a direct user-facing interface. It provides the following services to other groups:</p>
   <ul class="srs-ul reveal">
-    <li>User registration, authentication (JWT), and clinician approval workflow</li>
+    <li>User registration, authentication (JWT), and clinician approval / rejection workflow</li>
+    <li>Patient ↔ doctor binding and clinician license upload / replacement</li>
     <li>Session lifecycle management (create, close)</li>
-    <li>Measurement ingestion (single and batch) and retrieval with date-range filtering</li>
-    <li>Patient list and profile access for the doctor dashboard</li>
-    <li>Rehabilitation recommendation management (create, read, update, delete)</li>
-    <li>Rehabilitation schedule storage and retrieval</li>
-    <li>Push notification token registration and dispatch</li>
+    <li>Measurement ingestion (single, batch, raw IMU) and retrieval with date-range filtering</li>
+    <li>Patient list, profile and account management (modify, disable, role) for the dashboard</li>
+    <li>Rehabilitation recommendation management (create, read, update)</li>
+    <li>Rehabilitation schedule storage, plan exercises and per-exercise completion tracking</li>
+    <li>Patient progress aggregation (range of motion, adherence, pain)</li>
+    <li>User feedback, announcements and an administrator audit log</li>
+    <li>Push notification token registration and dispatch; real-time WebSocket feedback</li>
   </ul>
   <p class="srs-p reveal">The following are out of scope for V2: sensor hardware and firmware (S1), raw sensor data acquisition and mock generation (S2), patient mobile application UI (M1), doctor web dashboard UI (M2), and AI motion classification model training (V1).</p>
 
@@ -1239,6 +1243,12 @@
         <tr><td>IUC-V2-11</td><td>Manage Schedule</td><td>M2, Doctor, M1, Patient</td></tr>
         <tr><td>IUC-V2-12</td><td>Register Push Token</td><td>M1</td></tr>
         <tr><td>IUC-V2-13</td><td>Send Push Notification</td><td>M2, V1</td></tr>
+        <tr><td>IUC-V2-14</td><td>Bind Patient to Doctor</td><td>Patient, M1, M2</td></tr>
+        <tr><td>IUC-V2-15</td><td>Manage User Account</td><td>System Administrator, M2</td></tr>
+        <tr><td>IUC-V2-16</td><td>Manage Plan Exercises</td><td>Doctor, M2, Patient, M1</td></tr>
+        <tr><td>IUC-V2-17</td><td>Track Patient Progress</td><td>Patient, M1, Doctor, M2</td></tr>
+        <tr><td>IUC-V2-18</td><td>Manage Feedback &amp; Announcements</td><td>System Administrator, M2</td></tr>
+        <tr><td>IUC-V2-19</td><td>Query Audit Log</td><td>System Administrator, M2</td></tr>
       </tbody>
     </table>
   </div>
@@ -1252,7 +1262,7 @@
       <span class="iuc-actors">Actor: Patient · M1</span>
     </div>
     <div class="iuc-body">
-      M1 uses the <strong>"Patient Registration"</strong> use case of V2. In this use case, a patient opens M1 and fills in their credentials. M1 sends a registration request containing <code>username</code>, <code>password</code>, <code>email</code>, <code>role=patient</code>, and an optional <code>age</code> field to V2's <code>POST /auth/register</code> endpoint as a JSON body. V2 hashes the password using bcryptjs, creates a new user record in the database with <code>status=active</code>, generates a signed JWT token, and returns it to M1 alongside the user profile. M1 stores the token and the patient gains immediate access to the application.
+      M1 uses the <strong>"Patient Registration"</strong> use case of V2. In this use case, a patient opens M1 and fills in their credentials. M1 sends a registration request containing <code>name</code>, <code>password</code>, <code>email</code>, <code>role=patient</code>, and an optional <code>age</code> field to V2's <code>POST /auth/register</code> endpoint as a JSON body (no invite token required). V2 hashes the password using bcryptjs, creates a new user record with <code>status=active</code> and <code>doctor_id=0</code> (unbound), generates a signed JWT token, and returns it to M1 alongside the user profile. The patient gains immediate access and is later linked to a clinician via IUC-V2-14.
     </div>
   </div>
 
@@ -1274,7 +1284,7 @@
       <span class="iuc-actors">Actor: Patient · Doctor · M1 · M2</span>
     </div>
     <div class="iuc-body">
-      M1 and M2 use the <strong>"User Login"</strong> use case of V2. In this use case, the user submits their <code>username</code> and <code>password</code> through their respective application. The application sends these credentials to V2's <code>POST /auth/login</code> endpoint. V2 looks up the user record, verifies the password against the stored bcrypt hash, and checks that the account <code>status</code> is <code>active</code>. If both checks pass, V2 returns a signed JWT token encoding <code>userId</code> and <code>role</code>. If the account is <code>pending</code>, V2 rejects the request with a 403 response. The client stores the token and includes it in subsequent requests as a bearer token.
+      M1 and M2 use the <strong>"User Login"</strong> use case of V2. In this use case, the user submits their <code>email</code> and <code>password</code> through their respective application. The application sends these credentials to V2's <code>POST /auth/login</code> endpoint. V2 looks up the user record by email, verifies the password against the stored bcrypt hash, and checks that the account <code>status</code> is <code>active</code>. If both checks pass, V2 returns a signed JWT token encoding <code>id</code>, <code>email</code> and <code>role</code>, alongside the user profile (including <code>doctor_id</code>). If the account is <code>pending</code> or <code>rejected</code>, V2 rejects the request with a 403 response. The client stores the token and includes it in subsequent requests as a bearer token.
     </div>
   </div>
 
@@ -1285,7 +1295,7 @@
       <span class="iuc-actors">Actor: System Administrator · M2</span>
     </div>
     <div class="iuc-body">
-      M2 uses the <strong>"Clinician Approval"</strong> use case of V2. In this use case, a System Administrator reviews a pending clinician registration in M2's admin panel. The administrator selects the clinician and confirms the approval. M2 sends a <code>PATCH /auth/approve/:userId</code> request to V2 with the administrator's JWT token in the Authorization header. V2 verifies the token, locates the user record, sets <code>status=active</code>, and returns a confirmation to M2. The clinician can now log in successfully.
+      M2 uses the <strong>"Clinician Approval"</strong> use case of V2. In this use case, a System Administrator reviews a pending clinician registration (and its license file, retrievable via <code>GET /users/:id/license</code>) in M2's admin panel. To approve, M2 sends <code>PATCH /auth/approve/:userId</code> and V2 sets <code>status=active</code>; the clinician can now log in. To reject, M2 sends <code>PATCH /auth/reject/:userId</code> and V2 sets <code>status=rejected</code>; the clinician cannot log in and must upload a new license via <code>PATCH /users/:id/license</code>, which resets the account to <code>pending</code> for re-review. Both actions require the administrator's JWT and are recorded in the audit log (IUC-V2-19).
     </div>
   </div>
 
@@ -1351,7 +1361,7 @@
       <span class="iuc-actors">Actor: Doctor · M2 · Patient · M1</span>
     </div>
     <div class="iuc-body">
-      M2 uses the <strong>"Manage Recommendations"</strong> use case of V2. In this use case, after reviewing a patient's motion data, a doctor writes a rehabilitation recommendation in M2. M2 sends a <code>POST /recommendations</code> request to V2 with the patient's <code>userId</code>, the recommendation <code>content</code>, and an optional <code>notes</code> field for supplementary free-text. V2 stores the record and returns it with a server-generated integer <code>id</code> and the correct integer <code>userId</code>. The doctor may subsequently update the recommendation via <code>PUT /recommendations/:id</code> or delete it via <code>DELETE /recommendations/:id</code>. M1 retrieves the recommendations for a patient via <code>GET /recommendations/:userId</code> to display them to the patient. V2 returns an empty array (not a 404) if no recommendations exist yet.
+      M2 uses the <strong>"Manage Recommendations"</strong> use case of V2. In this use case, after reviewing a patient's motion data, a doctor (or V1) writes a rehabilitation recommendation. The creator sends a <code>POST /recommendations</code> request to V2 with the <code>sessionId</code>, the <code>movement</code> to improve, a <code>confidence</code> value, and an optional <code>notes</code> field. V2 stores the record and returns it with a server-generated integer <code>id</code> and <code>status=pending</code>. The doctor may subsequently update its status via <code>PATCH /recommendations/:id</code>. M1 and M2 read recommendations via <code>GET /recommendations/session/:sessionId</code> (per session) or trigger the analysis engine via <code>GET /recommendations/engine/:userId</code>. V2 returns an empty array (not a 404) if no recommendations exist yet.
     </div>
   </div>
 
@@ -1362,7 +1372,7 @@
       <span class="iuc-actors">Actor: Doctor · M2 · Patient · M1</span>
     </div>
     <div class="iuc-body">
-      M2 uses the <strong>"Manage Schedule"</strong> use case of V2. In this use case, a doctor assigns a rehabilitation schedule to a patient via M2. M2 sends a <code>POST /schedule</code> request to V2 with the patient's <code>userId</code>, a <code>scheduledAt</code> timestamp in ISO 8601 format, and a <code>description</code> of the planned exercise. V2 stores the entry and returns it to M2. M1 retrieves the patient's schedule via <code>GET /schedule/:userId</code> and displays upcoming sessions to the patient in the mobile application.
+      M2 uses the <strong>"Manage Schedule"</strong> use case of V2. In this use case, a doctor assigns a rehabilitation plan item to a patient via M2. M2 sends a <code>POST /schedule</code> request to V2 with the patient's <code>userId</code>, the <code>exercise</code> name, a <code>date</code> (ISO 8601), and optional <code>duration</code>, <code>notes</code> and <code>videoUrl</code> fields. V2 stores the entry and returns it. M1 retrieves the patient's plan via <code>GET /schedule/:userId</code> — each item always carries <code>video_url</code>, a string <code>notes</code>, and the bound <code>doctor_name</code>. A plan item may be updated or marked complete via <code>PATCH /schedule/:id</code>, or removed via <code>DELETE /schedule/:id</code>.
     </div>
   </div>
 
@@ -1384,7 +1394,73 @@
       <span class="iuc-actors">Actor: M2 · V1</span>
     </div>
     <div class="iuc-body">
-      M2 uses the <strong>"Send Push Notification"</strong> use case of V2. In this use case, when a doctor publishes a new recommendation or when V1 generates a real-time feedback alert, the triggering system sends a <code>POST /push/send</code> request to V2 with the target <code>userId</code> and the notification payload. V2 looks up the device push token registered for that user via IUC-V2-12 and forwards the payload to the external push notification service. V2 returns a delivery confirmation or a 404 if no token has been registered for the user.
+      M2 uses the <strong>"Send Push Notification"</strong> use case of V2. In this use case, when a doctor publishes a new recommendation or when V1 generates a real-time feedback alert, the device tokens registered via IUC-V2-12 are used to deliver the notification. V2 exposes <code>GET /push/tokens/:userId</code> to retrieve the device tokens registered for a user; the triggering system uses these to dispatch the payload through the external push service. <em>Note: a dedicated dispatch endpoint (<code>POST /push/send</code>) is planned but not yet deployed in Sprint 3 — only token registration and retrieval are live.</em>
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-14</span>
+      <span class="iuc-name">Bind Patient to Doctor</span>
+      <span class="iuc-actors">Actor: Patient · M1 · M2</span>
+    </div>
+    <div class="iuc-body">
+      M1 uses the <strong>"Bind Patient to Doctor"</strong> use case of V2. After registration (or when changing doctor in Settings), the patient enters a <code>doctorId</code>. M1 first calls <code>GET /users/:id</code> to verify the id exists and has <code>role=clinician</code>, shows a confirmation dialog with the doctor's name, and on confirmation sends <code>PATCH /users/:id</code> with <code>{ "doctorId": &lt;id&gt; }</code> for the patient. V2 validates that the target is a clinician and sets the patient's <code>doctor_id</code>. It rejects the request with <strong>400</strong> (invalid id), <strong>403</strong> (target is not a clinician), <strong>404</strong> (patient or doctor not found) or <strong>409</strong> (already bound to that doctor). Once bound, the patient's plan and progress are associated with that doctor.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-15</span>
+      <span class="iuc-name">Manage User Account</span>
+      <span class="iuc-actors">Actor: System Administrator · M2</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Manage User Account"</strong> use case of V2. An administrator queries accounts via <code>GET /users?role=clinician</code> or <code>?role=patient</code>, and modifies an account via <code>PATCH /users/:id</code> — changing <code>name</code>, <code>age</code>, <code>role</code> or <code>status</code> (including disabling an account with <code>status=disabled</code>). This single endpoint covers doctor account management, patient account management, and role/permission updates. Every change is written to the audit log (IUC-V2-19).
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-16</span>
+      <span class="iuc-name">Manage Plan Exercises</span>
+      <span class="iuc-actors">Actor: Doctor · M2 · Patient · M1</span>
+    </div>
+    <div class="iuc-body">
+      M1 uses the <strong>"Manage Plan Exercises"</strong> use case of V2. A plan item (schedule) contains individual exercises. The doctor adds exercises through M2 via <code>POST /schedule/:id/exercises</code> (<code>name</code>, <code>phase</code>, <code>sets</code>, <code>reps</code>, <code>holdSeconds</code>). When the patient opens a plan in M1, M1 calls <code>GET /schedule/:id/exercises</code> to retrieve the plan metadata plus the exercise list (grouped by phase, with <code>completed</code> and <code>lastPainLevel</code>). After completing an exercise the patient calls <code>PATCH /schedule/:id/exercises/:exerciseId/complete</code> with an optional <code>painLevel</code> (1–10); V2 marks it complete and records the pain level and completion time.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-17</span>
+      <span class="iuc-name">Track Patient Progress</span>
+      <span class="iuc-actors">Actor: Patient · M1 · Doctor · M2</span>
+    </div>
+    <div class="iuc-body">
+      M1 uses the <strong>"Track Patient Progress"</strong> use case of V2. The patient opens the Progress screen and M1 calls <code>GET /progress/:userId</code>. V2 aggregates the patient's sessions, measurements and completed exercises into a single response: <code>weekLabel</code>, range-of-motion (<code>rom</code> with weekly history), <code>adherence</code> (completion percentage, streak, per-day calendar), <code>pain</code> (weekly average, trend, daily series) and a <code>weeklySummary</code>. All values are computed from real stored data; a clinical ROM <code>targetDegrees</code> is returned as <code>null</code> because no target is stored yet.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-18</span>
+      <span class="iuc-name">Manage Feedback &amp; Announcements</span>
+      <span class="iuc-actors">Actor: System Administrator · M2</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Manage Feedback &amp; Announcements"</strong> use case of V2. Users submit feedback via <code>POST /feedback</code>; an administrator lists it via <code>GET /feedback</code> (filterable by <code>status</code>) and replies via <code>PATCH /feedback/:id</code> (setting <code>status</code> and a <code>response</code>). For platform-wide notices, the administrator manages announcements through <code>GET/POST/PATCH/DELETE /announcements</code>, publishing or unpublishing each via its <code>status</code> (<code>draft</code>/<code>published</code>). All write actions are recorded in the audit log.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-19</span>
+      <span class="iuc-name">Query Audit Log</span>
+      <span class="iuc-actors">Actor: System Administrator · M2</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Query Audit Log"</strong> use case of V2. Every administrative write action (approve/reject user, update user, update feedback, create/update/delete announcement) is automatically recorded with the actor, action, target and timestamp. An administrator queries the history via <code>GET /audit-logs</code>, optionally filtering by <code>?userId=</code>, <code>?action=</code> or <code>?targetType=</code>. This provides traceability of administrative changes across the platform.
     </div>
   </div>
 
@@ -1398,7 +1474,7 @@
     <li>The admin role responsible for approving clinician accounts (IUC-V2-04) is a real user in the system. Full role-based access control (RBAC) enforcement is planned for Sprint 3 and is not enforced at the route level in Sprint 2.</li>
     <li>The system is an academic prototype. No GDPR or health data compliance obligation is assumed for this phase.</li>
     <li>The server requires Node.js &ge; 18. The SQLite database is managed by sql.js (pure JavaScript — no native module compilation). The database file is located at <code>data/v2.db</code> and is created automatically on first startup.</li>
-    <li>All inter-team communication uses HTTP REST in Sprint 2. A WebSocket channel for real-time M1 streaming will be added in Sprint 3 without breaking existing REST endpoints.</li>
+    <li>Inter-team communication uses HTTP REST plus a WebSocket channel (<code>ws://host/ws?sessionId=</code>) for real-time M1 feedback, which is now live and does not break existing REST endpoints. The patient → doctor binding follows the open-registration model (register, then bind via IUC-V2-14); mandatory invite tokens were evaluated and discarded.</li>
     <li>All timestamps exchanged between teams use ISO 8601 UTC format. V2 normalises any SQLite-format dates automatically on every database read via a centralised helper function.</li>
     <li>License files submitted during clinician registration are stored on the local filesystem at <code>data/licenses/</code>. Cloud storage integration is not in scope for Sprint 2.</li>
     <li>The interface contract between V2 and S2 (IF1) is frozen for all conflicts except Conflict 4, which is pending a joint S2 + V1 + V2 decision on the raw IMU ingestion schema.</li>
@@ -1460,6 +1536,12 @@
         <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-11</span> Manage Schedule</div>
         <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-12</span> Register Push Token</div>
         <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-13</span> Send Push Notification</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-14</span> Bind Patient to Doctor</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-15</span> Manage User Account</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-16</span> Manage Plan Exercises</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-17</span> Track Patient Progress</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-18</span> Manage Feedback &amp; Announcements</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-19</span> Query Audit Log</div>
       </div>
     </div>
   </div>
