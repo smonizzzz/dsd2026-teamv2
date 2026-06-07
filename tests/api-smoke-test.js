@@ -285,24 +285,40 @@ async function main() {
   assert.strictEqual(typeof planCard.notes, 'string', 'schedule notes should always be a string');
   assert.strictEqual(planCard.doctor_name, 'Pending Doctor', 'schedule item should carry the bound doctor name');
 
+  // ── Exercise catalogue (M1 GET /exercises) ──
+  const catalog = await request('GET', '/exercises', undefined, token);
+  expectStatus(catalog, 200, 'GET /exercises');
+  assert.ok(Array.isArray(catalog.data), 'exercises catalogue should be an array');
+  assert.ok(catalog.data.length >= 10, 'catalogue should be seeded with at least 10 exercises');
+  assert.ok('gif_url' in catalog.data[0], 'catalogue item should always include gif_url');
+  assert.ok(catalog.data[0].category, 'catalogue item should include category');
+
   // ── Plan details: exercises inside a schedule (M1 UC-M1-04-01/02/03) ──
   const addExercise = await request('POST', `/schedule/${schedule.data.id}/exercises`, {
-    name: 'Ankle Pumps', phase: 'Warm Up', sets: 3, reps: 20, holdSeconds: 0,
+    name: 'Squat', phase: 'Strength', sets: 3, reps: 10, hold_seconds: 2,
+    notes: 'Stop if sharp pain.', gif_url: 'http://example.com/squat.gif', description: '3 reps, ~5s each',
   }, token);
-  expectStatus(addExercise, 201, 'POST /schedule/:id/exercises');
+  expectStatus(addExercise, 201, 'POST /schedule/:id/exercises (with gif_url, description, notes)');
   const exerciseId = addExercise.data.id;
+  assert.strictEqual(addExercise.data.holdSeconds, 2, 'snake_case hold_seconds should be accepted');
+  assert.strictEqual(addExercise.data.gif_url, 'http://example.com/squat.gif');
+  assert.strictEqual(addExercise.data.description, '3 reps, ~5s each');
+  assert.strictEqual(addExercise.data.notes, 'Stop if sharp pain.');
 
   const planExercises = await request('GET', `/schedule/${schedule.data.id}/exercises`, undefined, token);
   expectStatus(planExercises, 200, 'GET /schedule/:id/exercises');
   assert.ok(Array.isArray(planExercises.data.exercises), 'plan should return an exercises array');
-  assert.ok(planExercises.data.exercises.some((e) => e.id === exerciseId), 'exercises should include the added one');
+  const planEx = planExercises.data.exercises.find((e) => e.id === exerciseId);
+  assert.ok(planEx, 'exercises should include the added one');
+  assert.ok('gif_url' in planEx && 'description' in planEx && 'notes' in planEx, 'exercise must expose gif_url, description, notes');
 
-  const completeExercise = await request('PATCH', `/schedule/${schedule.data.id}/exercises/${exerciseId}/complete`, { painLevel: 3 }, token);
-  expectStatus(completeExercise, 200, 'PATCH /schedule/:id/exercises/:exerciseId/complete');
+  // pain_level (snake_case, as M1 now sends it)
+  const completeExercise = await request('PATCH', `/schedule/${schedule.data.id}/exercises/${exerciseId}/complete`, { pain_level: 3 }, token);
+  expectStatus(completeExercise, 200, 'PATCH /schedule/:id/exercises/:exerciseId/complete (pain_level)');
   assert.strictEqual(completeExercise.data.completed, true);
   assert.strictEqual(completeExercise.data.painLevel, 3);
 
-  const badPain = await request('PATCH', `/schedule/${schedule.data.id}/exercises/${exerciseId}/complete`, { painLevel: 99 }, token);
+  const badPain = await request('PATCH', `/schedule/${schedule.data.id}/exercises/${exerciseId}/complete`, { pain_level: 99 }, token);
   expectStatus(badPain, 400, 'PATCH exercise complete (painLevel out of range → 400)');
 
   const sessionEndedPromise = waitForSocketMessage(

@@ -1,8 +1,6 @@
 # V2 Backend — API Reference
 
-Single source of truth for every endpoint the V2 backend exposes. Built for the M1
-mobile app, but usable by every team (S2, V1, M2). Endpoints added in the latest
-round for M1 are tagged **🆕 NEW**.
+Single source of truth for every endpoint the V2 backend exposes.
 
 ---
 
@@ -71,6 +69,7 @@ WebSocket (real-time feedback): `wss://dsd2026-teamv2-production.up.railway.app/
 | POST | `/schedule/:id/exercises` | – | 🆕 Add an exercise to a plan |
 | PATCH | `/schedule/:id/exercises/:exerciseId/complete` | – | 🆕 Mark one exercise done |
 | GET | `/progress/:userId` | – | 🆕 Patient progress (ROM / adherence / pain) |
+| GET | `/exercises` | – | 🆕 Global exercise catalogue (M2 picker) |
 | POST | `/push/register` | – | Register an FCM device token |
 | GET | `/push/tokens/:userId` | – | List a user's push tokens |
 | GET | `/feedback` · `/feedback/:id` | – | User feedback (admin) |
@@ -297,28 +296,46 @@ Plan detail + the list of individual exercises (for the Plan Details screen).
   "duration": 30, "notes": "Keep back straight", "video_url": "https://.../squat.mp4",
   "status": "pending", "doctorName": "Dr. Ana Rodrigues",
   "exercises": [
-    { "id": 101, "name": "Ankle Pumps", "phase": "Warm Up", "sets": 3, "reps": 20,
-      "holdSeconds": 0, "completed": false, "lastPainLevel": null }
+    { "id": 101, "name": "Squat", "phase": "Strength", "sets": 3, "reps": 10,
+      "holdSeconds": 2, "notes": "Stop if sharp pain.", "gif_url": "https://.../squat.gif",
+      "description": "3 reps, ~5s each", "completed": false, "lastPainLevel": null }
   ]
 }
 ```
 `phase` ∈ `Warm Up` · `Strength` · `Mobility` · `Cooldown`. `holdSeconds` is `0` (never null).
-`lastPainLevel` is `1–10` or `null`. **Errors:** `404` schedule not found.
+`notes`/`gif_url`/`description` are always present (null when unset). `lastPainLevel` is `1–10`
+or `null`. **Errors:** `404` schedule not found.
 
 ### 🆕 POST `/schedule/:id/exercises`
-Add an exercise to a plan (doctor / M2 side).
-Body: `{ name, phase?, sets?, reps?, holdSeconds? }` → `201` with the created exercise object.
+Add an exercise to a plan (doctor / M2 side). Accepts camelCase **or** snake_case
+(`holdSeconds`/`hold_seconds`, `gif_url`/`gifUrl`).
+```json
+{ "name": "Squat", "phase": "Strength", "sets": 3, "reps": 10, "hold_seconds": 2,
+  "notes": "Stop if sharp pain.", "gif_url": "https://.../squat.gif", "description": "3 reps, ~5s each" }
+```
+→ `201` with the created exercise object (shape as above). Only `name` and `phase` are required.
 
 ### 🆕 PATCH `/schedule/:id/exercises/:exerciseId/complete`
-Mark one exercise done, with optional pain report.
+Mark one exercise done, with optional pain report. Accepts `painLevel` **or** `pain_level`.
 ```json
-{ "painLevel": 3 }
+{ "pain_level": 3 }
 ```
-`painLevel` optional, integer `1–10`. **`200`:**
+`painLevel`/`pain_level` optional, integer `1–10`. **`200`:**
 ```json
 { "exerciseId": 101, "completed": true, "painLevel": 3, "completedAt": "2026-05-03T14:45:00Z" }
 ```
 **Errors:** `400` painLevel out of range · `404` exercise/schedule not found.
+
+### 🆕 GET `/exercises`
+Global exercise catalogue (open — no auth). Used by M2 to populate the exercise picker.
+Seeded with 10 entries; `gif_url` is `null` until the clinical team supplies real GIF URLs.
+```json
+[
+  { "id": 1, "name": "Squat", "category": "Lower Body",
+    "description": "3 reps, ~5 s each. Feet shoulder-width apart…", "gif_url": null }
+]
+```
+`gif_url` is always present (may be `null`).
 
 ---
 
@@ -382,5 +399,3 @@ Connect: `wss://<host>/ws?sessionId=<id>`. Events pushed during a session:
 | `session_ended` | the session is closed | `{ sessionId, timestamp }` |
 
 ---
-
-*Maintained by Team V2. Last updated for the M1 v3.0 requirements round.*

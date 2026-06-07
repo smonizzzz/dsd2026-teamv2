@@ -91,10 +91,24 @@ Individual exercises inside a schedule item (Plan Details screen).
 | `sets` | INTEGER | default 1 |
 | `reps` | INTEGER | default 1 |
 | `hold_seconds` | INTEGER | default 0 |
+| `notes` | TEXT | nullable; doctor's note to the patient |
+| `gif_url` | TEXT | nullable; demonstration GIF (copied from catalogue) |
+| `description` | TEXT | nullable; short instructions (copied from catalogue) |
 | `completed` | INTEGER (bool) | default 0 |
 | `last_pain_level` | INTEGER | nullable; 1–10 |
 | `completed_at` | TEXT | nullable; ISO 8601 |
 | `created_at` | TEXT | ISO 8601 |
+
+### exercises
+Global exercise catalogue (read by M2 to build plans). Seeded with 10 entries on first run.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | INTEGER PK | |
+| `name` | TEXT | not null |
+| `category` | TEXT | e.g. `Lower Body`, `Gait`, `Flexibility`, `Balance` |
+| `description` | TEXT | short patient instructions |
+| `gif_url` | TEXT | nullable; demonstration GIF URL (seeded as `null`) |
 
 ### push_tokens
 | Column | Type | Notes |

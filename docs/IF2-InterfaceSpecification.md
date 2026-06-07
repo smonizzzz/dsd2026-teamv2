@@ -6,7 +6,7 @@
 | Field | Value |
 |-------|-------|
 | Document ID | IF2 |
-| Version | 2.0 |
+| Version | 2.1 |
 | Status | Baseline — Sprint 3 |
 | Aligned with | V2 SRS v1.1, M1 Requirements v3.0, M2 Admin UC set, `docs/API.md`, `docs/data-model.md` |
 | Last updated | June 2026 |
@@ -17,6 +17,7 @@
 |---------|------|-------------|
 | 1.0 | May 2026 | Initial REST contract (auth, sessions, measurements, recommendations, schedule, push) |
 | 2.0 | Jun 2026 | Added doctor binding, plan exercises, progress, license replace/reject, feedback/announcements/audit, WebSocket; added requirements traceability matrix and open-issues register |
+| 2.1 | Jun 7, 2026 | Added exercise catalogue (`GET /exercises`, open); plan exercises now carry `gif_url`/`description`/`notes`; endpoints accept both camelCase and snake_case (`hold_seconds`, `pain_level`) per M1 Exercise Library request |
 
 ---
 
@@ -146,9 +147,10 @@ Legend — Consumer: who on the Monitor layer calls it. Auth: ✓ enforced today
 | POST · PATCH | `/recommendations` · `/recommendations/:id` | M2 | Create / update status |
 | GET | `/schedule/:userId` | M1 | Plan list (`video_url`, `notes`, `doctor_name`) |
 | POST · PATCH · DELETE | `/schedule` · `/schedule/:id` | M2 | Manage plan items |
-| GET | `/schedule/:id/exercises` | M1 | Plan detail + exercises |
-| POST | `/schedule/:id/exercises` | M2 | Add an exercise |
-| PATCH | `/schedule/:id/exercises/:exerciseId/complete` | M1 | Mark exercise done (+`painLevel`) |
+| GET | `/exercises` | M2 | Global exercise catalogue (open) — picker source |
+| GET | `/schedule/:id/exercises` | M1 | Plan detail + exercises (incl. `gif_url`/`description`/`notes`) |
+| POST | `/schedule/:id/exercises` | M2 | Add an exercise (accepts `gif_url`/`description`/`notes`; camel or snake casing) |
+| PATCH | `/schedule/:id/exercises/:exerciseId/complete` | M1 | Mark exercise done (`painLevel` or `pain_level`) |
 | GET | `/progress/:userId` | M1, M2 | Patient progress (ROM/adherence/pain) |
 
 ### 4.4 Push & admin
@@ -167,9 +169,13 @@ Errors: `400` bad id · `403` target not clinician · `404` not found · `409` a
 ```json
 { "scheduleId":1, "exercise":"squat", "video_url":"…", "status":"pending",
   "doctorName":"Dr. Ana", "exercises":[
-    { "id":101, "name":"Ankle Pumps", "phase":"Warm Up", "sets":3, "reps":20,
-      "holdSeconds":0, "completed":false, "lastPainLevel":null } ] }
+    { "id":101, "name":"Squat", "phase":"Strength", "sets":3, "reps":10, "holdSeconds":2,
+      "notes":"Stop if sharp pain.", "gif_url":"https://…/squat.gif", "description":"3 reps…",
+      "completed":false, "lastPainLevel":null } ] }
 ```
+
+**Exercise catalogue** — `GET /exercises` (open) → `[{ id, name, category, description, gif_url }]`
+(`gif_url` is an animated GIF URL, `null` until supplied; seeded with 10 entries).
 
 **Progress** — `GET /progress/:userId` → `{ weekLabel, rom{currentDegrees,targetDegrees,weeklyGainDegrees,history[]}, adherence{weeklyPercent,completedExercises,totalExercises,skippedExercises,streakWeeks,weekDays[7]}, pain{averageThisWeek,changeFromLastWeek,daily[7]}, weeklySummary{avgSessionMinutes,activeDays,romGainDegrees} }` (see `docs/API.md` §8).
 
@@ -207,6 +213,7 @@ Each interface element is traced to the requirement(s) it satisfies.
 | IUC-V2-14 Bind Patient to Doctor | V2 SRS v1.1 | `GET /users/:id`, `PATCH /users/:id` `{doctorId}` |
 | IUC-V2-15 Manage User Account | V2 SRS v1.1 | `PATCH /users/:id`, `GET /users?role=` |
 | IUC-V2-16 Manage Plan Exercises | V2 SRS v1.1 | `GET/POST /schedule/:id/exercises`, `PATCH .../complete` |
+| (Exercise catalogue / picker) | M1 Exercise Library v1 | `GET /exercises` |
 | IUC-V2-17 Track Patient Progress | V2 SRS v1.1 | `GET /progress/:userId` |
 | IUC-V2-18 Manage Feedback & Announcements | V2 SRS v1.1 | `/feedback`, `/announcements` |
 | IUC-V2-19 Query Audit Log | V2 SRS v1.1 | `GET /audit-logs` |

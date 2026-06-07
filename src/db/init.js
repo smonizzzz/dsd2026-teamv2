@@ -76,10 +76,24 @@ async function initDb() {
       sets            INTEGER NOT NULL DEFAULT 1,
       reps            INTEGER NOT NULL DEFAULT 1,
       hold_seconds    INTEGER NOT NULL DEFAULT 0,
+      notes           TEXT,
+      gif_url         TEXT,
+      description     TEXT,
       completed       INTEGER NOT NULL DEFAULT 0,
       last_pain_level INTEGER,
       completed_at    TEXT,
       created_at      TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+    );
+  `);
+
+  // Global exercise catalogue (read by M2 to build patient plans).
+  db.run(`
+    CREATE TABLE IF NOT EXISTS exercises (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      name        TEXT NOT NULL,
+      category    TEXT NOT NULL DEFAULT 'General',
+      description TEXT NOT NULL DEFAULT '',
+      gif_url     TEXT
     );
   `);
 
@@ -105,6 +119,9 @@ async function initDb() {
     "ALTER TABLE users ADD COLUMN condition_date  TEXT",
     "ALTER TABLE recommendations ADD COLUMN notes TEXT",
     "ALTER TABLE measurements ADD COLUMN sensor_data TEXT",
+    "ALTER TABLE schedule_exercises ADD COLUMN notes       TEXT",
+    "ALTER TABLE schedule_exercises ADD COLUMN gif_url     TEXT",
+    "ALTER TABLE schedule_exercises ADD COLUMN description TEXT",
     "ALTER TABLE schedules ADD COLUMN video_url TEXT",
   ];
   for (const sql of migrations) {
@@ -167,6 +184,29 @@ async function initDb() {
       ['V2 Admin', adminEmail, hash]
     );
     console.log(`  Admin seeded: ${adminEmail}`);
+  }
+
+  // Seed the global exercise catalogue (only if empty). gif_url is left NULL —
+  // real GIF URLs are to be supplied later by the clinical team via M2.
+  const exCount = db.exec('SELECT COUNT(*) AS c FROM exercises');
+  const isEmpty = !exCount.length || exCount[0].values[0][0] === 0;
+  if (isEmpty) {
+    const seed = [
+      ['Squat', 'Lower Body', '3 reps, ~5 s each. Feet shoulder-width apart, knees aligned with toes. Do not let knees cave inward.'],
+      ['Walking Test', 'Gait', 'Walk forward 5 m at a natural pace. Eyes forward, arms relaxed.'],
+      ['Stair Climbing', 'Lower Body', 'Climb 10 steps. Body upright, one step at a time, hold the rail if needed.'],
+      ['Straight Leg Raise', 'Lower Body', 'Lie flat on back. Lift one leg to 45 degrees, hold 2 s, lower slowly.'],
+      ['Knee Extension', 'Lower Body', 'Seated on a chair. Extend knee fully, hold 3 s, lower slowly.'],
+      ['Ankle Pumps', 'Lower Body', 'Seated or lying. Flex and point the ankle repeatedly. Good for circulation post-surgery.'],
+      ['Hip Abduction', 'Lower Body', 'Side-lying. Lift top leg to 30-45 degrees, hold 2 s, lower slowly.'],
+      ['Calf Raises', 'Lower Body', 'Stand with feet flat. Rise onto toes, hold 2 s, lower slowly.'],
+      ['Hamstring Stretch', 'Flexibility', 'Seated, legs extended. Reach forward towards feet, hold 20-30 s. Do not bounce.'],
+      ['Single-Leg Balance', 'Balance', 'Stand on one leg for 30 s. Switch sides. Hold a wall if needed.'],
+    ];
+    for (const [name, category, description] of seed) {
+      run(db, 'INSERT INTO exercises (name, category, description, gif_url) VALUES (?, ?, ?, NULL)', [name, category, description]);
+    }
+    console.log(`  Exercise catalogue seeded: ${seed.length} exercises`);
   }
 
   save();
