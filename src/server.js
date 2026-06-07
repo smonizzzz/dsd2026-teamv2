@@ -24,7 +24,9 @@ const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);
 
 app.use(cors());
-app.use(express.json());
+// 5 MB limit so large measurement batches (with raw IMU sensorData) are not rejected
+// with 413; Express defaults to only 100 kb.
+app.use(express.json({ limit: '5mb' }));
 
 app.get('/health', (req, res) => res.json({
   status: 'ok',
