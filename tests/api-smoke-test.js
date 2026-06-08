@@ -320,8 +320,12 @@ async function main() {
   expectStatus(catalog, 200, 'GET /exercises');
   assert.ok(Array.isArray(catalog.data), 'exercises catalogue should be an array');
   assert.ok(catalog.data.length >= 10, 'catalogue should be seeded with at least 10 exercises');
-  assert.ok('gif_url' in catalog.data[0], 'catalogue item should always include gif_url');
-  assert.ok(catalog.data[0].category, 'catalogue item should include category');
+  const ex0 = catalog.data[0];
+  assert.ok(Array.isArray(ex0.instructions) && ex0.instructions.length > 0, 'exercise should have an instructions array');
+  assert.ok(Array.isArray(ex0.muscle_groups), 'exercise should have a muscle_groups array');
+  assert.ok(ex0.equipment && ex0.difficulty, 'exercise should include equipment and difficulty');
+  assert.ok(typeof ex0.gif_url === 'string' && ex0.gif_url.startsWith('http'), 'exercise gif_url should be a real URL');
+  assert.ok('thumbnail_url' in ex0, 'exercise should always include thumbnail_url');
 
   // ── Plan details: exercises inside a schedule (M1 UC-M1-04-01/02/03) ──
   const addExercise = await request('POST', `/schedule/${schedule.data.id}/exercises`, {

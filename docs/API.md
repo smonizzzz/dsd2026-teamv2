@@ -340,14 +340,28 @@ Mark one exercise done, with optional pain report. Accepts `painLevel` **or** `p
 
 ### 🆕 GET `/exercises`
 Global exercise catalogue (open — no auth). Used by M2 to populate the exercise picker.
-Seeded with 10 entries; `gif_url` is `null` until the clinical team supplies real GIF URLs.
+Seeded with 10 entries (full M1 format, with real GIF URLs).
 ```json
 [
-  { "id": 1, "name": "Squat", "category": "Lower Body",
-    "description": "3 reps, ~5 s each. Feet shoulder-width apart…", "gif_url": null }
+  {
+    "id": 1,
+    "name": "Squat",
+    "category": "Lower Body",
+    "description": "Strengthens quadriceps, glutes and core…",
+    "instructions": [
+      "Stand with feet shoulder-width apart, toes pointing slightly outward.",
+      "Slowly bend your knees and sit back with your hips…"
+    ],
+    "gif_url": "https://cdn.jefit.com/assets/img/exercises/gifs/493.gif",
+    "thumbnail_url": "",
+    "muscle_groups": ["Upper Legs", "Glutes", "Abs"],
+    "equipment": "Body Weight",
+    "difficulty": "Beginner"
+  }
 ]
 ```
-`gif_url` is always present (may be `null`).
+`instructions` and `muscle_groups` are always arrays (`[]` if empty). `thumbnail_url` is always
+a string (`""` if empty). `gif_url`/`equipment`/`difficulty` may be `null`.
 
 ---
 

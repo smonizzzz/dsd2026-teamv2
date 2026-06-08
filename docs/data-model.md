@@ -107,8 +107,13 @@ Global exercise catalogue (read by M2 to build plans). Seeded with 10 entries on
 | `id` | INTEGER PK | |
 | `name` | TEXT | not null |
 | `category` | TEXT | e.g. `Lower Body`, `Gait`, `Flexibility`, `Balance` |
-| `description` | TEXT | short patient instructions |
-| `gif_url` | TEXT | nullable; demonstration GIF URL (seeded as `null`) |
+| `description` | TEXT | summary of the exercise |
+| `instructions` | TEXT (JSON) | array of step strings; API returns `[]` |
+| `gif_url` | TEXT | nullable; demonstration GIF URL |
+| `thumbnail_url` | TEXT | nullable; API returns `""` when empty |
+| `muscle_groups` | TEXT (JSON) | array of strings; API returns `[]` |
+| `equipment` | TEXT | e.g. `Body Weight` |
+| `difficulty` | TEXT | `Beginner` \| `Intermediate` \| `Advanced` |
 
 ### push_tokens
 | Column | Type | Notes |

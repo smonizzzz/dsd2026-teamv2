@@ -87,13 +87,19 @@ async function initDb() {
   `);
 
   // Global exercise catalogue (read by M2 to build patient plans).
+  // instructions and muscle_groups are JSON arrays stored as TEXT.
   db.run(`
     CREATE TABLE IF NOT EXISTS exercises (
-      id          INTEGER PRIMARY KEY AUTOINCREMENT,
-      name        TEXT NOT NULL,
-      category    TEXT NOT NULL DEFAULT 'General',
-      description TEXT NOT NULL DEFAULT '',
-      gif_url     TEXT
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      name          TEXT NOT NULL,
+      category      TEXT NOT NULL DEFAULT 'General',
+      description   TEXT NOT NULL DEFAULT '',
+      instructions  TEXT,
+      gif_url       TEXT,
+      thumbnail_url TEXT,
+      muscle_groups TEXT,
+      equipment     TEXT,
+      difficulty    TEXT
     );
   `);
 
@@ -122,6 +128,11 @@ async function initDb() {
     "ALTER TABLE schedule_exercises ADD COLUMN notes       TEXT",
     "ALTER TABLE schedule_exercises ADD COLUMN gif_url     TEXT",
     "ALTER TABLE schedule_exercises ADD COLUMN description TEXT",
+    "ALTER TABLE exercises ADD COLUMN instructions  TEXT",
+    "ALTER TABLE exercises ADD COLUMN thumbnail_url TEXT",
+    "ALTER TABLE exercises ADD COLUMN muscle_groups TEXT",
+    "ALTER TABLE exercises ADD COLUMN equipment     TEXT",
+    "ALTER TABLE exercises ADD COLUMN difficulty    TEXT",
     "ALTER TABLE schedules ADD COLUMN video_url TEXT",
   ];
   for (const sql of migrations) {
@@ -186,25 +197,27 @@ async function initDb() {
     console.log(`  Admin seeded: ${adminEmail}`);
   }
 
-  // Seed the global exercise catalogue (only if empty). gif_url is left NULL —
-  // real GIF URLs are to be supplied later by the clinical team via M2.
+  // Seed the global exercise catalogue (only if empty). Full M1 format with
+  // instructions/muscle_groups (JSON arrays), real gif_url, equipment, difficulty.
   const exCount = db.exec('SELECT COUNT(*) AS c FROM exercises');
   const isEmpty = !exCount.length || exCount[0].values[0][0] === 0;
   if (isEmpty) {
     const seed = [
-      ['Squat', 'Lower Body', '3 reps, ~5 s each. Feet shoulder-width apart, knees aligned with toes. Do not let knees cave inward.'],
-      ['Walking Test', 'Gait', 'Walk forward 5 m at a natural pace. Eyes forward, arms relaxed.'],
-      ['Stair Climbing', 'Lower Body', 'Climb 10 steps. Body upright, one step at a time, hold the rail if needed.'],
-      ['Straight Leg Raise', 'Lower Body', 'Lie flat on back. Lift one leg to 45 degrees, hold 2 s, lower slowly.'],
-      ['Knee Extension', 'Lower Body', 'Seated on a chair. Extend knee fully, hold 3 s, lower slowly.'],
-      ['Ankle Pumps', 'Lower Body', 'Seated or lying. Flex and point the ankle repeatedly. Good for circulation post-surgery.'],
-      ['Hip Abduction', 'Lower Body', 'Side-lying. Lift top leg to 30-45 degrees, hold 2 s, lower slowly.'],
-      ['Calf Raises', 'Lower Body', 'Stand with feet flat. Rise onto toes, hold 2 s, lower slowly.'],
-      ['Hamstring Stretch', 'Flexibility', 'Seated, legs extended. Reach forward towards feet, hold 20-30 s. Do not bounce.'],
-      ['Single-Leg Balance', 'Balance', 'Stand on one leg for 30 s. Switch sides. Hold a wall if needed.'],
+      { name: 'Squat', category: 'Lower Body', description: 'Strengthens quadriceps, glutes and core. Essential for regaining functional leg strength after lower limb surgery.', instructions: ['Stand with feet shoulder-width apart, toes pointing slightly outward.', 'Extend your arms forward for balance and keep your chest up.', 'Slowly bend your knees and sit back with your hips, as if sitting into a chair.', 'Lower until your knees are parallel with your glutes, or as far as comfortable.', 'Return to the starting position, pressing through your heels.', 'Keep your knees aligned with your toes throughout — do not let them cave inward.'], gif_url: 'https://cdn.jefit.com/assets/img/exercises/gifs/493.gif', thumbnail_url: '', muscle_groups: ['Upper Legs', 'Glutes', 'Abs'], equipment: 'Body Weight', difficulty: 'Beginner' },
+      { name: 'Walking Test', category: 'Gait', description: 'Assesses basic gait quality and mobility after lower limb injury or surgery.', instructions: ['Stand upright with eyes forward and arms relaxed at your sides.', 'Walk forward at a natural, comfortable pace for 5 metres.', 'Maintain an even stride, keeping your weight centred.', 'Turn around and return to the starting position.', 'Use a walking aid or hold a wall if needed for safety.'], gif_url: 'https://cdn.jefit.com/assets/img/exercises/gifs/1373.gif', thumbnail_url: '', muscle_groups: ['Lower Legs', 'Upper Legs', 'Glutes'], equipment: 'Body Weight', difficulty: 'Beginner' },
+      { name: 'Stair Climbing', category: 'Lower Body', description: 'Builds functional strength and confidence in lower limb joints for everyday activities.', instructions: ['Stand facing a staircase and hold the handrail for support.', 'Step up with the stronger or less painful leg first.', 'Bring the other leg up to join it on the same step.', 'Continue climbing one step at a time, maintaining upright posture.', 'To descend, step down with the weaker leg first.', 'Stop if you feel sharp pain or instability.'], gif_url: 'https://cdn.jefit.com/assets/img/exercises/gifs/1225.gif', thumbnail_url: '', muscle_groups: ['Upper Legs', 'Glutes', 'Lower Legs'], equipment: 'Body Weight', difficulty: 'Intermediate' },
+      { name: 'Straight Leg Raise', category: 'Lower Body', description: 'Strengthens the quadriceps without knee flexion. Ideal for early post-surgery rehabilitation when the knee cannot yet bend.', instructions: ['Lie flat on your back on the floor with arms at your sides.', 'Bend one knee with the foot flat on the floor for support.', 'Keep the other leg straight and tighten its thigh muscle.', 'Slowly lift the straight leg to approximately 45°, level with the bent knee.', 'Hold for 2 seconds at the top.', 'Lower slowly back to the floor.', 'Complete all reps on one side before switching legs.'], gif_url: 'https://cdn.jefit.com/assets/img/exercises/gifs/982.gif', thumbnail_url: '', muscle_groups: ['Upper Legs', 'Abs'], equipment: 'Body Weight', difficulty: 'Beginner' },
+      { name: 'Knee Extension', category: 'Lower Body', description: 'Isolates and strengthens the quadriceps through controlled knee extension. Suitable for both machine and chair-based rehabilitation.', instructions: ['Sit upright on a chair or machine with your back firmly against the support.', 'Let your feet hang naturally at a 90-degree angle.', 'Grip the edges of the seat or handles to stabilise yourself.', 'Slowly extend one or both legs until fully straight.', 'Pause briefly at the top — do not snap or lock the knees.', 'Lower slowly back to the starting position.', 'Use controlled movements throughout; do not swing.'], gif_url: 'https://cdn.jefit.com/assets/img/exercises/gifs/130.gif', thumbnail_url: '', muscle_groups: ['Upper Legs'], equipment: 'Body Weight', difficulty: 'Beginner' },
+      { name: 'Ankle Pumps', category: 'Lower Body', description: 'Promotes circulation and reduces swelling in the lower limb. Especially important in the first days after surgery.', instructions: ['Sit in a chair or lie on your back with your legs comfortably extended.', 'Slowly flex your foot upward, pulling your toes towards you.', 'Hold for 2–3 seconds.', 'Then slowly point your foot downward away from you.', 'Hold for 2–3 seconds.', 'Repeat in a continuous pumping motion.', 'Perform on both ankles, 10–20 repetitions each.'], gif_url: 'https://www.physio-pedia.com/images/archive/3/35/20200323205608%21Ankle_pumps.gif', thumbnail_url: '', muscle_groups: ['Lower Legs'], equipment: 'Body Weight', difficulty: 'Beginner' },
+      { name: 'Hip Abduction', category: 'Lower Body', description: 'Strengthens the hip abductor muscles. Important for knee and hip stability during recovery.', instructions: ['Lie on your side on the floor or a mat.', 'Prop yourself up on your bottom elbow, directly beneath your shoulder.', 'Keep your body in a straight line from head to feet.', 'Slowly lift your top leg upward as high as you comfortably can without rotating your hips backward.', 'Pause briefly at the top.', 'Lower the leg slowly back to the starting position.', 'Complete all reps on one side before turning over.'], gif_url: 'https://cdn.jefit.com/assets/img/exercises/gifs/1361.gif', thumbnail_url: '', muscle_groups: ['Upper Legs', 'Glutes'], equipment: 'Body Weight', difficulty: 'Beginner' },
+      { name: 'Calf Raises', category: 'Lower Body', description: 'Strengthens the calf muscles and improves ankle stability. Supports safe return to walking and load-bearing activities.', instructions: ['Stand with the balls of your feet on the edge of a step, heels hanging off.', 'Hold a wall or handrail lightly for balance.', 'Let your heels drop down as far as comfortable to get a full calf stretch.', 'Slowly raise your heels up as high as possible, squeezing your calf muscles.', 'Hold at the top for 1–2 seconds.', 'Lower slowly back to the starting position.', 'If no step is available, perform flat on the floor for a reduced range.'], gif_url: 'https://cdn.jefit.com/assets/img/exercises/gifs/1227.gif', thumbnail_url: '', muscle_groups: ['Lower Legs'], equipment: 'Body Weight', difficulty: 'Beginner' },
+      { name: 'Hamstring Stretch', category: 'Flexibility', description: 'Stretches the hamstring muscles to restore range of motion and prevent tightness after lower limb injury.', instructions: ['Sit on the floor with both legs extended straight out in front of you.', 'Place a belt, towel or resistance band around one foot and hold both ends.', 'Keep your back straight — do not round your spine.', 'Gently pull back on the belt to draw your toes towards you.', 'Lean slightly forward from the hips until you feel a stretch along the back of your thigh.', 'Hold the stretch for 15–30 seconds.', 'Release slowly and repeat on the other leg.'], gif_url: 'https://cdn.jefit.com/assets/img/exercises/gifs/932.gif', thumbnail_url: '', muscle_groups: ['Upper Legs', 'Lower Legs'], equipment: 'Body Weight', difficulty: 'Intermediate' },
+      { name: 'Single-Leg Balance', category: 'Balance', description: 'Trains proprioception and joint stability. A key functional milestone in lower limb rehabilitation.', instructions: ['Stand upright with both arms relaxed at your sides.', 'Focus on a fixed point in front of you to help maintain balance.', 'Slowly lift one foot off the floor, keeping the standing knee slightly soft.', 'Hold the balance on one leg for up to 30 seconds.', 'Stand next to a wall or sturdy surface as a safety measure if needed.', 'Lower the foot and rest briefly, then switch sides.', 'As you progress, try closing your eyes briefly to increase the difficulty.'], gif_url: 'https://cdn.jefit.com/assets/img/exercises/gifs/662.gif', thumbnail_url: '', muscle_groups: ['Abs', 'Glutes', 'Upper Legs'], equipment: 'Body Weight', difficulty: 'Advanced' },
     ];
-    for (const [name, category, description] of seed) {
-      run(db, 'INSERT INTO exercises (name, category, description, gif_url) VALUES (?, ?, ?, NULL)', [name, category, description]);
+    for (const ex of seed) {
+      run(db, `INSERT INTO exercises (name, category, description, instructions, gif_url, thumbnail_url, muscle_groups, equipment, difficulty)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [ex.name, ex.category, ex.description, JSON.stringify(ex.instructions), ex.gif_url, ex.thumbnail_url, JSON.stringify(ex.muscle_groups), ex.equipment, ex.difficulty]);
     }
     console.log(`  Exercise catalogue seeded: ${seed.length} exercises`);
   }
