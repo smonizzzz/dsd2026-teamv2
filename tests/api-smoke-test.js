@@ -267,6 +267,16 @@ async function main() {
   expectStatus(engine, 200, 'GET /recommendations/engine/:userId');
   assert.ok(Array.isArray(engine.data.suggestions), 'engine should return suggestions array');
 
+  // A patient without an assigned doctor cannot receive a plan (Part B guard).
+  const unboundReg = await request('POST', '/auth/register', {
+    name: 'Unbound Patient', email: `unbound-${runId}@example.com`, password: 'pw12345', role: 'patient',
+  });
+  const unboundPlan = await request('POST', '/schedule', {
+    userId: unboundReg.data.user.id, exercise: 'Knee rehabilitation',
+    date: new Date(Date.now() + 86400000).toISOString(),
+  });
+  expectStatus(unboundPlan, 409, 'POST /schedule for patient with no doctor → 409');
+
   const schedule = await request('POST', '/schedule', {
     userId,
     exercise: 'Knee rehabilitation',

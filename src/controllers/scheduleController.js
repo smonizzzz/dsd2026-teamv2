@@ -59,8 +59,13 @@ async function createScheduleItem(req, res, next) {
     if (!['pending', 'completed', 'skipped'].includes(status)) {
       const e = new Error('status must be pending, completed or skipped'); e.status = 400; return next(e);
     }
-    if (!queryOne(db, 'SELECT id FROM users WHERE id = ?', [userId])) {
+    const patient = queryOne(db, 'SELECT id, doctor_id FROM users WHERE id = ?', [userId]);
+    if (!patient) {
       const e = new Error('User not found'); e.status = 404; return next(e);
+    }
+    // A plan can only be created for a patient who has a doctor assigned (see PATCH /users/:id).
+    if (!patient.doctor_id) {
+      const e = new Error('Patient has no doctor assigned'); e.status = 409; return next(e);
     }
 
     const result = run(db,
