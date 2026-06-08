@@ -196,6 +196,9 @@ async function initDb() {
     );
     console.log(`  Admin seeded: ${adminEmail}`);
   }
+  // Ensure the admin account has the 'admin' role. Older deployments seeded it as
+  // 'clinician' (before the admin role existed); upgrade it idempotently on every start.
+  run(db, "UPDATE users SET role = 'admin' WHERE email = ? AND role != 'admin'", [adminEmail]);
 
   // Seed the global exercise catalogue (only if empty). Full M1 format with
   // instructions/muscle_groups (JSON arrays), real gif_url, equipment, difficulty.
