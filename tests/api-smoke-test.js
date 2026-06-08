@@ -132,6 +132,14 @@ async function main() {
   const token = login.data.token;
   const userId = login.data.user.id;
 
+  // Admin token — required for the admin-only plane (approve/reject, account management, etc.).
+  const adminLogin = await request('POST', '/auth/login', {
+    email: process.env.ADMIN_EMAIL || 'admin@v2.dsd',
+    password: process.env.ADMIN_PASSWORD || 'Admin2026!',
+  });
+  expectStatus(adminLogin, 200, 'POST /auth/login admin');
+  const adminToken = adminLogin.data.token;
+
   const clinicianEmail = `doctor-${runId}@example.com`;
   const clinicianPassword = 'DoctorPassword123!';
   const clinicianRegister = await multipartRequest('POST', '/auth/register', {
@@ -148,7 +156,11 @@ async function main() {
   const clinicianPendingLogin = await request('POST', '/auth/login', { email: clinicianEmail, password: clinicianPassword });
   expectStatus(clinicianPendingLogin, 403, 'POST /auth/login pending clinician');
 
-  const rejectClinician = await request('PATCH', `/auth/reject/${clinicianRegister.data.userId}`, undefined, token);
+  // RBAC: a non-admin (patient) cannot reject/approve.
+  const rejectAsPatient = await request('PATCH', `/auth/reject/${clinicianRegister.data.userId}`, undefined, token);
+  expectStatus(rejectAsPatient, 403, 'PATCH /auth/reject as non-admin → 403');
+
+  const rejectClinician = await request('PATCH', `/auth/reject/${clinicianRegister.data.userId}`, undefined, adminToken);
   expectStatus(rejectClinician, 200, 'PATCH /auth/reject/:userId');
   assert.strictEqual(rejectClinician.data.status, 'rejected');
 
@@ -161,7 +173,7 @@ async function main() {
   expectStatus(updateClinicianLicense, 200, 'PATCH /users/:id/license');
   assert.strictEqual(updateClinicianLicense.data.status, 'pending');
 
-  const approveClinician = await request('PATCH', `/auth/approve/${clinicianRegister.data.userId}`, undefined, token);
+  const approveClinician = await request('PATCH', `/auth/approve/${clinicianRegister.data.userId}`, undefined, adminToken);
   expectStatus(approveClinician, 200, 'PATCH /auth/approve/:userId');
 
   const clinicianApprovedLogin = await request('POST', '/auth/login', { email: clinicianEmail, password: clinicianPassword });
@@ -179,14 +191,22 @@ async function main() {
   expectStatus(doctorLookup, 200, 'GET /users/:id (doctor verification)');
   assert.strictEqual(doctorLookup.data.role, 'clinician');
 
-  const bindDoctor = await request('PATCH', `/users/${userId}`, { doctorId }, token);
-  expectStatus(bindDoctor, 200, 'PATCH /users/:id (bind doctor)');
+  // RBAC: a patient cannot assign their own doctor — admin only.
+  const selfAssign = await request('PATCH', `/users/${userId}`, { doctorId }, token);
+  expectStatus(selfAssign, 403, 'PATCH /users/:id doctorId as non-admin → 403');
+
+  // A patient CAN edit their own profile fields (name) without admin.
+  const selfProfile = await request('PATCH', `/users/${userId}`, { name: 'API Smoke Tester' }, token);
+  expectStatus(selfProfile, 200, 'PATCH /users/:id own profile field (self)');
+
+  const bindDoctor = await request('PATCH', `/users/${userId}`, { doctorId }, adminToken);
+  expectStatus(bindDoctor, 200, 'PATCH /users/:id (admin binds doctor)');
   assert.strictEqual(bindDoctor.data.doctor_id, doctorId);
 
-  const rebindDoctor = await request('PATCH', `/users/${userId}`, { doctorId }, token);
+  const rebindDoctor = await request('PATCH', `/users/${userId}`, { doctorId }, adminToken);
   expectStatus(rebindDoctor, 409, 'PATCH /users/:id (rebind same doctor → conflict)');
 
-  const bindNonClinician = await request('PATCH', `/users/${userId}`, { doctorId: userId }, token);
+  const bindNonClinician = await request('PATCH', `/users/${userId}`, { doctorId: userId }, adminToken);
   expectStatus(bindNonClinician, 403, 'PATCH /users/:id (bind non-clinician → forbidden)');
 
   const session = await request('POST', '/sessions', { userId });

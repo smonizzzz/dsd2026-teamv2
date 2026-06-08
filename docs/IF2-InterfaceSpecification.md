@@ -236,7 +236,7 @@ Each interface element is traced to the requirement(s) it satisfies.
 |----|-------|--------|----------|
 | Conflict 4 | Raw IMU ingestion schema (S2 payload vs V2 measurements) — `/measurements/raw` accepts it as free JSON, formal schema undecided | **Open** | S2 · V1 · V2 |
 | OI-1 | V1 `is_correct` write-back: no endpoint/mechanism defined; measurements stay `is_correct=false` | **Open** | V1 · V2 |
-| OI-2 | RBAC not enforced at route level — most endpoints currently open | **Open** (Sprint 3) | V2 |
+| OI-2 | RBAC: admin plane now gated (approve/reject, user list/create, doctor assignment, audit log, announcements, feedback are admin-only; profile self-edit allowed). **Remaining:** per-record ownership on patient-data endpoints + securing measurement ingestion (S2/V1 are tokenless services) | **Partial** (Sprint 3) | V2 |
 | OI-3 | HTTPS unavailable on Huawei (no domain) → Mixed-Content blocks HTTPS frontends; Railway down | **Open** | V2 |
 | OI-4 | Doctor-binding model: IF2 uses open-register-then-bind (Model A). The `2nd-implementation` branch uses mandatory invite tokens (Model B) — must not regress | **Decided: Model A** | V2 · M1 |
 | OI-5 | `targetAngles[].angleID` is stored/returned verbatim (not transformed to `angle_id`) — M1 to confirm | **Pending confirmation** | M1 · V2 |

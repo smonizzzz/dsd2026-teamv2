@@ -64,6 +64,18 @@ async function updateUser(req, res, next) {
     if (!name && age === undefined && !role && !status && !hasDoctorId && conditionLabel === undefined && conditionDate === undefined) {
       const e = new Error('at least one field is required: name, age, role, status, doctorId, conditionLabel, conditionDate'); e.status = 400; return next(e);
     }
+
+    // Access control: role/status/doctor assignment are admin-only; profile fields (name,
+    // age, condition*) may be edited by the account owner or an admin.
+    const isAdmin = req.user && req.user.role === 'admin';
+    const isSelf  = req.user && Number(req.user.id) === Number(req.params.id);
+    const privileged = role !== undefined || status !== undefined || hasDoctorId;
+    if (privileged && !isAdmin) {
+      const e = new Error('Only an administrator can change role, status or doctor assignment'); e.status = 403; return next(e);
+    }
+    if (!isAdmin && !isSelf) {
+      const e = new Error('You can only update your own profile'); e.status = 403; return next(e);
+    }
     if (role && !['patient', 'clinician'].includes(role)) {
       const e = new Error('role must be patient or clinician'); e.status = 400; return next(e);
     }

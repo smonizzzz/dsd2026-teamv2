@@ -77,8 +77,20 @@ WebSocket (real-time feedback): `wss://dsd2026-teamv2-production.up.railway.app/
 | GET · POST · PATCH · DELETE | `/announcements` | – | Announcements (admin) |
 | GET | `/audit-logs` | – | Admin action log |
 
-> Note: most routes are currently open (no auth) except the four `/auth` ones marked ✓.
-> Route-level RBAC is a separate planned task.
+### Access control (RBAC)
+
+Role gating is now enforced on the **administration plane**:
+
+| Scope | Rule |
+|-------|------|
+| **Admin only** (`requireRole('admin')`) | `PATCH /auth/approve/:userId`, `PATCH /auth/reject/:userId`, `GET /users`, `POST /users`, `GET /audit-logs`, `POST/PATCH/DELETE /announcements`, `GET/PATCH /feedback` |
+| **Admin for privileged fields** | `PATCH /users/:id` — changing `role`, `status` or `doctorId` requires admin; the account owner may edit only their own `name`/`age`/`condition*` |
+| **Authenticated (any role)** | `GET /auth/me`, `GET /auth/status`, `GET /users/:id`, `GET/announcements`, `POST /feedback` |
+| **License download** | `GET /users/:id/license` — admin or clinician |
+| **Open (no auth)** | `POST /auth/register`, `POST /auth/login`, `GET /health`, `GET /exercises`, `PATCH /users/:id/license` (pending/rejected clinicians have no token) |
+| **Not yet gated** | Patient-data endpoints (sessions, measurements, recommendations, schedule, progress, push) and measurement ingestion remain open pending cross-team token coordination (S2/V1 are services without user tokens). Per-record ownership RBAC is the next stage. |
+
+> **Doctor assignment is admin-only** (`PATCH /users/:id` with `doctorId`). Patients no longer self-bind.
 
 ---
 

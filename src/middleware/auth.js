@@ -15,4 +15,15 @@ function requireAuth(req, res, next) {
   }
 }
 
-module.exports = { requireAuth, JWT_SECRET };
+// Role gate — use after requireAuth. e.g. requireRole('admin') or requireRole('admin','clinician').
+function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!req.user) return res.status(401).json({ error: 'Authentication required' });
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ error: `Forbidden: requires role ${roles.join(' or ')}` });
+    }
+    next();
+  };
+}
+
+module.exports = { requireAuth, requireRole, JWT_SECRET };
