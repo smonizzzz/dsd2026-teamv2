@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home | DSD2026 TeamV2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#08080e; --bg2:#0e0e18; --bg3:#13131e; --card:#181824;
+      --border:rgba(255,255,255,0.07);
+      --blue:#4a9eff; --blue-glow:rgba(74,158,255,0.15);
+      --red:#e8382a; --gold:#c9962a; --gold-light:#f0c040; --gold-glow:rgba(201,150,42,0.12);
+      --green:#10b981; --purple:#a78bfa;
+      --text:#f0ede8; --text-dim:#8888a8; --text-xs:#55556a;
+      --mono:'Space Mono',monospace; --sans:'Syne',sans-serif; --cn:'Noto Serif SC',serif;
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--sans); line-height:1.6; overflow-x:hidden; }
+
+    /* ── FIXED CHINESE BACKGROUND — always visible on every section ── */
+    .lattice-bg {
+      position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.03;
+      background-image:
+        linear-gradient(0deg,rgba(201,150,42,0.8) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(201,150,42,0.8) 1px,transparent 1px),
+        linear-gradient(0deg,rgba(201,150,42,0.3) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(201,150,42,0.3) 1px,transparent 1px);
+      background-size:80px 80px,80px 80px,20px 20px,20px 20px;
+    }
+    .accent-left  { position:fixed; left:0; top:0; bottom:0; width:3px; background:linear-gradient(to bottom,transparent 10%,var(--red) 40%,var(--gold) 60%,transparent 90%); opacity:0.5; pointer-events:none; z-index:50; }
+    .accent-right { position:fixed; right:0; top:0; bottom:0; width:3px; background:linear-gradient(to bottom,transparent 10%,var(--red) 40%,var(--gold) 60%,transparent 90%); opacity:0.5; pointer-events:none; z-index:50; }
+
+    /* Floating kanji — fixed, visible on all sections */
+    .float-kanji {
+      position:fixed; font-family:var(--cn); font-weight:700;
+      pointer-events:none; user-select:none; line-height:1; z-index:0;
+      color:var(--red); opacity:0.025;
+    }
+    .fk1 { font-size:22rem; top:5vh;  right:-4rem; }
+    .fk2 { font-size:14rem; bottom:5vh; left:-2rem; color:var(--gold); opacity:0.02; }
+    .fk3 { font-size:8rem;  top:40vh; left:3%;  opacity:0.015; }
+
+    /* ── NAV ── */
+    nav {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 6vw; height:56px;
+      background:rgba(8,8,14,0.92); backdrop-filter:blur(14px);
+      border-bottom:1px solid rgba(201,150,42,0.15);
+    }
+    nav::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:linear-gradient(to right,transparent,var(--gold),var(--red),var(--gold),transparent); opacity:0.4; }
+    .nav-logo { font-family:var(--mono); font-size:0.75rem; font-weight:700; letter-spacing:0.12em; color:var(--text); text-transform:uppercase; display:flex; align-items:center; gap:0.7rem; }
+    .nav-logo .cn-char { font-family:var(--cn); font-size:1rem; color:var(--red); line-height:1; }
+    .nav-links { display:flex; gap:2rem; }
+    .nav-links a { font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-dim); text-decoration:none; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--gold-light); }
+    .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; background:none; border:none; padding:4px; }
+    .hamburger span { width:22px; height:2px; background:var(--text); display:block; }
+    .mobile-menu { display:none; position:fixed; inset:0; z-index:99; background:rgba(8,8,14,0.97); flex-direction:column; align-items:center; justify-content:center; gap:1.2rem; }
+    .mobile-menu.open { display:flex; }
+    .mobile-menu a { font-family:var(--mono); font-size:1rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--text); text-decoration:none; padding:0.75rem 3rem; border:1px solid rgba(201,150,42,0.2); border-radius:8px; width:220px; text-align:center; transition:0.2s; }
+    .mobile-menu a:hover { border-color:var(--gold); color:var(--gold-light); }
+    .mobile-close { position:absolute; top:1.2rem; right:1.5rem; font-size:1.4rem; color:var(--text-dim); cursor:pointer; background:none; border:none; }
+
+    /* ── HERO ── */
+    .hero { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:100px 6vw 80px; position:relative; overflow:hidden; }
+    .hero-glow { position:absolute; inset:0; pointer-events:none;
+      background:radial-gradient(ellipse 70% 50% at 50% 50%,rgba(232,56,42,0.04) 0%,transparent 70%); }
+    .hero-circles { position:absolute; inset:0; pointer-events:none; }
+    .hc { position:absolute; border-radius:50%; border:1px solid; top:50%; left:50%; }
+    .hc1 { width:600px; height:600px; border-color:rgba(201,150,42,0.04); transform:translate(-50%,-50%); }
+    .hc2 { width:400px; height:400px; border-color:rgba(232,56,42,0.05); transform:translate(-50%,-50%); }
+    .hc3 { width:200px; height:200px; border-color:rgba(201,150,42,0.07); transform:translate(-50%,-50%); animation:spin 60s linear infinite; }
+    @keyframes spin { to{ transform:translate(-50%,-50%) rotate(360deg); } }
+
+    /* Corner ornaments */
+    .corner { position:absolute; width:100px; height:100px; pointer-events:none; opacity:0.15; }
+    .corner svg { width:100%; height:100%; }
+    .c-tl { top:68px; left:16px; }
+    .c-tr { top:68px; right:16px; transform:scaleX(-1); }
+    .c-bl { bottom:16px; left:16px; transform:scaleY(-1); }
+    .c-br { bottom:16px; right:16px; transform:scale(-1,-1); }
+
+    .hero-content { position:relative; z-index:2; }
+    .hero-tag { font-family:var(--mono); font-size:0.66rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-xs); margin-bottom:1.2rem; animation:fadeUp 0.6s ease both; display:flex; align-items:center; justify-content:center; gap:0.8rem; }
+    .hero-tag::before,.hero-tag::after { content:''; width:30px; height:1px; }
+    .hero-tag::before { background:linear-gradient(to right,transparent,var(--gold)); }
+    .hero-tag::after  { background:linear-gradient(to left,transparent,var(--gold)); }
+    .hero-cn-sub { font-family:var(--cn); font-size:1rem; color:rgba(201,150,42,0.45); letter-spacing:0.3em; margin-bottom:0.8rem; animation:fadeUp 0.6s 0.05s ease both; }
+    .hero h1 { font-size:clamp(2.6rem,7vw,5.2rem); font-weight:800; line-height:1.08; letter-spacing:-0.025em; margin-bottom:1.2rem; animation:fadeUp 0.6s 0.1s ease both; }
+    .hero h1 .accent { color:var(--blue); }
+    .hero-sub { max-width:520px; color:var(--text-dim); font-size:0.97rem; line-height:1.75; margin-bottom:2.4rem; animation:fadeUp 0.6s 0.2s ease both; }
+    .hero-badges { display:flex; gap:0.55rem; flex-wrap:wrap; justify-content:center; animation:fadeUp 0.6s 0.3s ease both; }
+    .badge { font-family:var(--mono); font-size:0.63rem; letter-spacing:0.08em; padding:0.28rem 0.75rem; border-radius:4px; border:1px solid var(--border); color:var(--text-dim); background:var(--bg3); }
+    .badge.blue  { border-color:rgba(74,158,255,0.3); color:var(--blue); }
+    .badge.amber { border-color:rgba(201,150,42,0.4); color:var(--gold-light); }
+    .badge.red   { border-color:rgba(232,56,42,0.35); color:var(--red); }
+    .scroll-hint { position:absolute; bottom:2rem; left:50%; transform:translateX(-50%); font-family:var(--mono); font-size:0.58rem; letter-spacing:0.15em; color:var(--text-xs); text-transform:uppercase; display:flex; flex-direction:column; align-items:center; gap:0.5rem; animation:fadeUp 0.6s 0.5s ease both; z-index:2; }
+    .scroll-hint::after { content:''; width:1px; height:36px; background:linear-gradient(to bottom,rgba(201,150,42,0.5),transparent); animation:lineDown 1.5s ease-in-out infinite; }
+    @keyframes lineDown { 0%,100%{opacity:.3;transform:scaleY(.6)} 50%{opacity:1;transform:scaleY(1)} }
+
+    /* ── SECTIONS — all transparent so lattice shows through ── */
+    section { padding:80px 6vw; position:relative; z-index:1; }
+    /* Alternating subtle bg so sections are distinguishable but lattice still visible */
+    #background  { background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
+    #functions   { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); }
+    #architecture{ background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
+    #dataflow    { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); }
+    #api         { background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
+    #progress    { background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
+    #conflicts   { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); }
+    #members     { background:rgba(8,8,14,0.0); border-top:1px solid rgba(201,150,42,0.1); }
+
+    .api-url-box { background:rgba(8,8,14,0.8); border:1px solid rgba(74,158,255,0.3); border-radius:10px; padding:1.2rem 1.6rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:2rem; }
+    .api-url-label { font-family:var(--mono); font-size:0.6rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-xs); margin-bottom:0.3rem; }
+    .api-url-value { font-family:var(--mono); font-size:1rem; color:var(--blue); font-weight:700; }
+    .api-live-badge { display:inline-flex; align-items:center; gap:0.5rem; font-family:var(--mono); font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.35rem 0.8rem; border-radius:20px; background:rgba(16,185,129,0.12); color:var(--green); border:1px solid rgba(16,185,129,0.3); white-space:nowrap; }
+    .api-live-badge::before { content:''; width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse2 1.5s ease-in-out infinite; }
+    @keyframes pulse2 { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .endpoint-group { margin-bottom:1.5rem; }
+    .endpoint-group-title { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid rgba(201,150,42,0.12); }
+    .endpoint-list { display:flex; flex-direction:column; gap:0.35rem; }
+    .endpoint-row { display:flex; align-items:baseline; gap:0.7rem; font-family:var(--mono); font-size:0.78rem; }
+    .method { font-size:0.6rem; font-weight:700; letter-spacing:0.08em; padding:0.12rem 0.45rem; border-radius:3px; white-space:nowrap; }
+    .m-get    { background:rgba(16,185,129,0.12); color:var(--green); border:1px solid rgba(16,185,129,0.25); }
+    .m-post   { background:rgba(74,158,255,0.12); color:var(--blue); border:1px solid rgba(74,158,255,0.25); }
+    .m-patch  { background:rgba(201,150,42,0.12); color:var(--gold-light); border:1px solid rgba(201,150,42,0.25); }
+    .m-delete { background:rgba(232,56,42,0.12); color:var(--red); border:1px solid rgba(232,56,42,0.25); }
+    .ep-path  { color:var(--text); }
+    .ep-desc  { color:var(--text-xs); font-size:0.68rem; }
+    .endpoint-cols { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:2rem; }
+
+    .section-label { font-family:var(--mono); font-size:0.63rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:0.5rem; display:flex; align-items:center; gap:0.6rem; }
+    .section-label::before { content:'⬡'; font-size:0.5rem; color:var(--red); }
+    h2 { font-size:clamp(1.6rem,3.5vw,2.3rem); font-weight:700; letter-spacing:-0.02em; margin-bottom:1rem; }
+    .section-intro { max-width:640px; color:var(--text-dim); font-size:0.93rem; line-height:1.78; margin-bottom:2.2rem; }
+
+    .cn-divider { display:flex; align-items:center; gap:1rem; margin:2rem 0; }
+    .cn-divider-line { flex:1; height:1px; background:linear-gradient(to right,transparent,rgba(201,150,42,0.3),transparent); }
+    .cn-divider-symbol { font-family:var(--cn); font-size:1.2rem; color:rgba(201,150,42,0.4); }
+
+    /* FUNCTIONS */
+    .fn-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1px; background:rgba(201,150,42,0.08); border:1px solid rgba(201,150,42,0.12); border-radius:12px; overflow:hidden; }
+    .fn-card { background:rgba(24,24,36,0.85); padding:1.8rem; transition:background 0.25s; position:relative; overflow:hidden; backdrop-filter:blur(4px); }
+    .fn-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(to right,var(--red),var(--gold)); opacity:0; transition:opacity 0.25s; }
+    .fn-card:hover { background:rgba(28,24,36,0.95); }
+    .fn-card:hover::before { opacity:1; }
+    .fn-label { font-size:0.65rem; font-family:var(--mono); letter-spacing:0.15em; color:var(--text-xs); text-transform:uppercase; margin-bottom:0.4rem; }
+    .fn-card h3 { font-size:1.15rem; font-weight:700; color:var(--gold-light); margin-bottom:0.6rem; }
+    .fn-card p  { font-size:0.86rem; color:var(--text-dim); line-height:1.65; }
+    .fn-cn { font-family:var(--cn); font-size:2rem; color:var(--red); opacity:0.15; position:absolute; bottom:1rem; right:1.2rem; line-height:1; }
+
+    /* ARCHITECTURE */
+    .arch-diagram { background:rgba(19,19,30,0.8); border:1px solid rgba(201,150,42,0.12); border-radius:12px; padding:2.5rem 1.5rem; margin-bottom:2rem; overflow-x:auto; backdrop-filter:blur(4px); }
+    .arch-flow { display:flex; align-items:center; justify-content:center; gap:0; flex-wrap:nowrap; min-width:480px; }
+    .arch-group { display:flex; flex-direction:column; gap:0.5rem; }
+    .arch-box { padding:0.5rem 0.9rem; border-radius:6px; font-family:var(--mono); font-size:0.68rem; font-weight:700; letter-spacing:0.04em; border:1.5px solid; white-space:nowrap; text-align:center; }
+    .arch-box.sensor  { border-color:#f97316; color:#f97316; background:rgba(249,115,22,0.08); }
+    .arch-box.server  { border-color:var(--blue); color:var(--blue); background:var(--blue-glow); }
+    .arch-box.server.v2 { border-color:var(--gold); color:var(--gold-light); background:var(--gold-glow); box-shadow:0 0 14px rgba(201,150,42,0.2); }
+    .arch-box.monitor { border-color:var(--green); color:var(--green); background:rgba(16,185,129,0.08); }
+    .arch-arrow { display:flex; flex-direction:column; align-items:center; padding:0 0.8rem; gap:3px; }
+    .arch-arrow .if-label { font-family:var(--mono); font-size:0.58rem; color:var(--gold); letter-spacing:0.08em; }
+    .arch-arrow .arrow-line { width:36px; height:1px; background:linear-gradient(to right,var(--text-xs),var(--gold),var(--text-xs)); position:relative; }
+    .arch-arrow .arrow-line::after { content:'▶'; position:absolute; right:-7px; top:-6px; font-size:0.52rem; color:var(--gold); }
+    .arch-table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:0.87rem; }
+    th { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); text-align:left; padding:0.6rem 1rem; border-bottom:1px solid rgba(201,150,42,0.15); }
+    td { padding:0.85rem 1rem; border-bottom:1px solid var(--border); color:var(--text-dim); vertical-align:top; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:rgba(19,19,30,0.6); }
+    td.layer-cell { font-family:var(--mono); font-size:0.68rem; color:var(--text-xs); text-transform:uppercase; white-space:nowrap; }
+    td.team-cell  { font-weight:600; color:var(--text); }
+    td.highlight  { color:var(--gold-light)!important; font-weight:700; }
+    .v2-row td    { background:rgba(201,150,42,0.04); }
+    .v2-row td.team-cell { color:var(--gold-light); }
+
+    /* PROGRESS */
+    .sprint-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1rem; }
+    .sprint-card { background:rgba(24,24,36,0.8); border:1px solid var(--border); border-radius:10px; padding:1.4rem; transition:border-color 0.25s,transform 0.25s; position:relative; overflow:hidden; backdrop-filter:blur(4px); }
+    .sprint-card::after { font-family:var(--cn); font-size:5rem; font-weight:700; position:absolute; bottom:-1rem; right:0.5rem; color:var(--red); opacity:0.05; line-height:1; pointer-events:none; content:attr(data-cn); }
+    .sprint-card:hover { border-color:rgba(201,150,42,0.3); transform:translateY(-2px); }
+    .sprint-card.active { border-color:rgba(201,150,42,0.4); border-left:2px solid var(--red); }
+    .sprint-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.9rem; }
+    .sprint-num { font-family:var(--mono); font-size:0.63rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-xs); }
+    .sprint-status { font-family:var(--mono); font-size:0.58rem; padding:0.18rem 0.5rem; border-radius:4px; letter-spacing:0.08em; text-transform:uppercase; }
+    .status-active   { background:rgba(232,56,42,0.12); color:var(--red); border:1px solid rgba(232,56,42,0.3); }
+    .status-complete { background:rgba(16,185,129,0.12); color:var(--green); border:1px solid rgba(16,185,129,0.3); }
+    .status-upcoming { background:rgba(255,255,255,0.04); color:var(--text-xs); border:1px solid var(--border); }
+    .sprint-title { font-size:0.93rem; font-weight:700; margin-bottom:0.75rem; }
+    .sprint-items { list-style:none; display:flex; flex-direction:column; gap:0.4rem; }
+    .sprint-items li { font-size:0.8rem; color:var(--text-dim); display:flex; align-items:flex-start; gap:0.5rem; }
+    .sprint-items li::before { content:'–'; color:var(--gold); flex-shrink:0; }
+    .progress-bar-wrap { margin-top:1.1rem; height:3px; background:var(--bg); border-radius:2px; overflow:hidden; }
+    .progress-bar { height:100%; background:linear-gradient(to right,var(--red),var(--gold)); border-radius:2px; }
+
+    /* MEMBERS */
+    .members-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:1rem; }
+    .member-card { background:rgba(24,24,36,0.8); border:1px solid var(--border); border-radius:10px; padding:1.4rem 1.1rem; text-align:center; transition:border-color 0.25s,transform 0.25s; backdrop-filter:blur(4px); }
+    .member-card:hover { border-color:rgba(201,150,42,0.3); transform:translateY(-2px); }
+    .member-card.pm { border-color:rgba(232,56,42,0.3); border-top:2px solid var(--red); }
+    .member-avatar { width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:0.95rem; font-weight:700; margin:0 auto 0.85rem; border:1.5px solid; }
+    .av-red    { background:rgba(232,56,42,0.12);  color:var(--red);        border-color:rgba(232,56,42,0.3); }
+    .av-gold   { background:rgba(201,150,42,0.12); color:var(--gold-light); border-color:rgba(201,150,42,0.35); }
+    .av-blue   { background:rgba(74,158,255,0.12); color:var(--blue);       border-color:rgba(74,158,255,0.3); }
+    .av-green  { background:rgba(16,185,129,0.12); color:var(--green);      border-color:rgba(16,185,129,0.3); }
+    .av-purple { background:rgba(167,139,250,0.12);color:var(--purple);     border-color:rgba(167,139,250,0.3); }
+    .member-name { font-size:0.92rem; font-weight:700; margin-bottom:0.2rem; }
+    .member-role { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-xs); margin-bottom:0.25rem; }
+    .member-nat  { font-size:0.85rem; color:var(--text-dim); margin-bottom:0.1rem; }
+    .member-tag  { display:inline-block; margin-top:0.55rem; font-family:var(--mono); font-size:0.56rem; letter-spacing:0.06em; text-transform:uppercase; padding:0.18rem 0.45rem; border-radius:3px; }
+    .tag-pm     { background:rgba(232,56,42,0.12);  color:var(--red);        border:1px solid rgba(232,56,42,0.25); }
+    .tag-arch   { background:rgba(167,139,250,0.12);color:var(--purple);     border:1px solid rgba(167,139,250,0.25); }
+    .tag-dev-pt { background:rgba(74,158,255,0.12); color:var(--blue);       border:1px solid rgba(74,158,255,0.25); }
+    .tag-dev-cn { background:rgba(201,150,42,0.12); color:var(--gold-light); border:1px solid rgba(201,150,42,0.25); }
+    .tag-vpm    { background:rgba(255,255,255,0.06);color:var(--text-dim);   border:1px solid var(--border); }
+
+    /* FOOTER */
+    footer { padding:2.5rem 6vw; border-top:1px solid rgba(201,150,42,0.15); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; position:relative; z-index:1; }
+    footer::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(to right,transparent,var(--gold),var(--red),var(--gold),transparent); opacity:0.3; }
+    .footer-logo { font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; color:var(--text-xs); }
+    .footer-cn   { font-family:var(--cn); font-size:0.85rem; color:rgba(201,150,42,0.25); letter-spacing:0.15em; }
+    .footer-links { display:flex; gap:1.4rem; flex-wrap:wrap; }
+    .footer-links a { font-family:var(--mono); font-size:0.63rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-xs); text-decoration:none; transition:color 0.2s; }
+    .footer-links a:hover { color:var(--gold-light); }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+    .reveal { opacity:0; transform:translateY(20px); transition:opacity 0.55s ease,transform 0.55s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+
+    @media(max-width:640px) {
+      .nav-links { display:none; }
+      .hamburger { display:flex; }
+      section { padding:60px 5vw; }
+      .float-kanji { display:none; }
+      .corner { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- FIXED CHINESE BG — stays on every section -->
+<div class="lattice-bg"></div>
+<div class="accent-left"></div>
+<div class="accent-right"></div>
+<div class="float-kanji fk1">协</div>
+<div class="float-kanji fk2">合</div>
+<div class="float-kanji fk3">技</div>
+
+<svg style="display:none">
+  <defs>
+    <symbol id="corner-svg" viewBox="0 0 100 100">
+      <path d="M8,8 L8,45 M8,8 L45,8" stroke="currentColor" stroke-width="2" fill="none"/>
+      <path d="M8,8 L8,25 M8,8 L25,8" stroke="currentColor" stroke-width="1" fill="none" opacity="0.5"/>
+      <circle cx="8" cy="8" r="3" fill="currentColor"/>
+      <path d="M18,18 Q30,18 30,30 Q30,42 42,42" stroke="currentColor" stroke-width="1" fill="none" opacity="0.35"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <span class="cn-char">协</span>
+    DSD2026 &middot; Team V2
+  </div>
+  <div class="nav-links">
+    <a href="#background">Background</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#dataflow">Data Flow</a>
+    <a href="#api">API</a>
+    <a href="#progress">Progress</a>
+    <a href="#conflicts">Conflicts</a>
+    <a href="news.html">Dispatch</a>
+    <a href="#srs">SRS</a>
+    <a href="#members">Members</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">&#x2715;</button>
+  <a href="#background"   onclick="closeMobile()">Background</a>
+  <a href="#architecture" onclick="closeMobile()">Architecture</a>
+  <a href="#dataflow"     onclick="closeMobile()">Data Flow</a>
+  <a href="#api"          onclick="closeMobile()">API</a>
+  <a href="#progress"     onclick="closeMobile()">Progress</a>
+  <a href="#conflicts"    onclick="closeMobile()">Conflicts</a>
+  <a href="news.html"     onclick="closeMobile()">Dispatch</a>
+  <a href="#srs"          onclick="closeMobile()">SRS</a>
+  <a href="#members"      onclick="closeMobile()">Members</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-circles">
+    <div class="hc hc1"></div>
+    <div class="hc hc2"></div>
+    <div class="hc hc3"></div>
+  </div>
+  <div class="corner c-tl" style="color:var(--gold)"><svg viewBox="0 0 100 100"><use href="#corner-svg"/></svg></div>
+  <div class="corner c-tr" style="color:var(--gold)"><svg viewBox="0 0 100 100"><use href="#corner-svg"/></svg></div>
+  <div class="corner c-bl" style="color:rgba(232,56,42,0.6)"><svg viewBox="0 0 100 100"><use href="#corner-svg"/></svg></div>
+  <div class="corner c-br" style="color:rgba(232,56,42,0.6)"><svg viewBox="0 0 100 100"><use href="#corner-svg"/></svg></div>
+  <div class="hero-content">
+    <p class="hero-tag">Distributed Software Development &middot; 2025&ndash;2026</p>
+    <div class="hero-cn-sub">后端接口与数据存储</div>
+    <h1>Backend API<br>&amp; <span class="accent">Storage</span></h1>
+    <p class="hero-sub">Team V2 is the central Node.js &amp; Express layer &mdash; bridging sensor data, AI inference, and end-user interfaces through REST APIs and SQLite-backed storage. The API is now live and publicly accessible.</p>
+    <div class="hero-badges">
+      <span class="badge blue">REST / WebSocket</span>
+      <span class="badge blue">SQL &amp; Migrations</span>
+      <span class="badge blue">JWT Auth</span>
+      <span class="badge amber">Integration Lead</span>
+      <span class="badge" style="border-color:rgba(16,185,129,0.4);color:var(--green)">&#x25cf; API Live</span>
+      <span class="badge red">UTAD &times; Jilin University</span>
+    </div>
+  </div>
+  <div class="scroll-hint">Scroll</div>
+</section>
+
+<!-- BACKGROUND -->
+<section id="background">
+  <p class="section-label reveal">01 &middot; Context</p>
+  <h2 class="reveal">Why This Project Exists</h2>
+  <p class="section-intro reveal">Recovering from limb surgery is rarely straightforward. Traditional rehabilitation demands frequent clinic visits and constant supervision &mdash; a model that is costly, time-consuming, and inaccessible for many patients. Our project tackles this gap head-on by building an intelligent, sensor-driven assistant that guides patients through their recovery at home.</p>
+  <p class="section-intro reveal">Developed jointly by UTAD and Jilin University as part of the Distributed Software Development course, the system brings together 28 students across 6 specialised teams, each contributing a distinct technical layer to one unified rehabilitation platform.</p>
+  <div class="cn-divider reveal">
+    <div class="cn-divider-line"></div>
+    <div class="cn-divider-symbol">中葡合作</div>
+    <div class="cn-divider-line"></div>
+  </div>
+</section>
+
+<!-- FUNCTIONS -->
+<section id="functions">
+  <p class="section-label reveal">02 &middot; What the System Does</p>
+  <h2 class="reveal">Three Core Capabilities</h2>
+  <div class="fn-grid reveal">
+    <div class="fn-card">
+      <p class="fn-label">Capability 01</p>
+      <h3>Tell</h3>
+      <p>Delivers instant feedback on whether a patient's movement matches the prescribed rehabilitation motion, reducing the risk of reinjury from poor form.</p>
+      <div class="fn-cn">告</div>
+    </div>
+    <div class="fn-card">
+      <p class="fn-label">Capability 02</p>
+      <h3>Reconstruct</h3>
+      <p>Builds a 3D representation of each recorded movement and benchmarks joint angles against clinically expected recovery curves for precise medical review.</p>
+      <div class="fn-cn">构</div>
+    </div>
+    <div class="fn-card">
+      <p class="fn-label">Capability 03</p>
+      <h3>Suggest</h3>
+      <p>Analyses a patient's performance history to generate tailored exercise recommendations, adapting the rehabilitation programme as recovery progresses.</p>
+      <div class="fn-cn">议</div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <p class="section-label reveal">03 &middot; How It&rsquo;s Built</p>
+  <h2 class="reveal">System Architecture</h2>
+  <p class="section-intro reveal">System Design 1.0, published on 13 April, freezes the distributed architecture into front-end, intermediate, and back-end layers. V2 sits in the middle as the API hub, storage coordinator, and integration point for the rest of the platform.</p>
+  <div class="arch-diagram reveal">
+    <div class="arch-flow">
+      <div class="arch-group">
+        <div class="arch-box sensor">Front-end</div>
+        <div class="arch-box sensor">IMU Sensors</div>
+      </div>
+      <div class="arch-arrow"><span class="if-label">INPUT</span><div class="arrow-line"></div></div>
+      <div class="arch-group">
+        <div class="arch-box server">V2 Server</div>
+        <div class="arch-box server v2">Node.js &amp; Express</div>
+      </div>
+      <div class="arch-arrow"><span class="if-label">OUTPUT</span><div class="arrow-line"></div></div>
+      <div class="arch-group">
+        <div class="arch-box monitor">SQLite DB</div>
+        <div class="arch-box monitor">V1 AI Module</div>
+      </div>
+    </div>
+  </div>
+  <div class="arch-table-wrap reveal">
+    <table>
+      <thead><tr><th>Layer</th><th>Team</th><th>Lead</th><th>Core Focus</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="layer-cell" rowspan="2">Sensor</td>
+          <td class="team-cell">S1 &mdash; Firmware &amp; Protocol</td><td>Zhihang Yu</td><td>Embedded firmware, IMU packet format, wireless transport rules</td>
+        </tr>
+        <tr>
+          <td class="team-cell">S2 &mdash; Data Acquisition &amp; Mock</td><td>Zhiqi Zhang</td><td>Sensor ingestion, input validation, mock measurements for testing</td>
+        </tr>
+        <tr>
+          <td class="layer-cell" rowspan="2">Server</td>
+          <td class="team-cell">V1 &mdash; AI &amp; Motion Recognition</td><td>Diogo Borges</td><td>Motion classification, feedback generation, recommendation inputs</td>
+        </tr>
+        <tr class="v2-row">
+          <td class="team-cell highlight">V2 &mdash; Backend API &amp; Storage &#9733;</td><td class="highlight">Sergio Moniz</td><td>Node.js &amp; Express API, SQLite storage, MVC layers, integration lead</td>
+        </tr>
+        <tr>
+          <td class="layer-cell" rowspan="2">Monitor</td>
+          <td class="team-cell">M1 &mdash; Patient Mobile App</td><td>Diogo Pinhel</td><td>User login, sessions, sensor upload, live feedback display</td>
+        </tr>
+        <tr>
+          <td class="team-cell">M2 &mdash; Clinical Web Dashboard</td><td>Yihang Li</td><td>Recovery charts, recommendation review, clinical monitoring views</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- DATA FLOW -->
+<section id="dataflow">
+  <style>
+    .df-wrap { overflow-x:auto; margin-bottom:2rem; }
+    .df-board { min-width:600px; background:rgba(19,19,30,0.85); border:1px solid rgba(201,150,42,0.12); border-radius:12px; padding:2rem 1.5rem; backdrop-filter:blur(4px); }
+    .df-row { display:flex; align-items:stretch; margin-bottom:0; }
+    .df-side { font-family:var(--mono); font-size:0.52rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--text-xs); writing-mode:vertical-rl; transform:rotate(180deg); min-width:2.4rem; display:flex; align-items:center; justify-content:center; border-right:1px solid rgba(201,150,42,0.1); margin-right:1.2rem; padding:0.4rem 0; }
+    .df-layer { flex:1; display:flex; flex-direction:column; gap:0.45rem; padding:0.65rem 0; }
+    .df-boxes { display:flex; gap:0.45rem; flex-wrap:wrap; align-items:center; }
+    .df-b { padding:0.35rem 0.7rem; border-radius:5px; font-family:var(--mono); font-size:0.67rem; font-weight:700; letter-spacing:0.04em; border:1.5px solid; text-align:center; white-space:nowrap; }
+    .df-b.cl  { border-color:rgba(240,237,232,0.3); color:var(--text); background:rgba(255,255,255,0.03); }
+    .df-b.ex  { border-color:rgba(74,158,255,0.45); color:var(--blue); background:rgba(74,158,255,0.07); }
+    .df-b.ro  { border-color:rgba(167,139,250,0.45); color:var(--purple); background:rgba(167,139,250,0.07); }
+    .df-b.au  { border-color:rgba(232,56,42,0.45); color:var(--red); background:rgba(232,56,42,0.05); border-style:dashed; }
+    .df-b.co  { border-color:rgba(201,150,42,0.5); color:var(--gold-light); background:var(--gold-glow); }
+    .df-b.he  { border-color:rgba(16,185,129,0.45); color:var(--green); background:rgba(16,185,129,0.05); }
+    .df-b.st  { border-color:rgba(249,115,22,0.45); color:#f97316; background:rgba(249,115,22,0.05); }
+    .df-note  { font-family:var(--mono); font-size:0.59rem; color:var(--text-xs); letter-spacing:0.04em; padding-left:0.2rem; }
+    .df-note::before { content:'↳ '; color:var(--gold); }
+    .df-arrow-v { display:flex; padding-left:3.6rem; padding-top:0.1rem; padding-bottom:0.1rem; }
+    .df-arrow-v-line { width:1px; height:24px; background:linear-gradient(to bottom,rgba(201,150,42,0.6),transparent); position:relative; }
+    .df-arrow-v-line::after { content:'▼'; position:absolute; bottom:-9px; left:-4px; font-size:0.48rem; color:var(--gold); }
+    .df-startup { display:flex; align-items:center; gap:0; overflow-x:auto; padding:1.4rem 1.5rem; background:rgba(19,19,30,0.85); border:1px solid rgba(201,150,42,0.12); border-radius:12px; backdrop-filter:blur(4px); margin-bottom:2rem; }
+    .df-sb { padding:0.4rem 0.8rem; border-radius:5px; font-family:var(--mono); font-size:0.67rem; font-weight:700; border:1.5px solid; white-space:nowrap; }
+    .df-sa { display:flex; flex-direction:column; align-items:center; padding:0 0.65rem; gap:2px; flex-shrink:0; }
+    .df-sa-line { width:32px; height:1px; background:linear-gradient(to right,var(--text-xs),var(--gold),var(--text-xs)); position:relative; }
+    .df-sa-line::after { content:'▶'; position:absolute; right:-7px; top:-6px; font-size:0.48rem; color:var(--gold); }
+    .df-sa-lbl { font-family:var(--mono); font-size:0.52rem; color:var(--gold); letter-spacing:0.05em; white-space:nowrap; }
+    .df-legend { display:flex; gap:0.8rem; flex-wrap:wrap; margin-top:1.5rem; }
+    .df-legend-item { display:flex; align-items:center; gap:0.4rem; font-family:var(--mono); font-size:0.59rem; color:var(--text-dim); }
+    .df-legend-dot { width:10px; height:10px; border-radius:2px; border:1.5px solid; flex-shrink:0; }
+  </style>
+
+  <p class="section-label reveal">04 &middot; Internal Data Flow</p>
+  <h2 class="reveal">How V2 Works Internally</h2>
+  <p class="section-intro reveal">Two flows govern the system: the <strong>startup sequence</strong> that runs once when the server boots, and the <strong>request lifecycle</strong> that every HTTP call follows from client to database and back.</p>
+
+  <p style="font-family:var(--mono);font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem" class="reveal">&#x25AA; Server Startup</p>
+  <div class="df-wrap reveal">
+    <div class="df-startup">
+      <div class="df-sb" style="border-color:var(--blue);color:var(--blue);background:rgba(74,158,255,0.08)">node src/server.js</div>
+      <div class="df-sa"><span class="df-sa-lbl">calls</span><div class="df-sa-line"></div></div>
+      <div class="df-sb" style="border-color:var(--gold);color:var(--gold-light);background:var(--gold-glow)">initDb()</div>
+      <div class="df-sa"><span class="df-sa-lbl">CREATE IF NOT EXISTS</span><div class="df-sa-line"></div></div>
+      <div class="df-sb" style="border-color:var(--green);color:var(--green);background:rgba(16,185,129,0.06)">Tables + Indexes</div>
+      <div class="df-sa"><span class="df-sa-lbl">ALTER TABLE</span><div class="df-sa-line"></div></div>
+      <div class="df-sb" style="border-color:var(--green);color:var(--green);background:rgba(16,185,129,0.06)">Migrations</div>
+      <div class="df-sa"><span class="df-sa-lbl">save()</span><div class="df-sa-line"></div></div>
+      <div class="df-sb" style="border-color:#f97316;color:#f97316;background:rgba(249,115,22,0.06)">data/v2.db</div>
+      <div class="df-sa"><span class="df-sa-lbl">then</span><div class="df-sa-line"></div></div>
+      <div class="df-sb" style="border-color:var(--red);color:var(--red);background:rgba(232,56,42,0.06)">app.listen(3000)</div>
+    </div>
+  </div>
+
+  <p style="font-family:var(--mono);font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem" class="reveal">&#x25AA; Request Lifecycle</p>
+  <div class="df-wrap reveal">
+    <div class="df-board">
+
+      <div class="df-row">
+        <div class="df-side">Client</div>
+        <div class="df-layer">
+          <div class="df-boxes">
+            <div class="df-b cl">HTTP Request</div>
+          </div>
+          <div class="df-note">JSON body &nbsp;&middot;&nbsp; multipart/form-data &nbsp;&middot;&nbsp; Bearer token</div>
+        </div>
+      </div>
+
+      <div class="df-arrow-v"><div class="df-arrow-v-line"></div></div>
+
+      <div class="df-row">
+        <div class="df-side">Middleware</div>
+        <div class="df-layer">
+          <div class="df-boxes">
+            <div class="df-b ex">CORS</div>
+            <div class="df-b ex">express.json()</div>
+            <div class="df-b ex">conditionalUpload (Multer)</div>
+          </div>
+          <div class="df-note">Multer only activated on multipart/form-data — clinician license upload</div>
+        </div>
+      </div>
+
+      <div class="df-arrow-v"><div class="df-arrow-v-line"></div></div>
+
+      <div class="df-row">
+        <div class="df-side">Router</div>
+        <div class="df-layer">
+          <div class="df-boxes">
+            <div class="df-b ro">/auth</div>
+            <div class="df-b ro">/users</div>
+            <div class="df-b ro">/patients</div>
+            <div class="df-b ro">/sessions</div>
+            <div class="df-b ro">/measurements</div>
+            <div class="df-b ro">/recommendations</div>
+            <div class="df-b ro">/schedule</div>
+            <div class="df-b ro">/push</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="df-arrow-v"><div class="df-arrow-v-line"></div></div>
+
+      <div class="df-row">
+        <div class="df-side">Auth Guard</div>
+        <div class="df-layer">
+          <div class="df-boxes">
+            <div class="df-b au">requireAuth middleware</div>
+            <div class="df-b au">jwt.verify(token, JWT_SECRET)</div>
+          </div>
+          <div class="df-note">Protected routes only (dashed border = optional path) &nbsp;&middot;&nbsp; 401 if token missing or invalid</div>
+        </div>
+      </div>
+
+      <div class="df-arrow-v"><div class="df-arrow-v-line"></div></div>
+
+      <div class="df-row">
+        <div class="df-side">Controller</div>
+        <div class="df-layer">
+          <div class="df-boxes">
+            <div class="df-b co">authController</div>
+            <div class="df-b co">usersController</div>
+            <div class="df-b co">sessionsController</div>
+            <div class="df-b co">measurementsController</div>
+            <div class="df-b co">recommendationsController</div>
+            <div class="df-b co">scheduleController</div>
+            <div class="df-b co">pushController</div>
+          </div>
+          <div class="df-note">Validates input &nbsp;&middot;&nbsp; business logic &nbsp;&middot;&nbsp; builds queries via DB helpers</div>
+        </div>
+      </div>
+
+      <div class="df-arrow-v"><div class="df-arrow-v-line"></div></div>
+
+      <div class="df-row">
+        <div class="df-side">DB Helpers</div>
+        <div class="df-layer">
+          <div class="df-boxes">
+            <div class="df-b he">queryAll() + normalizeDates()</div>
+            <div class="df-b he">queryOne()</div>
+            <div class="df-b he">run()</div>
+          </div>
+          <div class="df-note">normalizeDates() converts all *_at fields to ISO 8601 on every read</div>
+        </div>
+      </div>
+
+      <div class="df-arrow-v"><div class="df-arrow-v-line"></div></div>
+
+      <div class="df-row">
+        <div class="df-side">sql.js</div>
+        <div class="df-layer">
+          <div class="df-boxes">
+            <div class="df-b st">SQLite in-memory (sql.js)</div>
+          </div>
+          <div class="df-note">Pure JS SQLite — no native bindings, no Python, no compilation required</div>
+        </div>
+      </div>
+
+      <div class="df-arrow-v"><div class="df-arrow-v-line"></div></div>
+
+      <div class="df-row">
+        <div class="df-side">Persistence</div>
+        <div class="df-layer">
+          <div class="df-boxes">
+            <div class="df-b st">save() &rarr; data/v2.db</div>
+            <div class="df-b st">data/licenses/ (file uploads)</div>
+          </div>
+          <div class="df-note">Written to disk after every write op &nbsp;&middot;&nbsp; read-only ops do not trigger save()</div>
+        </div>
+      </div>
+
+      <div class="df-arrow-v"><div class="df-arrow-v-line"></div></div>
+
+      <div class="df-row">
+        <div class="df-side">Response</div>
+        <div class="df-layer">
+          <div class="df-boxes">
+            <div class="df-b cl">JSON Response &rarr; Client</div>
+          </div>
+          <div class="df-note">Uncaught errors flow to errorHandler middleware &rarr; { error: "..." }</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="df-legend reveal">
+    <div class="df-legend-item"><div class="df-legend-dot" style="border-color:rgba(240,237,232,0.3);background:rgba(255,255,255,0.03)"></div>Client / Response</div>
+    <div class="df-legend-item"><div class="df-legend-dot" style="border-color:rgba(74,158,255,0.45);background:rgba(74,158,255,0.07)"></div>Express Middleware</div>
+    <div class="df-legend-item"><div class="df-legend-dot" style="border-color:rgba(167,139,250,0.45);background:rgba(167,139,250,0.07)"></div>Router</div>
+    <div class="df-legend-item"><div class="df-legend-dot" style="border-color:rgba(232,56,42,0.45);background:rgba(232,56,42,0.05);border-style:dashed"></div>Auth Guard (optional)</div>
+    <div class="df-legend-item"><div class="df-legend-dot" style="border-color:rgba(201,150,42,0.5);background:var(--gold-glow)"></div>Controllers</div>
+    <div class="df-legend-item"><div class="df-legend-dot" style="border-color:rgba(16,185,129,0.45);background:rgba(16,185,129,0.05)"></div>DB Helpers</div>
+    <div class="df-legend-item"><div class="df-legend-dot" style="border-color:rgba(249,115,22,0.45);background:rgba(249,115,22,0.05)"></div>Storage</div>
+  </div>
+</section>
+
+<!-- API -->
+<section id="api">
+  <p class="section-label reveal">05 &middot; Live API</p>
+  <h2 class="reveal">Public API — Live Now</h2>
+  <p class="section-intro reveal">The V2 backend is deployed and publicly accessible. Any team can integrate immediately using the base URL below. No setup required — just HTTP calls.</p>
+
+  <div class="api-url-box reveal">
+    <div>
+      <div class="api-url-label">Base URL</div>
+      <div class="api-url-value">https://dsd2026-teamv2-production.up.railway.app</div>
+    </div>
+    <span class="api-live-badge">Online</span>
+  </div>
+
+  <div class="endpoint-cols reveal">
+    <div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Auth</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/auth/register</span><span class="ep-desc">JSON (patient) or multipart (clinician)</span></div>
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/auth/login</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/auth/me</span><span class="ep-desc">requires Bearer token</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/auth/status</span><span class="ep-desc">account approval status</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/auth/approve/:userId</span><span class="ep-desc">admin: approve clinician</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/auth/reject/:userId</span><span class="ep-desc">admin: reject clinician</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Users</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/users</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/users</span><span class="ep-desc">?role=clinician|patient</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/users/:id</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/users/:id</span><span class="ep-desc">modify name, age, role, status</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/users/:id/license</span><span class="ep-desc">download license file</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/users/:id/license</span><span class="ep-desc">replace license &amp; reset to pending</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Patients</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/patients</span><span class="ep-desc">all users with role=patient</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/patients/:id</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Sessions</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/sessions</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/sessions/:id</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/sessions?userId=</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/sessions/:id/end</span></div>
+          <div class="endpoint-row"><span class="method m-delete">DELETE</span><span class="ep-path">/sessions/:id</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Measurements</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/measurements</span></div>
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/measurements/batch</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/measurements/:sessionId</span><span class="ep-desc">?startDate=&amp;endDate=</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Recommendations</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/recommendations</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/recommendations/session/:id</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/recommendations/engine/:userId</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/recommendations/:id</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Schedule</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/schedule</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/schedule/:userId</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/schedule/:id</span></div>
+          <div class="endpoint-row"><span class="method m-delete">DELETE</span><span class="ep-path">/schedule/:id</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Feedback</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/feedback</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/feedback</span><span class="ep-desc">?status=pending|reviewed|resolved</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/feedback/:id</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/feedback/:id</span><span class="ep-desc">update status &amp; response</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Announcements</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/announcements</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/announcements</span><span class="ep-desc">?status=draft|published</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/announcements/:id</span></div>
+          <div class="endpoint-row"><span class="method m-patch">PATCH</span><span class="ep-path">/announcements/:id</span></div>
+          <div class="endpoint-row"><span class="method m-delete">DELETE</span><span class="ep-path">/announcements/:id</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Audit Log</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/audit-logs</span><span class="ep-desc">?userId= &amp;action= &amp;targetType=</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/audit-logs/:id</span></div>
+        </div>
+      </div>
+      <div class="endpoint-group">
+        <div class="endpoint-group-title">Push Tokens</div>
+        <div class="endpoint-list">
+          <div class="endpoint-row"><span class="method m-post">POST</span><span class="ep-path">/push/register</span></div>
+          <div class="endpoint-row"><span class="method m-get">GET</span><span class="ep-path">/push/tokens/:userId</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROGRESS -->
+<section id="progress">
+  <p class="section-label reveal">06 &middot; Roadmap</p>
+  <h2 class="reveal">Sprint Progress</h2>
+  <p class="section-intro reveal">Three sprints, one fully integrated system. Sprint 2 is now active — the API is live, auth is implemented, and all core endpoints are deployed to production.</p>
+  <div class="sprint-grid">
+    <div class="sprint-card reveal" data-cn="一">
+      <div class="sprint-header"><span class="sprint-num">Sprint 1</span><span class="sprint-status status-complete">Completed</span></div>
+      <div class="sprint-title">Groundwork &amp; Contracts</div>
+      <ul class="sprint-items">
+        <li>System Design 1.0 approved and baselined</li>
+        <li>Team assembled, roles distributed</li>
+        <li>IF1 co-authored with S2 and V1</li>
+        <li>IF2 initial draft prepared for M1 review</li>
+        <li>Repository structure and Wiki launched</li>
+        <li>Async standup routine established</li>
+      </ul>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:100%"></div></div>
+    </div>
+    <div class="sprint-card reveal" data-cn="二">
+      <div class="sprint-header"><span class="sprint-num">Sprint 2</span><span class="sprint-status status-complete">Completed</span></div>
+      <div class="sprint-title">Core Implementation</div>
+      <ul class="sprint-items">
+        <li>JWT auth system live (register / login / me)</li>
+        <li>Schedule endpoints deployed (CRUD)</li>
+        <li>Push token storage implemented</li>
+        <li>DELETE /sessions with cascade live</li>
+        <li>API deployed to Railway — publicly accessible</li>
+        <li>3 API consistency bugs patched (dates, types, casing)</li>
+        <li>Doctor approval workflow live (pending → active)</li>
+        <li>GET /patients &amp; GET /patients/:id added for M2</li>
+        <li>Date range filtering on measurements (?startDate &amp; ?endDate)</li>
+        <li>Optional notes on recommendations; age field on users</li>
+        <li>Admin account seeded automatically on every fresh deployment</li>
+        <li>Rejected status for clinicians + PATCH /auth/reject/:userId</li>
+        <li>PATCH /users/:id — modify name, age, role, status (ADMIN-03/04/08)</li>
+        <li>GET /users?role= filter for clinician/patient queries</li>
+        <li>GET + PATCH /users/:id/license — download &amp; replace license file</li>
+        <li>Feedback endpoints live — /feedback (ADMIN-06)</li>
+        <li>Announcements endpoints live — /announcements (ADMIN-07)</li>
+        <li>Audit log system — /audit-logs with automatic action recording (ADMIN-09)</li>
+        <li>WebSocket channel live — ws://host/ws?sessionId=</li>
+        <li>Huawei Cloud server deployed — 113.44.220.94:3000</li>
+      </ul>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:100%"></div></div>
+    </div>
+    <div class="sprint-card reveal active" data-cn="三">
+      <div class="sprint-header"><span class="sprint-num">Sprint 3</span><span class="sprint-status status-active">Active</span></div>
+      <div class="sprint-title">Integration &amp; Hardening</div>
+      <ul class="sprint-items">
+        <li>V2 leads full-stack integration testing</li>
+        <li>WebSocket channel live for M1 streaming</li>
+        <li>At least one cross-area integration report</li>
+        <li>Query performance tuning and indexing</li>
+        <li>RBAC policies and security review complete</li>
+      </ul>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONFLICTS -->
+<section id="conflicts">
+  <p class="section-label reveal">07 &middot; IF-S2-V2</p>
+  <h2 class="reveal">Interface Conflict Log</h2>
+  <p class="section-intro reveal">During System Design integration, S2 (Zhiqi Zhang) identified 9 conflicts between the S2 Interface Specification and V2&rsquo;s actual backend. All conflicts are within IF-S2-V2. Below is V2&rsquo;s proposed resolution for each one.</p>
+
+  <div class="cn-divider reveal">
+    <div class="cn-divider-line"></div>
+    <div class="cn-divider-symbol">接口冲突</div>
+    <div class="cn-divider-line"></div>
+  </div>
+
+  <style>
+    .conflict-grid { display:flex; flex-direction:column; gap:1rem; margin-top:1.5rem; }
+    .conflict-card { background:rgba(24,24,36,0.85); border:1px solid var(--border); border-radius:10px; overflow:hidden; backdrop-filter:blur(4px); transition:border-color 0.25s; }
+    .conflict-card:hover { border-color:rgba(201,150,42,0.3); }
+    .conflict-header { display:flex; align-items:center; gap:1rem; padding:1rem 1.3rem; border-bottom:1px solid var(--border); flex-wrap:wrap; cursor:pointer; }
+    .conflict-id { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.12em; color:var(--text-xs); text-transform:uppercase; white-space:nowrap; }
+    .conflict-title { font-size:0.93rem; font-weight:700; flex:1; }
+    .conflict-type { font-family:var(--mono); font-size:0.58rem; padding:0.18rem 0.55rem; border-radius:4px; letter-spacing:0.08em; text-transform:uppercase; white-space:nowrap; }
+    .type-a { background:rgba(74,158,255,0.12); color:var(--blue); border:1px solid rgba(74,158,255,0.3); }
+    .type-b { background:rgba(201,150,42,0.12); color:var(--gold-light); border:1px solid rgba(201,150,42,0.3); }
+    .type-c { background:rgba(232,56,42,0.12); color:var(--red); border:1px solid rgba(232,56,42,0.3); }
+    .conflict-status { font-family:var(--mono); font-size:0.58rem; padding:0.18rem 0.55rem; border-radius:4px; letter-spacing:0.08em; text-transform:uppercase; white-space:nowrap; }
+    .status-resolved  { background:rgba(16,185,129,0.12); color:var(--green); border:1px solid rgba(16,185,129,0.3); }
+    .status-pending   { background:rgba(255,255,255,0.05); color:var(--text-xs); border:1px solid var(--border); }
+    .conflict-body { padding:1.3rem; display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+    @media(max-width:700px){ .conflict-body { grid-template-columns:1fr; } }
+    .conflict-col-label { font-family:var(--mono); font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; margin-bottom:0.45rem; }
+    .col-label-s2  { color:var(--blue); }
+    .col-label-v2  { color:var(--gold); }
+    .col-label-res { color:var(--green); }
+    .conflict-col p, .conflict-col li { font-size:0.82rem; color:var(--text-dim); line-height:1.65; }
+    .conflict-col ul { padding-left:1rem; display:flex; flex-direction:column; gap:0.25rem; }
+    .conflict-col li::marker { color:var(--gold); }
+    .conflict-resolution { grid-column:1/-1; background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.15); border-radius:8px; padding:1rem 1.2rem; }
+    .conflict-code { font-family:var(--mono); font-size:0.75rem; color:var(--blue); background:rgba(8,8,14,0.6); border-radius:6px; padding:0.6rem 0.9rem; margin-top:0.5rem; overflow-x:auto; white-space:pre; line-height:1.55; }
+  </style>
+
+  <div class="conflict-grid">
+
+    <!-- C1 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 1</span>
+        <span class="conflict-title">Endpoint Path Mismatch</span>
+        <span class="conflict-type type-b">Type B</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Design</div>
+          <ul>
+            <li>POST /api/session</li>
+            <li>POST /api/session/&lt;sessionId&gt;/data</li>
+            <li>PUT /api/session/&lt;sessionId&gt;/end</li>
+          </ul>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Actual</div>
+          <ul>
+            <li>POST /sessions</li>
+            <li>POST /measurements or /measurements/batch</li>
+            <li>PATCH /sessions/:id/end</li>
+          </ul>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <p>S2 adopts V2&rsquo;s path structure. No <code>/api</code> prefix is used. Measurements are a top-level resource, not nested under sessions &mdash; this cleanly separates concerns and allows other teams (V1, M1) to query measurements independently. S2 updates their implementation to call <code>/sessions</code> and <code>/measurements</code> directly.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- C2 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 2</span>
+        <span class="conflict-title">HTTP Method Mismatch — End Session</span>
+        <span class="conflict-type type-b">Type B</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Design</div>
+          <p>Uses <strong>PUT</strong> to end a session.</p>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Actual</div>
+          <p>Uses <strong>PATCH</strong> — only one field (ended_at) is updated, not the full resource.</p>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <p>Use <strong>PATCH</strong>. This is semantically correct per HTTP spec: PUT replaces the entire resource, PATCH applies a partial update. S2 updates their client to send <code>PATCH /sessions/:id/end</code>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- C3 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 3</span>
+        <span class="conflict-title">Session Creation Request Body</span>
+        <span class="conflict-type type-a">Type A</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Sends</div>
+          <div class="conflict-code">{ "sessionId": "session-001",
+  "patientId": "patient-001",
+  "sensorJointMapping": {...},
+  "payloadStatus": "bend_knee_10",
+  "startTime": 1714456800000 }</div>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Expects</div>
+          <div class="conflict-code">{ "userId": 1 }</div>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <ul>
+            <li>V2 ignores unknown fields — S2 may send extra fields without breaking the API.</li>
+            <li><strong>patientId → userId:</strong> S2 renames this field to <code>userId</code> and uses the integer ID returned by <code>GET /users</code>. String IDs are not supported.</li>
+            <li><strong>sessionId:</strong> Server generates the ID. S2 must not provide it; use the <code>id</code> returned in the response for subsequent calls.</li>
+            <li><strong>startTime:</strong> Server auto-generates <code>started_at</code>. Client-provided start times are ignored for now.</li>
+            <li>V2 returns <strong>201 Created</strong> on success (not 200 OK).</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- C4 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 4</span>
+        <span class="conflict-title">Data Upload Structure — Critical</span>
+        <span class="conflict-type type-c">Type C</span>
+        <span class="conflict-status status-pending">In Negotiation</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Sends</div>
+          <div class="conflict-code">{ "sensorData": [
+    { "sensorId":"...",
+      "accX":..., "accY":..., "accZ":...,
+      "gyroX":..., "gyroY":..., "gyroZ":...,
+      "roll":..., "pitch":..., "yaw":... }
+  ],
+  "targetAngles": [
+    { "angleID":"...", "angle":... }
+  ],
+  "errors": [
+    { "sensorId":"...", "errorType":"...",
+      "message":"..." }
+  ] }</div>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Expects</div>
+          <div class="conflict-code">{ "sessionId": 1,
+  "jointAngles": {
+    "knee": 45.2,
+    "hip": 30.1
+  },
+  "isCorrect": false }</div>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Proposed Resolution</div>
+          <p>V2 will create a dedicated ingestion endpoint <code>POST /ingest</code> that accepts S2&rsquo;s full payload. Internally, V2 will:</p>
+          <ul>
+            <li>Map <code>targetAngles</code> &rarr; <code>joint_angles</code> (keyed by angleID)</li>
+            <li>Store raw IMU data in a new <code>raw_imu</code> JSON field on the measurements table</li>
+            <li>Store sensor errors in a separate <code>sensor_errors</code> JSON field</li>
+            <li>Set <code>is_correct = false</code> by default; V1 fills this in later via their own endpoint</li>
+          </ul>
+          <p style="margin-top:0.6rem;color:var(--red);font-size:0.8rem;">&#9888; This requires V1 input: V1 must confirm how they consume the data before V2 finalises the schema extension. Joint call between S2 + V1 + V2 required.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- C5 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 5</span>
+        <span class="conflict-title">Session End Request Body</span>
+        <span class="conflict-type type-a">Type A</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Sends</div>
+          <div class="conflict-code">{ "endTime": 1714456860000,
+  "sampleCount": 1200,
+  "errorCount": 3 }</div>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Actual</div>
+          <p>No body expected. Server auto-sets <code>ended_at = now()</code>. No fields for sampleCount or errorCount.</p>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <p>V2 will accept the optional body but ignore unknown fields for now. <code>sampleCount</code> and <code>errorCount</code> are computable server-side from existing data and do not need to be stored separately. <code>endTime</code> is ignored — server timestamp is authoritative to avoid clock skew between devices.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- C6 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 6</span>
+        <span class="conflict-title">Timestamp Format</span>
+        <span class="conflict-type type-b">Type B</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Design</div>
+          <p>Unix milliseconds integer — e.g. <code>1714456800000</code></p>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Actual</div>
+          <p>ISO 8601 UTC string — e.g. <code>"2025-04-21T14:30:00.000Z"</code></p>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <p>All timestamps use <strong>ISO 8601 UTC</strong> throughout the system. This is the REST API standard, human-readable, and timezone-unambiguous. S2 converts Unix ms to ISO 8601 before sending. V2 will accept both formats on the optional <code>timestamp</code> field and normalise internally if needed.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- C7 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 7</span>
+        <span class="conflict-title">Field Naming Convention</span>
+        <span class="conflict-type type-b">Type B</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Design</div>
+          <p>camelCase in both requests <em>and</em> responses.</p>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Actual</div>
+          <p>camelCase in <strong>requests</strong> (what you send), snake_case in <strong>responses</strong> (what you receive back).</p>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <p>The mixed convention is intentional and already documented in V2&rsquo;s integration guide. All teams must follow it: send camelCase, parse snake_case. This is the single most common cause of bugs during integration &mdash; read the guide carefully. V2 will not change response casing, as it would break teams already built against it.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- C8 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 8</span>
+        <span class="conflict-title">Session ID Type</span>
+        <span class="conflict-type type-b">Type B</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Design</div>
+          <p>String, client-generated — e.g. <code>"session-001"</code></p>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Actual</div>
+          <p>Integer, server auto-incremented — e.g. <code>1</code>, <code>2</code>, <code>3</code></p>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <p>Server-generated integer IDs are used throughout. Client-provided IDs are rejected. S2 must call <code>POST /sessions</code>, receive the <code>id</code> integer in the response, and use that value in all subsequent measurement uploads. This prevents ID collisions across distributed clients and is consistent with the rest of the API.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- C9 -->
+    <div class="conflict-card reveal">
+      <div class="conflict-header">
+        <span class="conflict-id">Conflict 9</span>
+        <span class="conflict-title">HTTP Status Codes &amp; Authentication</span>
+        <span class="conflict-type type-b">Type B</span>
+        <span class="conflict-status status-resolved">Resolved</span>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-s2">S2 Design</div>
+          <ul>
+            <li>Success: <strong>200 OK</strong> for all operations</li>
+            <li>Auth failure: <strong>401 Unauthorized</strong></li>
+          </ul>
+        </div>
+        <div class="conflict-col">
+          <div class="conflict-col-label col-label-v2">V2 Actual</div>
+          <ul>
+            <li>Resource creation: <strong>201 Created</strong></li>
+            <li>Reads/updates: <strong>200 OK</strong></li>
+            <li>No authentication — 401 is never returned</li>
+          </ul>
+        </div>
+        <div class="conflict-resolution conflict-col">
+          <div class="conflict-col-label col-label-res">V2 Resolution</div>
+          <p>V2&rsquo;s status codes follow HTTP semantics: <strong>201</strong> for new resource creation, <strong>200</strong> for reads and updates. Authentication is not implemented in Sprint 1; 401 responses do not exist yet. When auth is added in Sprint 3, a 401 scheme will be agreed with all teams simultaneously. S2 should treat any unexpected 401 as a server misconfiguration for now.</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.conflict-grid -->
+
+  <div class="cn-divider reveal" style="margin-top:2.5rem">
+    <div class="cn-divider-line"></div>
+    <div class="cn-divider-symbol">待定</div>
+    <div class="cn-divider-line"></div>
+  </div>
+  <p class="section-intro reveal" style="margin-top:1rem">
+    <strong style="color:var(--red)">1 conflict remains open (Conflict 4)</strong> &mdash; the raw IMU data structure requires a joint call between S2, V1, and V2 before V2 can finalise the schema extension and the <code>/ingest</code> endpoint. All other 8 conflicts are resolved from V2&rsquo;s side.
+  </p>
+
+</section>
+
+<!-- SRS -->
+<section id="srs">
+  <p class="section-label reveal">08 &middot; SRS</p>
+  <h2 class="reveal">Requirements Analysis</h2>
+  <p class="section-intro reveal">V2 — Backend API &amp; Storage &middot; Version 1.0 &middot; May 5, 2026 &middot; DSD 2025–2026 &middot; UTAD &times; Jilin University</p>
+
+  <style>
+    #srs { background:rgba(14,14,24,0.6); border-top:1px solid rgba(201,150,42,0.1); border-bottom:1px solid rgba(201,150,42,0.1); }
+    .srs-h2 { font-family:var(--mono); font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin:2.5rem 0 0.9rem; padding-bottom:0.4rem; border-bottom:1px solid rgba(255,255,255,0.07); }
+    .srs-h3 { font-size:0.88rem; font-weight:700; color:var(--text); margin:1.6rem 0 0.5rem; }
+    .srs-h4 { font-family:var(--mono); font-size:0.7rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-xs); margin:1.2rem 0 0.4rem; }
+    .srs-p  { font-size:0.84rem; color:var(--text-dim); line-height:1.75; margin-bottom:0.6rem; }
+    .srs-ul { font-size:0.84rem; color:var(--text-dim); padding-left:1.4rem; margin-bottom:0.7rem; line-height:1.7; }
+    .srs-ul li { margin-bottom:0.25rem; }
+    .srs-table-wrap { overflow-x:auto; margin:0.8rem 0 1.2rem; border-radius:8px; border:1px solid rgba(255,255,255,0.07); }
+    .srs-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+    .srs-table thead { background:rgba(255,255,255,0.04); }
+    .srs-table th { padding:0.55rem 0.9rem; text-align:left; font-family:var(--mono); font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-xs); border-bottom:1px solid rgba(255,255,255,0.07); white-space:nowrap; }
+    .srs-table td { padding:0.55rem 0.9rem; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--text-dim); vertical-align:top; line-height:1.6; }
+    .srs-table tr:last-child td { border-bottom:none; }
+    .srs-table td:first-child { font-family:var(--mono); font-size:0.75rem; color:var(--gold); white-space:nowrap; }
+    .srs-actor-list { display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.6rem 0 1.2rem; }
+    .srs-actor { font-family:var(--mono); font-size:0.73rem; padding:0.3rem 0.8rem; border-radius:5px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:var(--text-dim); }
+    .iuc { border:1px solid rgba(255,255,255,0.07); border-radius:8px; margin:1rem 0; overflow:hidden; }
+    .iuc-head { display:flex; align-items:center; gap:0.7rem; padding:0.65rem 1rem; background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.06); }
+    .iuc-id { font-family:var(--mono); font-size:0.68rem; color:var(--gold); white-space:nowrap; }
+    .iuc-name { font-size:0.88rem; font-weight:700; }
+    .iuc-actors { font-family:var(--mono); font-size:0.65rem; color:var(--text-xs); margin-left:auto; white-space:nowrap; }
+    .iuc-body { padding:0.9rem 1rem; font-size:0.84rem; color:var(--text-dim); line-height:1.75; }
+    .iuc-body strong { color:var(--text); }
+    .srs-badge { display:inline-block; font-family:var(--mono); font-size:0.58rem; letter-spacing:0.07em; text-transform:uppercase; padding:0.12rem 0.45rem; border-radius:4px; }
+    .sb-done   { background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.3); }
+    .sb-open   { background:rgba(232,56,42,0.1);   color:var(--red); border:1px solid rgba(232,56,42,0.3); }
+    .sb-sprint { background:rgba(96,165,250,0.1);  color:#60a5fa;  border:1px solid rgba(96,165,250,0.3); }
+    /* UC Diagram */
+    .ucd-wrap { margin:1.2rem 0; display:flex; gap:1.5rem; align-items:flex-start; flex-wrap:wrap; }
+    .ucd-actors { display:flex; flex-direction:column; gap:0.5rem; min-width:110px; }
+    .ucd-actor { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:6px; padding:0.35rem 0.7rem; font-family:var(--mono); font-size:0.7rem; color:var(--text-dim); text-align:center; }
+    .ucd-actor.ext { border-color:rgba(201,150,42,0.3); color:var(--gold); }
+    .ucd-system { flex:1; min-width:260px; border:1.5px dashed rgba(201,150,42,0.25); border-radius:10px; padding:1rem; }
+    .ucd-system-label { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); margin-bottom:0.8rem; }
+    .ucd-ucs { display:flex; flex-direction:column; gap:0.4rem; }
+    .ucd-uc { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); border-radius:5px; padding:0.3rem 0.7rem; font-size:0.78rem; color:var(--text-dim); display:flex; align-items:center; gap:0.5rem; }
+    .ucd-uc-id { font-family:var(--mono); font-size:0.65rem; color:var(--gold); }
+  </style>
+
+  <!-- PART 1 -->
+  <p class="srs-h2 reveal">Part 1 — Introduction</p>
+
+  <p class="srs-h3 reveal">1. Version History</p>
+  <div class="srs-table-wrap reveal">
+    <table class="srs-table">
+      <thead><tr><th>Date</th><th>Author</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>May 5, 2026</td><td>Sergio Moniz</td><td>Initial version — Sprint 2 baseline. Covers all internal use cases implemented and verified in production.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="srs-h3 reveal">2. Scope</p>
+  <p class="srs-p reveal">V2 — Backend API &amp; Storage is the central server-side component of the Limb Motion Recognition and Assistant system. It is implemented as a Node.js + Express REST API backed by a SQLite database (sql.js). V2 is the single integration point for all other subsystems: it receives sensor measurement data from S2, serves session and measurement data to M1 and M2, provides AI classification inputs to V1, and manages all persistent storage for the platform.</p>
+  <p class="srs-p reveal">V2 does not have a direct user-facing interface. It provides the following services to other groups:</p>
+  <ul class="srs-ul reveal">
+    <li>User registration, authentication (JWT), and clinician approval workflow</li>
+    <li>Session lifecycle management (create, close)</li>
+    <li>Measurement ingestion (single and batch) and retrieval with date-range filtering</li>
+    <li>Patient list and profile access for the doctor dashboard</li>
+    <li>Rehabilitation recommendation management (create, read, update, delete)</li>
+    <li>Rehabilitation schedule storage and retrieval</li>
+    <li>Push notification token registration and dispatch</li>
+  </ul>
+  <p class="srs-p reveal">The following are out of scope for V2: sensor hardware and firmware (S1), raw sensor data acquisition and mock generation (S2), patient mobile application UI (M1), doctor web dashboard UI (M2), and AI motion classification model training (V1).</p>
+
+  <p class="srs-h3 reveal">3. Glossary</p>
+  <div class="srs-table-wrap reveal">
+    <table class="srs-table">
+      <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+      <tbody>
+        <tr><td>Session</td><td>A bounded rehabilitation exercise event with a <code>started_at</code> timestamp and an optional <code>ended_at</code>. Measurements may only be added to an open (not ended) session.</td></tr>
+        <tr><td>Measurement</td><td>A single joint-angle reading associated with a session. Contains <code>joint_angles</code> (JSON object), <code>is_correct</code> (boolean, set by V1), and an ISO 8601 timestamp.</td></tr>
+        <tr><td>Pending</td><td>Clinician account status after self-registration, before admin approval. A pending account cannot log in.</td></tr>
+        <tr><td>Active</td><td>Fully operational user account status. Required for login.</td></tr>
+        <tr><td>JWT</td><td>JSON Web Token — stateless bearer token issued by V2 on successful login, required on all protected endpoints.</td></tr>
+        <tr><td>ISO 8601</td><td>Timestamp format used throughout V2: <code>YYYY-MM-DDTHH:MM:SS.sssZ</code>. All date fields are normalised to this format on every database read.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PART 2 -->
+  <p class="srs-h2 reveal">Part 2 — External Use Cases</p>
+  <p class="srs-p reveal">V2 is a backend service with no direct user-facing interface. External use cases are not applicable to V2. This part is handled exclusively by M1 (Patient Mobile App) and M2 (Doctor Web Dashboard), which are the only groups that interact directly with end users.</p>
+
+  <!-- PART 3 -->
+  <p class="srs-h2 reveal">Part 3 — Internal Use Cases</p>
+
+  <p class="srs-h3 reveal">1. Actor List</p>
+  <div class="srs-actor-list reveal">
+    <span class="srs-actor">Patient</span>
+    <span class="srs-actor">Doctor</span>
+    <span class="srs-actor">System Administrator</span>
+    <span class="srs-actor">S2</span>
+    <span class="srs-actor">V1</span>
+    <span class="srs-actor">M1</span>
+    <span class="srs-actor">M2</span>
+  </div>
+
+  <p class="srs-h3 reveal">2. Use Case List</p>
+  <div class="srs-table-wrap reveal">
+    <table class="srs-table">
+      <thead><tr><th>ID</th><th>Name</th><th>Primary Actor(s)</th></tr></thead>
+      <tbody>
+        <tr><td>IUC-V2-01</td><td>Patient Registration</td><td>Patient, M1</td></tr>
+        <tr><td>IUC-V2-02</td><td>Clinician Registration</td><td>Doctor, M2</td></tr>
+        <tr><td>IUC-V2-03</td><td>User Login</td><td>Patient, Doctor, M1, M2</td></tr>
+        <tr><td>IUC-V2-04</td><td>Clinician Approval</td><td>System Administrator, M2</td></tr>
+        <tr><td>IUC-V2-05</td><td>Create Rehabilitation Session</td><td>M1, S2</td></tr>
+        <tr><td>IUC-V2-06</td><td>End Rehabilitation Session</td><td>M1, S2</td></tr>
+        <tr><td>IUC-V2-07</td><td>Record Measurement(s)</td><td>S2, M1</td></tr>
+        <tr><td>IUC-V2-08</td><td>Query Measurements</td><td>M1, M2, V1</td></tr>
+        <tr><td>IUC-V2-09</td><td>Access Patient Records</td><td>M2, Doctor</td></tr>
+        <tr><td>IUC-V2-10</td><td>Manage Recommendations</td><td>M2, Doctor, M1, Patient</td></tr>
+        <tr><td>IUC-V2-11</td><td>Manage Schedule</td><td>M2, Doctor, M1, Patient</td></tr>
+        <tr><td>IUC-V2-12</td><td>Register Push Token</td><td>M1</td></tr>
+        <tr><td>IUC-V2-13</td><td>Send Push Notification</td><td>M2, V1</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="srs-h3 reveal">3. Specific Use Cases</p>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-01</span>
+      <span class="iuc-name">Patient Registration</span>
+      <span class="iuc-actors">Actor: Patient · M1</span>
+    </div>
+    <div class="iuc-body">
+      M1 uses the <strong>"Patient Registration"</strong> use case of V2. In this use case, a patient opens M1 and fills in their credentials. M1 sends a registration request containing <code>username</code>, <code>password</code>, <code>email</code>, <code>role=patient</code>, and an optional <code>age</code> field to V2's <code>POST /auth/register</code> endpoint as a JSON body. V2 hashes the password using bcryptjs, creates a new user record in the database with <code>status=active</code>, generates a signed JWT token, and returns it to M1 alongside the user profile. M1 stores the token and the patient gains immediate access to the application.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-02</span>
+      <span class="iuc-name">Clinician Registration</span>
+      <span class="iuc-actors">Actor: Doctor · M2</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Clinician Registration"</strong> use case of V2. In this use case, a doctor fills in their credentials and attaches a professional license file (PDF or image, maximum 5 MB) in M2's registration form. M2 sends a <code>multipart/form-data</code> request to V2's <code>POST /auth/register</code> endpoint. V2 stores the license file on disk under <code>data/licenses/</code>, creates a user record with <code>status=pending</code>, and returns a confirmation message to M2 without issuing a JWT token. The clinician must wait for a System Administrator to approve the account before being able to log in.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-03</span>
+      <span class="iuc-name">User Login</span>
+      <span class="iuc-actors">Actor: Patient · Doctor · M1 · M2</span>
+    </div>
+    <div class="iuc-body">
+      M1 and M2 use the <strong>"User Login"</strong> use case of V2. In this use case, the user submits their <code>username</code> and <code>password</code> through their respective application. The application sends these credentials to V2's <code>POST /auth/login</code> endpoint. V2 looks up the user record, verifies the password against the stored bcrypt hash, and checks that the account <code>status</code> is <code>active</code>. If both checks pass, V2 returns a signed JWT token encoding <code>userId</code> and <code>role</code>. If the account is <code>pending</code>, V2 rejects the request with a 403 response. The client stores the token and includes it in subsequent requests as a bearer token.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-04</span>
+      <span class="iuc-name">Clinician Approval</span>
+      <span class="iuc-actors">Actor: System Administrator · M2</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Clinician Approval"</strong> use case of V2. In this use case, a System Administrator reviews a pending clinician registration in M2's admin panel. The administrator selects the clinician and confirms the approval. M2 sends a <code>PATCH /auth/approve/:userId</code> request to V2 with the administrator's JWT token in the Authorization header. V2 verifies the token, locates the user record, sets <code>status=active</code>, and returns a confirmation to M2. The clinician can now log in successfully.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-05</span>
+      <span class="iuc-name">Create Rehabilitation Session</span>
+      <span class="iuc-actors">Actor: M1 · S2</span>
+    </div>
+    <div class="iuc-body">
+      M1 uses the <strong>"Create Rehabilitation Session"</strong> use case of V2. In this use case, when a patient begins an exercise in M1, M1 sends a <code>POST /sessions</code> request to V2 containing the patient's <code>userId</code>. V2 validates that the user exists, creates a new session record with a server-generated integer <code>id</code> and a <code>started_at</code> timestamp in ISO 8601 UTC, and returns the session object to M1. M1 stores the returned session <code>id</code> and provides it to S2. S2 uses this <code>id</code> to associate all subsequent measurement uploads with the correct session.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-06</span>
+      <span class="iuc-name">End Rehabilitation Session</span>
+      <span class="iuc-actors">Actor: M1 · S2</span>
+    </div>
+    <div class="iuc-body">
+      M1 uses the <strong>"End Rehabilitation Session"</strong> use case of V2. In this use case, when the patient finishes their exercise, M1 sends a <code>PATCH /sessions/:id/end</code> request to V2 with the session's integer <code>id</code>. V2 verifies the session exists and is still open, sets <code>ended_at</code> to the current ISO 8601 UTC timestamp, and returns the updated session object. From this point, V2 rejects any attempt to add new measurements to this session with a 409 Conflict response.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-07</span>
+      <span class="iuc-name">Record Measurement(s)</span>
+      <span class="iuc-actors">Actor: S2 · M1</span>
+    </div>
+    <div class="iuc-body">
+      S2 uses the <strong>"Record Measurement(s)"</strong> use case of V2. In this use case, after S2 processes raw IMU data from S1 into formal sensor data, S2 sends the data to V2. For individual measurements, S2 sends a <code>POST /measurements</code> request with <code>sessionId</code> and <code>jointAngles</code> (a JSON object keyed by joint name). For high-frequency streaming, S2 sends a <code>POST /measurements/batch</code> request with an array of measurement objects in a single atomic transaction. V2 validates that the target session is open, inserts the record(s) into the database, and returns confirmation to S2. The <code>is_correct</code> field defaults to <code>false</code> and is later updated by V1 after AI classification.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-08</span>
+      <span class="iuc-name">Query Measurements</span>
+      <span class="iuc-actors">Actor: M1 · M2 · V1</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Query Measurements"</strong> use case of V2. In this use case, a doctor opens a patient's session detail view in M2. M2 sends a <code>GET /measurements/:sessionId</code> request to V2, optionally including <code>?startDate=</code> and <code>?endDate=</code> query parameters to filter by date range. V2 looks up the session, applies the date filters if provided (accepting both <code>YYYY-MM-DD</code> and full ISO 8601 formats, normalised internally), and returns the filtered measurement array ordered by timestamp ascending to M2. M2 uses this data to render motion visualisation charts. V1 uses the same endpoint to retrieve measurements for AI classification.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-09</span>
+      <span class="iuc-name">Access Patient Records</span>
+      <span class="iuc-actors">Actor: Doctor · M2</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Access Patient Records"</strong> use case of V2. In this use case, a doctor opens the patient management panel in M2. M2 sends a <code>GET /patients</code> request to V2, which returns the list of all users with <code>role=patient</code>, including their <code>id</code>, <code>username</code>, <code>email</code>, <code>age</code>, and <code>status</code>. To view a specific patient's full profile, M2 sends a <code>GET /patients/:id</code> request. V2 returns the patient object, or a 404 response if the user does not exist or is not a patient. M2 displays this information in the doctor's dashboard.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-10</span>
+      <span class="iuc-name">Manage Recommendations</span>
+      <span class="iuc-actors">Actor: Doctor · M2 · Patient · M1</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Manage Recommendations"</strong> use case of V2. In this use case, after reviewing a patient's motion data, a doctor writes a rehabilitation recommendation in M2. M2 sends a <code>POST /recommendations</code> request to V2 with the patient's <code>userId</code>, the recommendation <code>content</code>, and an optional <code>notes</code> field for supplementary free-text. V2 stores the record and returns it with a server-generated integer <code>id</code> and the correct integer <code>userId</code>. The doctor may subsequently update the recommendation via <code>PUT /recommendations/:id</code> or delete it via <code>DELETE /recommendations/:id</code>. M1 retrieves the recommendations for a patient via <code>GET /recommendations/:userId</code> to display them to the patient. V2 returns an empty array (not a 404) if no recommendations exist yet.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-11</span>
+      <span class="iuc-name">Manage Schedule</span>
+      <span class="iuc-actors">Actor: Doctor · M2 · Patient · M1</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Manage Schedule"</strong> use case of V2. In this use case, a doctor assigns a rehabilitation schedule to a patient via M2. M2 sends a <code>POST /schedule</code> request to V2 with the patient's <code>userId</code>, a <code>scheduledAt</code> timestamp in ISO 8601 format, and a <code>description</code> of the planned exercise. V2 stores the entry and returns it to M2. M1 retrieves the patient's schedule via <code>GET /schedule/:userId</code> and displays upcoming sessions to the patient in the mobile application.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-12</span>
+      <span class="iuc-name">Register Push Token</span>
+      <span class="iuc-actors">Actor: M1</span>
+    </div>
+    <div class="iuc-body">
+      M1 uses the <strong>"Register Push Token"</strong> use case of V2. In this use case, after a patient successfully logs in, M1 obtains the device's push notification token from the operating system. M1 sends a <code>POST /push/register</code> request to V2 containing the <code>userId</code> and the device <code>token</code>. V2 stores the token associated with the user account and returns a confirmation including both <code>user_id</code> and <code>token</code>. This token is used in IUC-V2-13 to deliver push notifications to the patient's device.
+    </div>
+  </div>
+
+  <div class="iuc reveal">
+    <div class="iuc-head">
+      <span class="iuc-id">IUC-V2-13</span>
+      <span class="iuc-name">Send Push Notification</span>
+      <span class="iuc-actors">Actor: M2 · V1</span>
+    </div>
+    <div class="iuc-body">
+      M2 uses the <strong>"Send Push Notification"</strong> use case of V2. In this use case, when a doctor publishes a new recommendation or when V1 generates a real-time feedback alert, the triggering system sends a <code>POST /push/send</code> request to V2 with the target <code>userId</code> and the notification payload. V2 looks up the device push token registered for that user via IUC-V2-12 and forwards the payload to the external push notification service. V2 returns a delivery confirmation or a 404 if no token has been registered for the user.
+    </div>
+  </div>
+
+  <!-- PART 4 -->
+  <p class="srs-h2 reveal">Part 4 — Others</p>
+
+  <p class="srs-h3 reveal">1. Assumptions and Dependencies</p>
+  <ul class="srs-ul reveal">
+    <li>Each patient has exactly one active account. The system does not handle duplicate accounts for the same person.</li>
+    <li>V2 does not validate the clinical content of recommendations. Clinical correctness is the responsibility of the doctor using M2.</li>
+    <li>The admin role responsible for approving clinician accounts (IUC-V2-04) is a real user in the system. Full role-based access control (RBAC) enforcement is planned for Sprint 3 and is not enforced at the route level in Sprint 2.</li>
+    <li>The system is an academic prototype. No GDPR or health data compliance obligation is assumed for this phase.</li>
+    <li>The server requires Node.js &ge; 18. The SQLite database is managed by sql.js (pure JavaScript — no native module compilation). The database file is located at <code>data/v2.db</code> and is created automatically on first startup.</li>
+    <li>All inter-team communication uses HTTP REST in Sprint 2. A WebSocket channel for real-time M1 streaming will be added in Sprint 3 without breaking existing REST endpoints.</li>
+    <li>All timestamps exchanged between teams use ISO 8601 UTC format. V2 normalises any SQLite-format dates automatically on every database read via a centralised helper function.</li>
+    <li>License files submitted during clinician registration are stored on the local filesystem at <code>data/licenses/</code>. Cloud storage integration is not in scope for Sprint 2.</li>
+    <li>The interface contract between V2 and S2 (IF1) is frozen for all conflicts except Conflict 4, which is pending a joint S2 + V1 + V2 decision on the raw IMU ingestion schema.</li>
+    <li>The external push notification service and its credentials are configured via environment variables. V2 does not select or manage the third-party push provider.</li>
+  </ul>
+
+  <p class="srs-h3 reveal">2. Non-Functional Requirements</p>
+  <p class="srs-h4 reveal">Performance</p>
+  <ul class="srs-ul reveal">
+    <li>Simple read endpoints (<code>GET /patients</code>, <code>GET /measurements/:sessionId</code>) must respond within 200 ms for datasets up to 10,000 records.</li>
+    <li>Batch measurement inserts (<code>POST /measurements/batch</code>) must complete within 500 ms for batches of up to 500 records.</li>
+    <li>The server must handle at least 10 concurrent connections during integration testing without degradation in response time.</li>
+  </ul>
+  <p class="srs-h4 reveal">Security</p>
+  <ul class="srs-ul reveal">
+    <li>Passwords must never be stored in plaintext. All passwords are hashed using bcryptjs with a cost factor of 10 or higher before being written to the database.</li>
+    <li>All protected API endpoints require a valid JWT bearer token in the Authorization header. Expired or malformed tokens must result in a 401 Unauthorized response.</li>
+    <li>License file uploads are limited to 5 MB. The server-side path of the stored license file (<code>license_path</code>) must never be included in any API response to prevent filesystem path disclosure.</li>
+  </ul>
+  <p class="srs-h4 reveal">Reliability</p>
+  <ul class="srs-ul reveal">
+    <li>The database schema is initialised automatically each time the server starts. ALTER TABLE migration statements are wrapped in try/catch blocks so the server starts correctly on both a fresh database and an existing one.</li>
+    <li>Batch measurement inserts are executed as a single atomic transaction. A failure on any individual record must roll back the entire batch.</li>
+    <li>The <code>GET /health</code> endpoint must return 200 OK at all times when the server process is running, with no authentication required.</li>
+  </ul>
+  <p class="srs-h4 reveal">Maintainability</p>
+  <ul class="srs-ul reveal">
+    <li>The codebase follows a strict MVC pattern: routes, controllers, middleware, and database helpers are placed in separate directories. No business logic is permitted in route definition files.</li>
+    <li>Date normalisation is implemented exclusively in <code>src/db/helpers.js</code> (<code>normalizeDates</code>). No individual controller performs date conversion.</li>
+    <li>All commit messages and code comments are written in English.</li>
+    <li>No native module compilation is required. The project must be fully installable via a standard <code>npm install</code> on any platform.</li>
+  </ul>
+
+  <p class="srs-h3 reveal">3. Internal Use Case Diagram</p>
+  <div class="ucd-wrap reveal">
+    <div class="ucd-actors">
+      <p style="font-family:var(--mono);font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-xs);margin-bottom:0.5rem;">Actors</p>
+      <div class="ucd-actor ext">Patient</div>
+      <div class="ucd-actor ext">Doctor</div>
+      <div class="ucd-actor ext">Sys Admin</div>
+      <div class="ucd-actor">M1</div>
+      <div class="ucd-actor">M2</div>
+      <div class="ucd-actor">S2</div>
+      <div class="ucd-actor">V1</div>
+    </div>
+    <div class="ucd-system">
+      <div class="ucd-system-label">V2 — Backend API &amp; Storage</div>
+      <div class="ucd-ucs">
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-01</span> Patient Registration</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-02</span> Clinician Registration</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-03</span> User Login</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-04</span> Clinician Approval</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-05</span> Create Rehabilitation Session</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-06</span> End Rehabilitation Session</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-07</span> Record Measurement(s)</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-08</span> Query Measurements</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-09</span> Access Patient Records</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-10</span> Manage Recommendations</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-11</span> Manage Schedule</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-12</span> Register Push Token</div>
+        <div class="ucd-uc"><span class="ucd-uc-id">IUC-V2-13</span> Send Push Notification</div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- MEMBERS -->
+<section id="members">
+  <p class="section-label reveal">09 &middot; The Team</p>
+  <h2 class="reveal">Who We Are</h2>
+  <p class="section-intro reveal">Five engineers. Two continents. One shared codebase.</p>
+  <div class="members-grid">
+    <div class="member-card pm reveal">
+      <div class="member-avatar av-red">SM</div>
+      <div class="member-name">Sergio Moniz</div>
+      <div class="member-role">Team Leader</div>
+      <div class="member-nat">🇵🇹 Portuguese</div>
+      <span class="member-tag tag-pm">PM</span>
+    </div>
+    <div class="member-card reveal">
+      <div class="member-avatar av-gold">?</div>
+      <div class="member-name">TBD</div>
+      <div class="member-role">Vice PM</div>
+      <div class="member-nat">🇨🇳 Chinese</div>
+      <span class="member-tag tag-vpm">Shadow PM</span>
+    </div>
+    <div class="member-card reveal">
+      <div class="member-avatar av-purple">?</div>
+      <div class="member-name">TBD</div>
+      <div class="member-role">System Architect</div>
+      <div class="member-nat">🇵🇹 / 🇨🇳</div>
+      <span class="member-tag tag-arch">Architect</span>
+    </div>
+    <div class="member-card reveal">
+      <div class="member-avatar av-blue">?</div>
+      <div class="member-name">TBD</div>
+      <div class="member-role">Programmer / Tester</div>
+      <div class="member-nat">🇵🇹 Portuguese</div>
+      <span class="member-tag tag-dev-pt">Dev PT</span>
+    </div>
+    <div class="member-card reveal">
+      <div class="member-avatar av-gold">?</div>
+      <div class="member-name">TBD</div>
+      <div class="member-role">Programmer / Tester</div>
+      <div class="member-nat">🇨🇳 Chinese</div>
+      <span class="member-tag tag-dev-cn">Dev CN</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>
+    <div class="footer-logo">DSD2026 &middot; Team V2 &middot; UTAD &times; Jilin University</div>
+    <div class="footer-cn">中葡分布式软件开发</div>
+  </div>
+  <div class="footer-links">
+    <a href="#background">Home</a>
+    <a href="#progress">Progress</a>
+    <a href="news.html">Dispatch</a>
+    <a href="#srs">SRS</a>
+    <a href="#members">Members</a>
+  </div>
+</footer>
+
+<script>
+  const hamburger  = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileClose= document.getElementById('mobileClose');
+  hamburger.addEventListener('click', () => mobileMenu.classList.add('open'));
+  mobileClose.addEventListener('click', closeMobile);
+  function closeMobile() { mobileMenu.classList.remove('open'); }
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer  = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  revealEls.forEach(el => observer.observe(el));
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks  = document.querySelectorAll('.nav-links a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => { if(window.scrollY >= s.offsetTop - 80) current = s.id; });
+    navLinks.forEach(a => { a.style.color = a.getAttribute('href') === '#'+current ? 'var(--gold-light)' : ''; });
+  });
+</script>
+</body>
+</html>
