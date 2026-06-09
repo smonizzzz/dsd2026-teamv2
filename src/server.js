@@ -18,6 +18,7 @@ const announcementsRouter   = require('./routes/announcements');
 const auditLogsRouter       = require('./routes/auditLogs');
 const progressRouter        = require('./routes/progress');
 const exercisesRouter       = require('./routes/exercises');
+const painRouter            = require('./routes/pain');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -48,6 +49,7 @@ app.use('/announcements',   announcementsRouter);
 app.use('/audit-logs',      auditLogsRouter);
 app.use('/progress',        progressRouter);
 app.use('/exercises',       exercisesRouter);
+app.use('/pain',            painRouter);
 
 app.use((req, res) => res.status(404).json({ error: `${req.method} ${req.path} not found` }));
 app.use(errorHandler);

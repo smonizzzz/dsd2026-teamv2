@@ -379,6 +379,34 @@ async function main() {
   });
   expectStatus(closedMeasurement, 409, 'POST /measurements after session end');
 
+  // ── Pain Log (M1 + M2) ──
+  const painCreate = await request('POST', '/pain', { level: 6, notes: 'after squats' }, token);
+  expectStatus(painCreate, 201, 'POST /pain');
+  assert.strictEqual(painCreate.data.level, 6);
+  assert.strictEqual(painCreate.data.user_id, userId);
+
+  const badPainPost = await request('POST', '/pain', { level: 99 }, token);
+  expectStatus(badPainPost, 400, 'POST /pain level out of range → 400');
+
+  const ownHistory = await request('GET', `/pain/${userId}`, undefined, token);
+  expectStatus(ownHistory, 200, 'GET /pain/:userId (own → ok)');
+  assert.ok(Array.isArray(ownHistory.data) && ownHistory.data.length >= 1);
+
+  // Privacy: a *different* patient must not be able to read this user's history.
+  const stranger = await request('POST', '/auth/register', {
+    name: 'Stranger Patient', email: `stranger-${runId}@example.com`, password: 'pw12345', role: 'patient',
+  });
+  const strangerRead = await request('GET', `/pain/${userId}`, undefined, stranger.data.token);
+  expectStatus(strangerRead, 403, 'GET /pain/:userId by another patient → 403');
+
+  // Admin may read any.
+  const adminRead = await request('GET', `/pain/${userId}`, undefined, adminToken);
+  expectStatus(adminRead, 200, 'GET /pain/:userId by admin → 200');
+
+  const stats = await request('GET', `/pain/${userId}/stats`, undefined, token);
+  expectStatus(stats, 200, 'GET /pain/:userId/stats');
+  assert.ok(stats.data.total_entries >= 1);
+
   console.log('');
   console.log('Passed tests:');
   for (const test of passedTests) {

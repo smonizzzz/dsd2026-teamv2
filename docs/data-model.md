@@ -52,6 +52,7 @@ Patients, clinicians and the seeded admin all live in this table.
 | `timestamp` | TEXT | ISO 8601 |
 | `joint_angles` | TEXT (JSON) | object map `{"knee":45.2}` **or** M1/S2 array `[{angleID,angle,timestamp}]` |
 | `sensor_data` | TEXT (JSON) | nullable; raw IMU frames (acc/gyro/orientation) |
+| `pain_level` | INTEGER | nullable; optional 1–10 pain reported alongside the measurement |
 | `is_correct` | INTEGER (bool) | default 0; set by V1 after AI classification *(write-back mechanism still open)* |
 
 ### recommendations
@@ -144,6 +145,17 @@ Global exercise catalogue (read by M2 to build plans). Seeded with 10 entries on
 | `status` | TEXT | `draft` \| `published` (default `draft`) |
 | `created_by` | INTEGER FK→users(id) | |
 | `created_at` / `updated_at` | TEXT | ISO 8601 |
+
+### pain_logs
+Patient-reported pain entries. M1 syncs from local storage; M2 reads for correlation.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | INTEGER PK | |
+| `user_id` | INTEGER FK→users(id) ON DELETE CASCADE | the patient |
+| `level` | INTEGER | 1–10 (CHECK enforced) |
+| `notes` | TEXT | nullable |
+| `created_at` | TEXT | ISO 8601 |
 
 ### audit_logs
 | Column | Type | Notes |

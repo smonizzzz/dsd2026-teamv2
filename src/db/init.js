@@ -127,6 +127,7 @@ async function initDb() {
     "ALTER TABLE recommendations ADD COLUMN notes TEXT",
     "ALTER TABLE measurements ADD COLUMN sensor_data TEXT",
     "ALTER TABLE sessions ADD COLUMN action_type TEXT NOT NULL DEFAULT 'unknown'",
+    "ALTER TABLE measurements ADD COLUMN pain_level INTEGER",
     "ALTER TABLE schedule_exercises ADD COLUMN notes       TEXT",
     "ALTER TABLE schedule_exercises ADD COLUMN gif_url     TEXT",
     "ALTER TABLE schedule_exercises ADD COLUMN description TEXT",
@@ -177,6 +178,17 @@ async function initDb() {
     );
   `);
 
+  // Patient self-reported pain entries (M1 captures locally and syncs; M2 reads for correlation).
+  db.run(`
+    CREATE TABLE IF NOT EXISTS pain_logs (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      level      INTEGER NOT NULL CHECK(level >= 1 AND level <= 10),
+      notes      TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+    );
+  `);
+
   db.run('CREATE INDEX IF NOT EXISTS idx_sessions_user  ON sessions(user_id);');
   db.run('CREATE INDEX IF NOT EXISTS idx_meas_session   ON measurements(session_id);');
   db.run('CREATE INDEX IF NOT EXISTS idx_recs_session   ON recommendations(session_id);');
@@ -186,6 +198,7 @@ async function initDb() {
   db.run('CREATE INDEX IF NOT EXISTS idx_audit_user     ON audit_logs(user_id);');
   db.run('CREATE INDEX IF NOT EXISTS idx_users_doctor   ON users(doctor_id);');
   db.run('CREATE INDEX IF NOT EXISTS idx_sched_ex_sched ON schedule_exercises(schedule_id);');
+  db.run('CREATE INDEX IF NOT EXISTS idx_pain_user_date ON pain_logs(user_id, created_at DESC);');
 
   // Seed default admin account if it does not exist yet.
   const adminEmail = process.env.ADMIN_EMAIL    || 'admin@v2.dsd';

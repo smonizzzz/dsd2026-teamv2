@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS measurements (
   timestamp    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
   joint_angles TEXT    NOT NULL,                        -- JSON: object map or targetAngles array
   sensor_data  TEXT,                                    -- JSON: raw IMU frames (nullable)
+  pain_level   INTEGER,                                 -- optional 1-10 alongside this reading
   is_correct   INTEGER NOT NULL DEFAULT 0               -- bool; set by V1 after classification
 );
 
@@ -122,6 +123,15 @@ CREATE TABLE IF NOT EXISTS announcements (
   updated_at TEXT
 );
 
+-- Patient-reported pain entries (M1 syncs; M2 reads for correlation).
+CREATE TABLE IF NOT EXISTS pain_logs (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  level      INTEGER NOT NULL CHECK(level >= 1 AND level <= 10),
+  notes      TEXT,
+  created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+
 -- Administrator action audit log.
 CREATE TABLE IF NOT EXISTS audit_logs (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -145,3 +155,4 @@ CREATE INDEX IF NOT EXISTS idx_feedback_user  ON feedback(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_user     ON audit_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_users_doctor   ON users(doctor_id);
 CREATE INDEX IF NOT EXISTS idx_sched_ex_sched ON schedule_exercises(schedule_id);
+CREATE INDEX IF NOT EXISTS idx_pain_user_date ON pain_logs(user_id, created_at DESC);

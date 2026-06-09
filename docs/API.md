@@ -70,6 +70,9 @@ WebSocket (real-time feedback): `wss://dsd2026-teamv2-production.up.railway.app/
 | PATCH | `/schedule/:id/exercises/:exerciseId/complete` | – | 🆕 Mark one exercise done |
 | GET | `/progress/:userId` | – | 🆕 Patient progress (ROM / adherence / pain) |
 | GET | `/exercises` | – | 🆕 Global exercise catalogue (M2 picker) |
+| POST | `/pain` | ✓ | 🆕 Patient submits a pain entry (level 1–10) |
+| GET | `/pain/:userId` | ✓ | 🆕 Pain history (self/own-doctor/admin) |
+| GET | `/pain/:userId/stats` | ✓ | 🆕 Pain stats (total/avg/min/max) |
 | POST | `/push/register` | – | Register an FCM device token |
 | GET | `/push/tokens/:userId` | – | List a user's push tokens |
 | GET | `/feedback` · `/feedback/:id` | – | User feedback (admin) |
@@ -401,7 +404,32 @@ real session, measurement and exercise data.
 
 ---
 
-## 9. Push, Feedback, Announcements, Audit (admin / M2)
+## 9. 🆕 Pain Log
+
+Patient-reported pain entries. M1 captures locally and syncs; M2 reads to correlate pain
+with exercise sessions.
+
+### POST `/pain` *(auth)*
+Body: `{ "level": 6, "notes": "after squats" }` — `level` integer **1–10** required;
+`notes` optional. The entry is bound to the authenticated user (no need to send userId).
+**`201`:** `{ "id": 12, "user_id": 1, "level": 6, "notes": "after squats", "created_at": "..." }`.
+**Errors:** `400` level missing or out of range.
+
+### GET `/pain/:userId` *(auth)*
+Pain history for a user, newest first. Returns `[]` if empty.
+**Access control:**
+- Patient → only their own logs (`403` otherwise).
+- Clinician → only logs of patients bound to them via `users.doctor_id` (`403` otherwise).
+- Admin → any user.
+
+### GET `/pain/:userId/stats` *(auth)*
+`{ "total_entries": 3, "average_level": 5.6, "min_level": 4, "max_level": 8,
+   "first_entry": "...", "latest_entry": "..." }` — same access control as the history.
+**Errors:** `404` user not found.
+
+---
+
+## 10. Push, Feedback, Announcements, Audit (admin / M2)
 
 | Endpoint | Body / Notes |
 |----------|--------------|
@@ -415,7 +443,7 @@ real session, measurement and exercise data.
 
 ---
 
-## 10. WebSocket — real-time feedback
+## 11. WebSocket — real-time feedback
 
 Connect: `wss://<host>/ws?sessionId=<id>`. Events pushed during a session:
 
