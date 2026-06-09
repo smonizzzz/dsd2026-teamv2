@@ -40,6 +40,7 @@ Patients, clinicians and the seeded admin all live in this table.
 |--------|------|-------|
 | `id` | INTEGER PK | |
 | `user_id` | INTEGER FK→users(id) | the patient |
+| `action_type` | TEXT | exercise tag — e.g. `walk`, `climb_stairs`, `squat`; default `unknown` |
 | `started_at` | TEXT | ISO 8601 |
 | `ended_at` | TEXT | nullable; set when the session closes |
 

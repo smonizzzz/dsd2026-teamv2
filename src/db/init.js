@@ -24,10 +24,11 @@ async function initDb() {
 
   db.run(`
     CREATE TABLE IF NOT EXISTS sessions (
-      id         INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id    INTEGER NOT NULL REFERENCES users(id),
-      started_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
-      ended_at   TEXT
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id     INTEGER NOT NULL REFERENCES users(id),
+      action_type TEXT    NOT NULL DEFAULT 'unknown',
+      started_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+      ended_at    TEXT
     );
   `);
 
@@ -125,6 +126,7 @@ async function initDb() {
     "ALTER TABLE users ADD COLUMN condition_date  TEXT",
     "ALTER TABLE recommendations ADD COLUMN notes TEXT",
     "ALTER TABLE measurements ADD COLUMN sensor_data TEXT",
+    "ALTER TABLE sessions ADD COLUMN action_type TEXT NOT NULL DEFAULT 'unknown'",
     "ALTER TABLE schedule_exercises ADD COLUMN notes       TEXT",
     "ALTER TABLE schedule_exercises ADD COLUMN gif_url     TEXT",
     "ALTER TABLE schedule_exercises ADD COLUMN description TEXT",
@@ -217,11 +219,19 @@ async function initDb() {
       { name: 'Hamstring Stretch', category: 'Flexibility', description: 'Stretches the hamstring muscles to restore range of motion and prevent tightness after lower limb injury.', instructions: ['Sit on the floor with both legs extended straight out in front of you.', 'Place a belt, towel or resistance band around one foot and hold both ends.', 'Keep your back straight — do not round your spine.', 'Gently pull back on the belt to draw your toes towards you.', 'Lean slightly forward from the hips until you feel a stretch along the back of your thigh.', 'Hold the stretch for 15–30 seconds.', 'Release slowly and repeat on the other leg.'], gif_url: 'https://cdn.jefit.com/assets/img/exercises/gifs/932.gif', thumbnail_url: '', muscle_groups: ['Upper Legs', 'Lower Legs'], equipment: 'Body Weight', difficulty: 'Intermediate' },
       { name: 'Single-Leg Balance', category: 'Balance', description: 'Trains proprioception and joint stability. A key functional milestone in lower limb rehabilitation.', instructions: ['Stand upright with both arms relaxed at your sides.', 'Focus on a fixed point in front of you to help maintain balance.', 'Slowly lift one foot off the floor, keeping the standing knee slightly soft.', 'Hold the balance on one leg for up to 30 seconds.', 'Stand next to a wall or sturdy surface as a safety measure if needed.', 'Lower the foot and rest briefly, then switch sides.', 'As you progress, try closing your eyes briefly to increase the difficulty.'], gif_url: 'https://cdn.jefit.com/assets/img/exercises/gifs/662.gif', thumbnail_url: '', muscle_groups: ['Abs', 'Glutes', 'Upper Legs'], equipment: 'Body Weight', difficulty: 'Advanced' },
     ];
-    for (const ex of seed) {
+    // Thumbnails hosted by M1 on GitHub (raw, public). Indexed to match the seed order above.
+    const THUMB_BASE = 'https://raw.githubusercontent.com/diogopinhel/limbmotionrecovery-assets/main/';
+    const thumbs = [
+      'thumb_squat.png', 'thumb_walking_test.png', 'thumb_stair_climbing.png',
+      'thumb_straight_leg_raise.png', 'thumb_knee_extension.png', 'thumb_ankle_pumps.png',
+      'thumb_hip_abduction.png', 'thumb_calf_raises.png', 'thumb_hamstring_stretch.png',
+      'thumb_single_leg_balance.png',
+    ];
+    seed.forEach((ex, i) => {
       run(db, `INSERT INTO exercises (name, category, description, instructions, gif_url, thumbnail_url, muscle_groups, equipment, difficulty)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [ex.name, ex.category, ex.description, JSON.stringify(ex.instructions), ex.gif_url, ex.thumbnail_url, JSON.stringify(ex.muscle_groups), ex.equipment, ex.difficulty]);
-    }
+        [ex.name, ex.category, ex.description, JSON.stringify(ex.instructions), ex.gif_url, THUMB_BASE + thumbs[i], JSON.stringify(ex.muscle_groups), ex.equipment, ex.difficulty]);
+    });
     console.log(`  Exercise catalogue seeded: ${seed.length} exercises`);
   }
 

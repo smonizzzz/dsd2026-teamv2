@@ -22,10 +22,11 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Rehabilitation sessions.
 CREATE TABLE IF NOT EXISTS sessions (
-  id         INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id    INTEGER NOT NULL REFERENCES users(id),
-  started_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
-  ended_at   TEXT
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id     INTEGER NOT NULL REFERENCES users(id),
+  action_type TEXT    NOT NULL DEFAULT 'unknown',   -- e.g. walk | climb_stairs | squat
+  started_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+  ended_at    TEXT
 );
 
 -- Measurements (joint-angle readings + optional raw IMU data).

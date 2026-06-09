@@ -53,13 +53,16 @@ async function getSessionById(req, res, next) {
 async function createSession(req, res, next) {
   try {
     const { db, save } = await getDb();
-    const { userId } = req.body;
+    const { userId, actionType } = req.body;
     if (!userId) { const e = new Error('userId is required'); e.status = 400; return next(e); }
 
     const user = queryOne(db, 'SELECT id FROM users WHERE id = ?', [userId]);
     if (!user) { const e = new Error('User not found'); e.status = 404; return next(e); }
 
-    const result = run(db, 'INSERT INTO sessions (user_id) VALUES (?)', [userId]);
+    const result = run(db,
+      'INSERT INTO sessions (user_id, action_type) VALUES (?, ?)',
+      [userId, actionType || 'unknown']
+    );
     save();
     const created = queryOne(db, `
       SELECT s.*, u.name AS user_name FROM sessions s

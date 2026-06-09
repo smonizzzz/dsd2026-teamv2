@@ -199,9 +199,10 @@ includes `session_count` and `doctor_id`). `404` if the patient id does not exis
 ## 4. Sessions
 
 ### POST `/sessions`
-`{ "userId": 1 }` →
+Body: `{ "userId": 1, "actionType": "squat" }` — `actionType` is optional (defaults to `"unknown"`);
+common values: `walk`, `climb_stairs`, `squat`, etc. →
 ```json
-{ "id": 1, "user_id": 1, "user_name": "Ana Costa",
+{ "id": 1, "user_id": 1, "user_name": "Ana Costa", "action_type": "squat",
   "started_at": "2026-04-21T14:00:00Z", "ended_at": null }
 ```
 
