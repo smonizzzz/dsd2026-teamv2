@@ -209,6 +209,42 @@ async function main() {
   const bindNonClinician = await request('PATCH', `/users/${userId}`, { doctorId: userId }, adminToken);
   expectStatus(bindNonClinician, 403, 'PATCH /users/:id (bind non-clinician → forbidden)');
 
+  // ── /patients access control ──
+  const patientsNoToken = await request('GET', '/patients');
+  expectStatus(patientsNoToken, 401, 'GET /patients no token → 401');
+
+  // The approved clinician is now bound to our patient (above). The doctor list call
+  // must return only patients they are bound to.
+  const doctorToken = clinicianApprovedLogin.data.token;
+  const patientsAsDoctor = await request('GET', '/patients', undefined, doctorToken);
+  expectStatus(patientsAsDoctor, 200, 'GET /patients as doctor → 200');
+  assert.ok(patientsAsDoctor.data.every((p) => p.doctor_id === doctorId),
+    'doctor must only see patients bound to them');
+  assert.ok(patientsAsDoctor.data.some((p) => p.id === userId),
+    'doctor must see their own bound patient');
+
+  // Admin still sees everyone.
+  const patientsAsAdmin = await request('GET', '/patients', undefined, adminToken);
+  expectStatus(patientsAsAdmin, 200, 'GET /patients as admin → 200');
+  assert.ok(patientsAsAdmin.data.length >= patientsAsDoctor.data.length,
+    'admin must see at least as many patients as the doctor');
+
+  // Patient sees only themselves.
+  const patientsAsPatient = await request('GET', '/patients', undefined, token);
+  expectStatus(patientsAsPatient, 200, 'GET /patients as patient → 200');
+  assert.strictEqual(patientsAsPatient.data.length, 1, 'patient must see only themselves');
+  assert.strictEqual(patientsAsPatient.data[0].id, userId);
+
+  // GET /patients/:id ownership: register a stranger patient and have the doctor try to fetch them.
+  const strangerReg = await request('POST', '/auth/register', {
+    name: 'Stranger Patient B', email: `stranger-pat-${runId}@example.com`, password: 'pw12345', role: 'patient',
+  });
+  const strangerByDoctor = await request('GET', `/patients/${strangerReg.data.user.id}`, undefined, doctorToken);
+  expectStatus(strangerByDoctor, 403, 'GET /patients/:id of unbound patient by doctor → 403');
+
+  const ownByDoctor = await request('GET', `/patients/${userId}`, undefined, doctorToken);
+  expectStatus(ownByDoctor, 200, 'GET /patients/:id of bound patient by doctor → 200');
+
   const session = await request('POST', '/sessions', { userId });
   expectStatus(session, 201, 'POST /sessions');
   assert.ok(session.data.id, 'session should return an id');

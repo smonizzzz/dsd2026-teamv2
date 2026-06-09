@@ -123,11 +123,21 @@ async function updateUser(req, res, next) {
 async function getPatients(req, res, next) {
   try {
     const { db } = await getDb();
-    const patients = queryAll(db,
-      'SELECT id, name, email, role, age, status, created_at FROM users WHERE role = ? ORDER BY created_at DESC',
-      ['patient']
-    );
-    res.json(patients);
+    // Visibility:
+    //   admin → all patients
+    //   clinician → only patients bound to them (users.doctor_id)
+    //   patient → only themselves
+    let sql = 'SELECT id, name, email, role, age, status, doctor_id, created_at FROM users WHERE role = ?';
+    const params = ['patient'];
+    if (req.user.role === 'clinician') {
+      sql += ' AND doctor_id = ?';
+      params.push(req.user.id);
+    } else if (req.user.role === 'patient') {
+      sql += ' AND id = ?';
+      params.push(req.user.id);
+    }
+    sql += ' ORDER BY created_at DESC';
+    res.json(queryAll(db, sql, params));
   } catch (err) { next(err); }
 }
 
@@ -135,11 +145,18 @@ async function getPatientById(req, res, next) {
   try {
     const { db } = await getDb();
     const patient = queryOne(db, `
-      SELECT u.id, u.name, u.email, u.role, u.age, u.status, u.created_at, COUNT(s.id) AS session_count
+      SELECT u.id, u.name, u.email, u.role, u.age, u.status, u.doctor_id, u.created_at, COUNT(s.id) AS session_count
       FROM users u LEFT JOIN sessions s ON s.user_id = u.id
       WHERE u.id = ? AND u.role = 'patient' GROUP BY u.id
     `, [req.params.id]);
     if (!patient) { const e = new Error('Patient not found'); e.status = 404; return next(e); }
+    // Access control: admin sees any; clinician only sees their bound patients; patient only self.
+    if (req.user.role === 'clinician' && Number(patient.doctor_id) !== Number(req.user.id)) {
+      const e = new Error('You can only access your own patients'); e.status = 403; return next(e);
+    }
+    if (req.user.role === 'patient' && Number(patient.id) !== Number(req.user.id)) {
+      const e = new Error('Patients can only access their own profile'); e.status = 403; return next(e);
+    }
     res.json(patient);
   } catch (err) { next(err); }
 }
